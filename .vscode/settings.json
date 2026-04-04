@@ -1,0 +1,19 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    ".github/workflows/core/*.yml": ".github/workflows/core/*.yaml",
+    ".github/workflows/deploy/*.yml": ".github/workflows/deploy/*.yaml",
+    ".github/workflows/build/*.yml": ".github/workflows/build/*.yaml",
+    ".github/workflows/utils/*.yml": ".github/workflows/utils/*.yaml",
+    ".github/workflows/manual/*.yml": ".github/workflows/manual/*.yaml",
+    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+  },
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml"
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/**/*.yml"
+  }
+}

@@ -1,0 +1,48 @@
+name: Upload Windows Release
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      full_version:
+        type: string
+        required: true
+      exe_path:
+        type: string
+        required: true
+
+jobs:
+  upload:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: ./Output
+        continue-on-error: true
+
+      - name: Upload to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: ${{ inputs.exe_path }}/*.exe
+          retention-days: 5
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.full_version }}-${{ inputs.flavor }}
+          name: ${{ inputs.full_version }} (${{ inputs.flavor }})
+          files: ${{ inputs.exe_path }}/*.exe
+          prerelease: ${{ inputs.flavor != 'prod' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

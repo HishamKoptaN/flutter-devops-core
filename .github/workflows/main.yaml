@@ -51,83 +51,31 @@ jobs:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets: inherit
 
-    build_windows_exe:
+    windows_shorebird:
         needs: check_platforms
         if: needs.check_platforms.outputs.windows_exists == 'true'
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  fetch-depth: 1
-            - uses: shorebirdtech/setup-shorebird@v1
-              with:
-                  cache: true
-            - uses: subosito/flutter-action@v2
-              with:
-                  channel: stable
-                  cache: true
-            - run: git config --system core.longpaths true
-            - shell: pwsh
-              run: |
-                  $flavor = "${{ inputs.flavor || github.ref_name }}"
-                  # Set app_id based on flavor (Windows doesn't support --flavor)
-                  $appId = "e962126d-ee7a-48f2-b89d-fb0349f4a05f"  # dev default
-                  if ($flavor -eq "prod") {
-                      $appId = "ed427ccb-5edb-4594-a376-2ee9636bef4e"
-                  }
-                  (Get-Content shorebird.yaml) -replace '^app_id:.*', "app_id: $appId" | Set-Content shorebird.yaml
-                  Write-Host "✅ Updated shorebird.yaml with App ID: $appId for flavor: $flavor"
-            - shell: pwsh
-              env:
-                  SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-              run: |
-                  $outputPath = "$env:TEMP\shorebird_output.txt"
+        uses: ./.github/workflows/deploy-windows-shorebird.yml
+        with:
+            flavor: ${{ inputs.flavor || github.ref_name }}
+        secrets: inherit
 
-                  # Run command WITHOUT --flavor (not supported on Windows)
-                  shorebird release windows --flutter-version=3.32.6 --no-confirm --verbose 2>&1 | Tee-Object -FilePath $outputPath
-                  $exitCode = $LASTEXITCODE
+    windows_build:
+        needs: [check_platforms, windows_shorebird]
+        if: needs.check_platforms.outputs.windows_exists == 'true' && needs.windows_shorebird.outputs.changed == 'true'
+        uses: ./.github/workflows/build-windows-exe.yml
+        with:
+            flavor: ${{ inputs.flavor || github.ref_name }}
 
-                  # Check exit code first - most reliable indicator
-                  if ($exitCode -ne 0) {
-                      Write-Host "❌ Shorebird command failed with exit code $exitCode"
-                      exit 1
-                  }
-                  # Additional check for error patterns in output
-                  $errorPatterns = @(
-                      "SHOREBIRD_TOKEN not set",
-                      "required",
-                      "failed",
-                      "BUILD FAILED",
-                      "Process 'command.*flutter.*finished with non-zero exit",
-                      "No release exists",
-                      "Release not found"
-                  )
-                  foreach ($pattern in $errorPatterns) {
-                      if (Select-String -Path $outputPath -Pattern $pattern) {
-                          Write-Host "❌ Detected error pattern: $pattern"
-                          exit 1
-                      }
-                  }
-                  Write-Host "✅ Shorebird build succeeded"
-            - shell: pwsh
-              run: |
-                  $flavor = "${{ inputs.flavor || github.ref_name }}"
-                  $basePath = "build/windows/x64/runner/Release"
-                  $files = Get-ChildItem -Path $basePath -Filter "*.exe" -File
-                  if ($flavor -eq "dev") {
-                    $newName = "abujena_windows_dev.exe"
-                  } else {
-                    $newName = "abujena_windows.exe"
-                  }
-                  if ($files.Count -gt 0) {
-                    Rename-Item -Path $files[0].FullName -NewName $newName
-                    Write-Host "✅ Renamed executable to $newName"
-                  }
-            - uses: actions/upload-artifact@v4
-              with:
-                  name: windows-exe-${{ inputs.flavor || github.ref_name }}
-                  path: build/windows/x64/runner/Release/*.exe
-                  retention-days: 5
+    windows_upload:
+        needs: [windows_shorebird, windows_build]
+        if: needs.windows_shorebird.outputs.changed == 'true'
+        permissions:
+            contents: write
+        uses: ./.github/workflows/upload-windows-release.yml
+        with:
+            flavor: ${{ inputs.flavor || github.ref_name }}
+            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
+            exe_path: ${{ needs.windows_build.outputs.exe_path }}
     build_installer:
         needs: [check_platforms, deploy_shorebird]
         if: needs.check_platforms.outputs.windows_exists == 'true'
