@@ -15,7 +15,6 @@ on:
       installer_name:
         type: string
         required: true
-
 jobs:
   release:
     runs-on: windows-latest
@@ -56,18 +55,15 @@ jobs:
             git push origin ${{ inputs.flavor }}
             Write-Host "✅ Appcast updated" -ForegroundColor Green
           }
-
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}
           name: ${{ inputs.flavor == 'prod' && format('Release v{0}', inputs.full_version) || format('Release v{0} ({1})', inputs.full_version, inputs.flavor) }}
           body: |
             ## 🚀 Release v${{ inputs.full_version }}
-
             ### Changes
             - Automated release from ${{ inputs.flavor }} branch
             - Shorebird deployment: ${{ inputs.version_changed == 'true' && 'New Release' || 'Patch' }}
-
             ### Downloads
             - **Installer**: `${{ inputs.installer_name }}`
           files: ./Output/${{ inputs.installer_name }}

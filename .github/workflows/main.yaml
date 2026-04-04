@@ -149,13 +149,10 @@ jobs:
     cleanup_releases:
         needs: github_release
         uses: ./.github/workflows/cleanup-releases.yml
-        secrets:
-            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+        secrets: inherit
     distribute_android:
         needs: [check_platforms, deploy_shorebird]
         if: needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
         uses: ./.github/workflows/distribute-android.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets:
-            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
