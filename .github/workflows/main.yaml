@@ -41,8 +41,7 @@ jobs:
         uses: ./.github/workflows/deploy-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets:
-            SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        secrets: inherit
 
     build_firebase_apk:
         needs: [check_platforms, deploy_shorebird]
@@ -50,8 +49,7 @@ jobs:
         uses: ./.github/workflows/build-firebase-apk.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets:
-            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+        secrets: inherit
 
     build_windows_exe:
         needs: check_platforms
@@ -156,3 +154,4 @@ jobs:
         uses: ./.github/workflows/distribute-android.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
+        secrets: inherit

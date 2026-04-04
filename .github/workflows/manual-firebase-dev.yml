@@ -11,14 +11,11 @@ jobs:
       flavor: dev
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-    secrets:
-      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+    secrets: inherit
   firebase:
     needs: distribute
     if: always() && needs.distribute.result == 'success'
     uses: ./.github/workflows/build-firebase-apk.yml
     with:
       flavor: dev
-    secrets:
-      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-      FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+    secrets: inherit

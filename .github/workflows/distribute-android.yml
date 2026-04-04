@@ -7,7 +7,7 @@ on:
         required: true
     secrets:
       FIREBASE_ADMIN_SDK:
-        required: true
+        required: false
 
 jobs:
   distribute:

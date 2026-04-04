@@ -13,7 +13,7 @@ on:
         value: ${{ jobs.deploy.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
-        required: true
+        required: false
 jobs:
   deploy:
     runs-on: windows-latest
