@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "296117455905",
+    "project_id": "flutter-devops-core-dev",
+    "storage_bucket": "flutter-devops-core-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296117455905:android:428b7289c2da1eaa816760",
+        "android_client_info": {
+          "package_name": "com.example.flutter_devops_core"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQdlFpJQuq82qdDuQ_KiKC7SC3Hh1wFpc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
