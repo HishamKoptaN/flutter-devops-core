@@ -57,6 +57,7 @@ jobs:
         uses: ./.github/workflows/deploy-windows-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
+            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
         secrets: inherit
 
     windows_build:
