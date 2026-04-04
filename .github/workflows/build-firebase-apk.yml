@@ -7,20 +7,33 @@ on:
         type: string
         required: true
     secrets:
-      FIREBASE_APP_ID:
-        required: true
       FIREBASE_ADMIN_SDK:
-        required: true
+        required: false
 
 jobs:
   distribute:
     runs-on: ubuntu-latest
     environment: ${{ inputs.flavor }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - uses: actions/download-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
           path: build/app/outputs/flutter-apk/
+
+      - name: Extract Firebase App ID
+        id: get_app_id
+        run: |
+          APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+          if [ -z "$APP_ID" ]; then
+            echo "❌ Could not find mobilesdk_app_id in google-services.json"
+            exit 1
+          fi
+          echo "Found Firebase App ID: $APP_ID"
+          echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
 
       - id: find_apk
         run: |
@@ -37,7 +50,7 @@ jobs:
 
       - uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
-          appId: ${{ secrets.FIREBASE_APP_ID }}
+          appId: ${{ steps.get_app_id.outputs.app_id }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
           groups: "apk"
           file: ${{ steps.find_apk.outputs.apk_path }}
