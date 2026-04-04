@@ -65,7 +65,7 @@ jobs:
             flavor: ${{ inputs.flavor || github.ref_name }}
     windows_upload:
         needs: [windows_shorebird, windows_build]
-        if: needs.windows_shorebird.outputs.changed == 'true'
+        if: needs.check_platforms.outputs.windows_exists == 'true'
         permissions:
             contents: write
         uses: ./.github/workflows/upload-windows-release.yml
