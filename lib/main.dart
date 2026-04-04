@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'config/firebase/firebase_config.dart';
 
 class AppConfig {
   final String flavor;
@@ -15,7 +16,7 @@ class AppConfig {
 
 late final AppConfig appConfig;
 
-void main() {
+void main() async {
   const flavor = String.fromEnvironment('ENV', defaultValue: 'dev');
 
   final config = switch (flavor) {
@@ -32,6 +33,8 @@ void main() {
   };
 
   appConfig = config;
+
+  await FirebaseConfig.initialize();
 
   if (kDebugMode) {
     print('🚀 Running in ${config.flavor} flavor');

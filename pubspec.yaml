@@ -12,6 +12,30 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+
+  # Flavor-specific configurations
+  flavors:
+    dev:
+      image_path: "assets/icon/icon_dev.png"
+      android: true
+      ios: true
+      adaptive_icon_background: "#2196F3"
+      adaptive_icon_foreground: "assets/icon/icon_dev_foreground.png"
+    prod:
+      image_path: "assets/icon/icon.png"
+      android: true
+      ios: true
+      adaptive_icon_background: "#FFFFFF"
+      adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+
 flutter:
   uses-material-design: true
   assets:
