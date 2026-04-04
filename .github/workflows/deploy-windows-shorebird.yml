@@ -6,9 +6,15 @@ on:
       flavor:
         type: string
         required: true
+      full_version:
+        type: string
+        required: true
     outputs:
       changed:
         value: ${{ jobs.shorebird.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: false
 
 jobs:
   shorebird:
