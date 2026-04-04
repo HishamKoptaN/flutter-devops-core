@@ -4,35 +4,9 @@ on:
     push:
         branches: [dev, prod]
     workflow_dispatch:
-
 jobs:
     check_platforms:
-        runs-on: ubuntu-latest
-        outputs:
-            android_exists: ${{ steps.check_android.outputs.exists }}
-            ios_exists: ${{ steps.check_ios.outputs.exists }}
-            windows_exists: ${{ steps.check_windows.outputs.exists }}
-            linux_exists: ${{ steps.check_linux.outputs.exists }}
-            macos_exists: ${{ steps.check_macos.outputs.exists }}
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  fetch-depth: 1
-            - id: check_android
-              run: |
-                  if [ -d "android" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
-            - id: check_ios
-              run: |
-                  if [ -d "ios" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
-            - id: check_windows
-              run: |
-                  if [ -d "windows" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
-            - id: check_linux
-              run: |
-                  if [ -d "linux" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
-            - id: check_macos
-              run: |
-                  if [ -d "macos" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+        uses: ./.github/workflows/check-platforms.yml
     deploy_shorebird:
         needs: check_platforms
         permissions:
@@ -74,7 +48,7 @@ jobs:
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
             exe_path: ${{ needs.windows_build.outputs.exe_path }}
     build_installer:
-        needs: [check_platforms, deploy_shorebird]
+        needs: [windows_build]
         if: needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-installer.yml
         with:

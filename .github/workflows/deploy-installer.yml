@@ -24,28 +24,35 @@ jobs:
 
       - run: git config --system core.longpaths true
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      - shell: pwsh
-        run: |
-          flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
-          Write-Host "✅ Windows app built" -ForegroundColor Green
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: build/windows/x64/runner/Release/
+        continue-on-error: true
 
       - shell: pwsh
         run: |
-          # Debug: List files
-          Write-Host "📂 Current directory: $(Get-Location)"
-          Get-ChildItem -Force
-          if (Test-Path "./installers") {
-            Write-Host "📂 Installers directory:"
-            Get-ChildItem ./installers/ -Force
-          }
-          if (Test-Path "./build/windows") {
-            Write-Host "📂 Build directory:"
-            Get-ChildItem ./build/windows/ -Recurse | Select-Object -First 20
+          # Check if we have pre-built artifact
+          $exePath = "build/windows/x64/runner/Release/*.exe"
+          if (Test-Path $exePath) {
+            Write-Host "✅ Using pre-built EXE from artifact" -ForegroundColor Green
+          } else {
+            Write-Host "🔨 Building Windows app..." -ForegroundColor Yellow
+            flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            Write-Host "✅ Windows app built" -ForegroundColor Green
           }
 
       - shell: pwsh
