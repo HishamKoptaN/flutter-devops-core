@@ -57,6 +57,10 @@ jobs:
           baseVersion="${{ inputs.base_version }}"
           flavor="${{ inputs.flavor }}"
 
+          # Trim any whitespace/newlines from version
+          version=$(echo "$version" | tr -d '\n' | tr -d '\r')
+          baseVersion=$(echo "$baseVersion" | tr -d '\n' | tr -d '\r')
+
           TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
           if [ "$flavor" = "prod" ]; then
             TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
@@ -70,7 +74,10 @@ jobs:
             androidReleaseVersion=$(echo "$version" | sed "s/+/-$flavor+/")
           fi
 
-          echo "📱 Android version: $androidReleaseVersion"
+          # Trim any whitespace/newlines
+          androidReleaseVersion=$(echo "$androidReleaseVersion" | tr -d '\n' | tr -d '\r')
+
+          echo "📱 Android version: '$androidReleaseVersion'"
           versionChanged=false
 
           if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
