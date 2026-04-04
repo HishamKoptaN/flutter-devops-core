@@ -11,6 +11,9 @@ on:
         value: ${{ jobs.version.outputs.full_version }}
       version_changed:
         value: ${{ jobs.combine.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: true
 jobs:
   version:
     uses: ./.github/workflows/get-version.yml
@@ -22,6 +25,8 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 
   windows:
     needs: version
@@ -29,6 +34,8 @@ jobs:
     with:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
   combine:
     needs: [version, android, windows]
     runs-on: ubuntu-latest
