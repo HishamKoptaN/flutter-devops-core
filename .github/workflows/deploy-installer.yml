@@ -1,5 +1,4 @@
 name: Build Installer
-
 on:
   workflow_call:
     inputs:
@@ -12,7 +11,6 @@ on:
     outputs:
       installer_name:
         value: ${{ jobs.build.outputs.installer_name }}
-
 jobs:
   build:
     runs-on: windows-latest
@@ -40,14 +38,14 @@ jobs:
         run: |
           # Debug: List files
           Write-Host "📂 Current directory: $(Get-Location)"
-          ls -la
+          Get-ChildItem -Force
           if (Test-Path "./installers") {
             Write-Host "📂 Installers directory:"
-            ls -la ./installers/
+            Get-ChildItem ./installers/ -Force
           }
           if (Test-Path "./build/windows") {
             Write-Host "📂 Build directory:"
-            ls -la ./build/windows/ -Recurse | Select-Object -First 20
+            Get-ChildItem ./build/windows/ -Recurse | Select-Object -First 20
           }
 
       - shell: pwsh
