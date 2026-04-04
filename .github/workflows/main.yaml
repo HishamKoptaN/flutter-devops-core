@@ -10,8 +10,8 @@ on:
         inputs:
             flavor:
                 type: string
-                required: true
-                default: dev
+                required: false
+                default: ""
     # 2. Direct push in this repository
     push:
         branches: [dev, prod]
