@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class AppConfig {
   final String flavor;
@@ -14,8 +15,28 @@ class AppConfig {
 
 late final AppConfig appConfig;
 
-void mainCommon(AppConfig config) {
+void main() {
+  const flavor = String.fromEnvironment('ENV', defaultValue: 'dev');
+
+  final config = switch (flavor) {
+    'prod' => const AppConfig(
+      flavor: 'prod',
+      appName: 'DevOps',
+      primaryColor: Colors.deepPurple,
+    ),
+    _ => const AppConfig(
+      flavor: 'dev',
+      appName: 'DevOps Dev',
+      primaryColor: Colors.blue,
+    ),
+  };
+
   appConfig = config;
+
+  if (kDebugMode) {
+    print('🚀 Running in ${config.flavor} flavor');
+  }
+
   runApp(const MyApp());
 }
 
