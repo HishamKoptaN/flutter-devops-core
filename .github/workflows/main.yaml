@@ -125,7 +125,6 @@ jobs:
         needs: github_release
         uses: ./.github/workflows/cleanup-releases.yml
         secrets:
-            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
             FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
 
     distribute_android:
@@ -135,5 +134,4 @@ jobs:
         with:
             flavor: ${{ github.ref_name }}
         secrets:
-            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
             FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}

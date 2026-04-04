@@ -3,8 +3,6 @@ name: Cleanup Releases
 on:
   workflow_call:
     secrets:
-      FIREBASE_APP_ID:
-        required: true
       FIREBASE_ADMIN_SDK:
         required: true
 
@@ -26,11 +24,22 @@ jobs:
           dart pub get
           dart run build_runner build --delete-conflicting-outputs
 
+      - name: Extract Firebase App ID
+        id: get_app_id
+        run: |
+          APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+          if [ -z "$APP_ID" ]; then
+            echo "❌ Could not find mobilesdk_app_id in google-services.json"
+            exit 1
+          fi
+          echo "Found Firebase App ID: $APP_ID"
+          echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+
       - name: Cleanup old releases
         working-directory: .github/scripts/automation_tool
         env:
           FIREBASE_PROJECT_NUMBER: "448994699498"
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APP_ID: ${{ steps.get_app_id.outputs.app_id }}
           FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
         run: dart bin/main.dart cleanup
         continue-on-error: true
