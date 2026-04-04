@@ -2,9 +2,6 @@ name: Cleanup Releases
 
 on:
   workflow_call:
-    secrets:
-      FIREBASE_ADMIN_SDK:
-        required: true
 
 jobs:
   cleanup:
