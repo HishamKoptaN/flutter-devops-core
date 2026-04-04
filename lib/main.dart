@@ -21,15 +21,15 @@ void main() async {
 
   final config = switch (flavor) {
     'prod' => const AppConfig(
-      flavor: 'prod',
-      appName: 'DevOps',
-      primaryColor: Colors.deepPurple,
-    ),
+        flavor: 'prod',
+        appName: 'DevOps',
+        primaryColor: Colors.deepPurple,
+      ),
     _ => const AppConfig(
-      flavor: 'dev',
-      appName: 'DevOps Dev',
-      primaryColor: Colors.blue,
-    ),
+        flavor: 'dev',
+        appName: 'DevOps Dev',
+        primaryColor: Colors.blue,
+      ),
   };
 
   appConfig = config;
@@ -84,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
             Text(
