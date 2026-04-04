@@ -45,12 +45,12 @@ jobs:
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          $version = "${{ inputs.full_version }}"
+          $version = "${{ inputs.full_version }}".Trim()
           $flavor = "${{ inputs.flavor }}"
           $TARGET_ID = if ($flavor -eq "prod") { "ed427ccb-5edb-4594-a376-2ee9636bef4e" } else { "e962126d-ee7a-48f2-b89d-fb0349f4a05f" }
           (Get-Content shorebird.yaml) -replace '^app_id:.*', "app_id: $TARGET_ID" | Set-Content shorebird.yaml
           $versionChanged = $false
-          shorebird patch windows --release-version=$version --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable patchOutput
+          shorebird patch windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable patchOutput
           $patchExitCode = $LASTEXITCODE
           if ($patchExitCode -ne 0) {
             if ($patchOutput -match "Release not found|No release exists|UnpatchableChangeException|asset changes") {

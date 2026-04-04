@@ -85,7 +85,7 @@ jobs:
           else
             if grep -q "Release not found\|No release exists\|UnpatchableChangeException\|asset changes" /tmp/patch_output; then
               echo "🚀 Attempting release (patch not possible)..."
-              if shorebird release android --flavor=$flavor --build-name="$baseVersion" --release-version="$androidReleaseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
+              if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
                 versionChanged=true
               else
                 if grep -q "existing.*release\|already exists" /tmp/release_output; then
