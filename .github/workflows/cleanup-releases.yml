@@ -24,6 +24,11 @@ jobs:
       - name: Extract Firebase App ID
         id: get_app_id
         run: |
+          if [ ! -f "android/app/google-services.json" ]; then
+            echo "⚠️ google-services.json not found, skipping Firebase cleanup"
+            echo "app_id=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
           if [ -z "$APP_ID" ]; then
             echo "❌ Could not find mobilesdk_app_id in google-services.json"
@@ -33,6 +38,7 @@ jobs:
           echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
 
       - name: Cleanup old releases
+        if: steps.get_app_id.outputs.app_id != ''
         working-directory: .github/scripts/automation_tool
         env:
           FIREBASE_PROJECT_NUMBER: "448994699498"
