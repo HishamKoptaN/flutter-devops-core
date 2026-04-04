@@ -72,12 +72,13 @@ jobs:
               env:
                   SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
               run: |
-                  shorebird release windows --flutter-version=3.29.3 --flavor=${{ github.ref_name }} --artifact=exe --no-confirm --verbose 2>&1 | Tee-Object -FilePath /tmp/shorebird_output
-                  if (Select-String -Path /tmp/shorebird_output -Pattern "SHOREBIRD_TOKEN not set") {
+                  $outputPath = "$env:TEMP\shorebird_output.txt"
+                  shorebird release windows --flutter-version=3.29.3 --flavor=${{ github.ref_name }} --artifact=exe --no-confirm --verbose 2>&1 | Tee-Object -FilePath $outputPath
+                  if (Select-String -Path $outputPath -Pattern "SHOREBIRD_TOKEN not set") {
                     Write-Host "❌ SHOREBIRD_TOKEN is not set"
                     exit 1
                   }
-                  if (Select-String -Path /tmp/shorebird_output -Pattern "Exception|Error|error|Failed") {
+                  if (Select-String -Path $outputPath -Pattern "Exception|Error|error|Failed") {
                     Write-Host "❌ Build failed with errors"
                     exit 1
                   }
