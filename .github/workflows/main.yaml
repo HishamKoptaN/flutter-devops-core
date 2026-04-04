@@ -1,21 +1,8 @@
 name: Main
 on:
-    # 1. Called from other projects (reusable workflow)
     workflow_call:
-        secrets:
-            SHOREBIRD_TOKEN:
-                required: true
-            FIREBASE_ADMIN_SDK:
-                required: true
-        inputs:
-            flavor:
-                type: string
-                required: false
-                default: ""
-    # 2. Direct push in this repository
     push:
         branches: [dev, prod]
-    # 3. Manual trigger
     workflow_dispatch:
 
 jobs:
