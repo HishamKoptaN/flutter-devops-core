@@ -54,6 +54,9 @@ jobs:
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
+            exe_name: ${{ needs.windows_build.outputs.exe_name }}
+            app_name: "Abujena"
+            app_publisher: "Abujena Dawajen"
     github_release:
         needs: [deploy_shorebird, build_installer]
         uses: ./.github/workflows/deploy-release.yml

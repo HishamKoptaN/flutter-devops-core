@@ -8,6 +8,18 @@ on:
       full_version:
         type: string
         required: true
+      exe_name:
+        type: string
+        required: false
+        default: "app.exe"
+      app_name:
+        type: string
+        required: false
+        default: "MyApp"
+      app_publisher:
+        type: string
+        required: false
+        default: "MyCompany"
     outputs:
       installer_name:
         value: ${{ jobs.build.outputs.installer_name }}
@@ -60,8 +72,12 @@ jobs:
           $issPath = "./installers/setup.iss"
           if (Test-Path $issPath) {
             $content = Get-Content $issPath -Raw
-            $newContent = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
-            [System.IO.File]::WriteAllText($issPath, $newContent)
+            $content = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
+            $content = $content -replace "APP_NAME_PLACEHOLDER", "${{ inputs.app_name }}"
+            $content = $content -replace "APP_PUBLISHER_PLACEHOLDER", "${{ inputs.app_publisher }}"
+            $content = $content -replace "APP_EXE_PLACEHOLDER", "${{ inputs.exe_name }}"
+            $content = $content -replace "APP_GUID_PLACEHOLDER", "$(New-Guid)"
+            [System.IO.File]::WriteAllText($issPath, $content)
             Write-Host "✅ Template prepared" -ForegroundColor Green
           } else {
             Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red

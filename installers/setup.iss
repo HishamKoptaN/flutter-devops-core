@@ -1,11 +1,11 @@
-#define MyAppName "abujena_dawajen"
+#define MyAppName "APP_NAME_PLACEHOLDER"
 #define MyAppVersion "APP_VERSION_PLACEHOLDER"
-#define MyAppPublisher "abujena_dawajen"
-#define MyAppExeName "abujena_dawajen.exe"
+#define MyAppPublisher "APP_PUBLISHER_PLACEHOLDER"
+#define MyAppExeName "APP_EXE_PLACEHOLDER"
 
 [Setup]
 ; معرف فريد للتطبيق لضمان التحديث فوق النسخة القديمة
-AppId={{D3B3A5E1-72C1-4B5D-9A9A-123456789ABC}
+AppId={{APP_GUID_PLACEHOLDER}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -23,7 +23,7 @@ CloseApplications=yes
 
 ; --- إعدادات ملف المخرج ---
 OutputDir={#SourcePath}
-OutputBaseFilename=abujena_setup_v{#MyAppVersion}
+OutputBaseFilename=setup_v{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -37,11 +37,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; باستخدام {#SourcePath} سيعمل السكربت في أي مكان (محلي أو ريموت)
-; 1. ملف التشغيل الأساسي
+; Main executable
 Source: "{#SourcePath}\..\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 
-; 2. كافة ملفات الـ DLL ومجلد الـ data (ضروري للأيقونات والخطوط)
+; All DLL files and data folder (includes flutter_windows.dll)
 Source: "{#SourcePath}\..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#MyAppExeName}"
 
 [Icons]
@@ -49,5 +48,4 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-; تشغيل البرنامج بعد انتهاء التثبيت (يتم تخطيه في الوضع الصامت)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
