@@ -1,0 +1,25 @@
+name: Get Version
+on:
+  workflow_call:
+    outputs:
+      full_version:
+        value: ${{ jobs.version.outputs.full_version }}
+      base_version:
+        value: ${{ jobs.version.outputs.base_version }}
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      full_version: ${{ steps.v.outputs.full_version }}
+      base_version: ${{ steps.v.outputs.base_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - id: v
+        run: |
+          version=$(grep -E '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d '"')
+          baseVersion=$(echo "$version" | cut -d'+' -f1)
+          echo "full_version=$version" >> $GITHUB_OUTPUT
+          echo "base_version=$baseVersion" >> $GITHUB_OUTPUT
+          echo "🔍 Version: $version, Base: $baseVersion"

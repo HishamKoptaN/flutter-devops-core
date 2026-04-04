@@ -1,0 +1,78 @@
+name: GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      full_version:
+        type: string
+        required: true
+      version_changed:
+        type: string
+        required: true
+      installer_name:
+        type: string
+        required: true
+
+jobs:
+  release:
+    runs-on: windows-latest
+    environment: ${{ inputs.flavor }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: installer
+          path: ./Output
+
+      - id: update_appcast
+        shell: pwsh
+        run: |
+          $version = "${{ inputs.full_version }}"
+          $fileName = "${{ inputs.installer_name }}"
+          $filePath = "./Output/$fileName"
+          $fileLength = if (Test-Path $filePath) { (Get-Item $filePath).Length } else { 0 }
+          $url = "https://github.com/${{ github.repository }}/releases/latest/download/$fileName"
+          $xmlPath = "desktop_appcast.xml"
+          $currentDate = Get-Date -Format "ddd, dd MMM yyyy HH:mm:ss K"
+
+          if (Test-Path $xmlPath) {
+            $content = Get-Content $xmlPath -Raw
+            $content = $content -replace 'sparkle:version="[^"]*"', "sparkle:version=""$version"""
+            $content = $content -replace 'sparkle:shortVersionString="[^"]*"', "sparkle:shortVersionString=""$version"""
+            $content = $content -replace 'url="[^"]*"', "url=""$url"""
+            $content = $content -replace 'length="[^"]*"', "length=""$fileLength"""
+            [System.IO.File]::WriteAllText($xmlPath, $content)
+            
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add $xmlPath
+            git commit -m "chore: sync appcast to $version [skip ci]" || echo "No changes"
+            git push origin ${{ inputs.flavor }}
+            Write-Host "✅ Appcast updated" -ForegroundColor Green
+          }
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}
+          name: ${{ inputs.flavor == 'prod' && format('Release v{0}', inputs.full_version) || format('Release v{0} ({1})', inputs.full_version, inputs.flavor) }}
+          body: |
+            ## 🚀 Release v${{ inputs.full_version }}
+
+            ### Changes
+            - Automated release from ${{ inputs.flavor }} branch
+            - Shorebird deployment: ${{ inputs.version_changed == 'true' && 'New Release' || 'Patch' }}
+
+            ### Downloads
+            - **Installer**: `${{ inputs.installer_name }}`
+          files: ./Output/${{ inputs.installer_name }}
+          make_latest: true
+          prerelease: ${{ inputs.flavor == 'dev' }}
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

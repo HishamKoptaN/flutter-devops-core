@@ -1,0 +1,115 @@
+name: Deploy Windows Shorebird
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      full_version:
+        type: string
+        required: true
+    outputs:
+      changed:
+        value: ${{ jobs.deploy.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: true
+jobs:
+  deploy:
+    runs-on: windows-latest
+    environment: ${{ inputs.flavor }}
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.deploy.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: git config --system core.longpaths true
+      - uses: actions/cache@v4
+        with:
+          path: build/windows
+          key: ${{ runner.os }}-windows-build-${{ hashFiles('**/pubspec.yaml', '**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-windows-build-
+      - id: deploy
+        shell: pwsh
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          $version = "${{ inputs.full_version }}"
+          $flavor = "${{ inputs.flavor }}"
+          $TARGET_ID = if ($flavor -eq "prod") { "ed427ccb-5edb-4594-a376-2ee9636bef4e" } else { "e962126d-ee7a-48f2-b89d-fb0349f4a05f" }
+          (Get-Content shorebird.yaml) -replace '^app_id:.*', "app_id: $TARGET_ID" | Set-Content shorebird.yaml
+          $versionChanged = $false
+          shorebird patch windows --release-version=$version --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable patchOutput
+          $patchExitCode = $LASTEXITCODE
+          if ($patchExitCode -ne 0) {
+            if ($patchOutput -match "Release not found|No release exists|UnpatchableChangeException|asset changes") {
+              shorebird release windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable releaseOutput
+              $releaseExitCode = $LASTEXITCODE
+              if ($releaseExitCode -ne 0) {
+                if ($releaseOutput -match "existing.*release|already exists") {
+                  $versionChanged = $false
+                } else {
+                  Write-Host "❌ Release failed" -ForegroundColor Red
+                  exit 1
+                }
+              } else {
+                $versionChanged = $true
+              }
+            } else {
+              Write-Host "❌ Windows failed" -ForegroundColor Red
+              exit 1
+            }
+          } else {
+            Write-Host "✅ Windows patch succeeded" -ForegroundColor Green
+          }
+          echo "changed=$versionChanged" >> $env:GITHUB_OUTPUT
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+        run: |
+          flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Get-ChildItem -Path "build/windows/x64/runner/Release/" -ErrorAction SilentlyContinue || Get-ChildItem -Path "build/windows/runner/Release/"
+        shell: pwsh
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+        id: find_build
+        run: |
+          $outputPath = "build\windows\x64\runner\Release"
+          if (Test-Path $outputPath) {
+            echo "Found path: $outputPath"
+            echo "path=$outputPath" >> $env:GITHUB_OUTPUT
+          } else {
+            $outputPath = "build\windows\runner\Release"
+            echo "Using fallback path: $outputPath"
+            echo "path=$outputPath" >> $env:GITHUB_OUTPUT
+          }
+          Get-ChildItem $outputPath
+        shell: pwsh
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-${{ inputs.flavor }}
+          path: ${{ steps.find_build.outputs.path }}
+          retention-days: 5
+
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.full_version }}-${{ inputs.flavor }}
+          name: ${{ inputs.full_version }} (${{ inputs.flavor }})
+          files: build/windows/x64/runner/Release/*.exe
+          prerelease: ${{ inputs.flavor != 'prod' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,96 @@
+name: Distribute Android
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+    secrets:
+      FIREBASE_APP_ID:
+        required: true
+      FIREBASE_ADMIN_SDK:
+        required: true
+
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.flavor }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download APK Artifact
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-${{ inputs.flavor }}
+          path: build/app/outputs/flutter-apk/
+        continue-on-error: true
+
+      - name: Debug - List downloaded files
+        run: |
+          echo "📁 Listing build outputs..."
+          find build/app/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+          ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "No flutter-apk directory found"
+
+      - name: Find APK file
+        id: find_apk
+        run: |
+          APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
+          if [ -n "$APK_PATH" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+            echo "✅ Found APK: $APK_PATH"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No APK found"
+          fi
+
+      - name: Set APK Name
+        if: steps.find_apk.outputs.found == 'true'
+        id: apk_name
+        run: |
+          if [ "${{ inputs.flavor }}" = "prod" ]; then
+            echo "name=android-apk" >> $GITHUB_OUTPUT
+          else
+            echo "name=android-apk_${{ inputs.flavor }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload to Artifact (Backup)
+        if: steps.find_apk.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk_name.outputs.name }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      - name: Firebase Distribution
+        if: steps.find_apk.outputs.found == 'true'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
+          groups: "apk"
+          file: ${{ steps.find_apk.outputs.apk_path }}
+
+      - name: Set Release Tag
+        if: steps.find_apk.outputs.found == 'true'
+        id: release_tag
+        run: |
+          if [ "${{ inputs.flavor }}" = "prod" ]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest_${{ inputs.flavor }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: GitHub Release
+        if: steps.find_apk.outputs.found == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: ${{ inputs.flavor == 'prod' && 'Latest Release' || format('Latest {0}', inputs.flavor) }}
+          files: build/app/outputs/flutter-apk/*.apk
+          prerelease: ${{ inputs.flavor == 'dev' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

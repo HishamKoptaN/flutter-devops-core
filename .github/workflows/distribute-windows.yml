@@ -1,0 +1,94 @@
+name: Distribute Windows
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+  workflow_dispatch:
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          cache: true
+      - uses: shorebirdtech/setup-shorebird@v1
+      - name: Configure Git for long paths
+        run: git config --system core.longpaths true
+      - uses: actions/cache@v4
+        with:
+          path: ~/.shorebird
+          key: ${{ runner.os }}-shorebird-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-shorebird-
+      - name: Get Flutter dependencies
+        run: flutter pub get
+      - name: Get version from pubspec
+        id: version
+        run: |
+          $version = (Get-Content pubspec.yaml | Select-String "version:" | ForEach-Object { ($_ -split " ")[1] })
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      - name: Shorebird Release Windows
+        id: shorebird_release
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          # Try to create release, if it fails (exists), create patch instead
+          shorebird release windows 2>&1 | Tee-Object -Variable output
+          if ($LASTEXITCODE -ne 0) {
+            if ($output -match "existing.*release" -or $output -match "bump your version") {
+              echo "Release exists, creating patch instead..."
+              shorebird patch windows
+              echo "is_patch=true" >> $env:GITHUB_OUTPUT
+            } else {
+              exit $LASTEXITCODE
+            }
+          } else {
+            echo "is_patch=false" >> $env:GITHUB_OUTPUT
+          }
+        shell: pwsh
+      - name: Find Shorebird Build Output
+        id: find_build
+        run: |
+          $outputPath = "build\windows\x64\runner\Release"
+          if (Test-Path $outputPath) {
+            echo "path=$outputPath" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "path=build\windows\runner\Release" >> $env:GITHUB_OUTPUT
+          }
+        shell: pwsh
+      - name: Set Artifact Name
+        id: set_name
+        run: |
+          if ("${{ github.ref_name }}" -eq "prod") {
+            echo "name=windows-desktop" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "name=windows-desktop_${{ github.ref_name }}" >> $env:GITHUB_OUTPUT
+          }
+        shell: pwsh
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set_name.outputs.name }}
+          path: ${{ steps.find_build.outputs.path }}
+          retention-days: 30
+      - name: Create Installer with Inno Setup (if prod)
+        if: github.ref_name == 'prod'
+        uses: joncloud/makensis-action@v4
+        with:
+          script-file: abujena_setup.iss
+          arguments: "/V3"
+      - name: Upload Installer Artifact
+        if: github.ref_name == 'prod'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: "*.exe"
+          retention-days: 30

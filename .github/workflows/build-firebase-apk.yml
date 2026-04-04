@@ -1,0 +1,43 @@
+name: Distribute APK to Firebase
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+    secrets:
+      FIREBASE_APP_ID:
+        required: true
+      FIREBASE_ADMIN_SDK:
+        required: true
+
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.flavor }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk-${{ inputs.flavor }}
+          path: build/app/outputs/flutter-apk/
+
+      - id: find_apk
+        run: |
+          echo "🔍 Looking for APK files..."
+          ls -la build/app/outputs/flutter-apk/
+
+          APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ No APK file found"
+            exit 1
+          fi
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "✅ Found APK: $APK_PATH"
+
+      - uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
+          groups: "apk"
+          file: ${{ steps.find_apk.outputs.apk_path }}

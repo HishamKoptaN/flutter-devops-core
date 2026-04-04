@@ -1,0 +1,36 @@
+name: Cleanup Releases
+
+on:
+  workflow_call:
+    secrets:
+      FIREBASE_APP_ID:
+        required: true
+      FIREBASE_ADMIN_SDK:
+        required: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Setup automation tool
+        run: |
+          cd .github/scripts/automation_tool
+          rm -f lib/**/*.freezed.dart lib/**/*.g.dart
+          dart pub get
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Cleanup old releases
+        working-directory: .github/scripts/automation_tool
+        env:
+          FIREBASE_PROJECT_NUMBER: "448994699498"
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+        run: dart bin/main.dart cleanup
+        continue-on-error: true

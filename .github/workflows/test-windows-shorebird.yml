@@ -1,0 +1,35 @@
+name: Test Windows Shorebird Build
+on:
+  push:
+    branches: [devs]
+jobs:
+  check_windows:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - id: check
+        run: |
+          if [ -d "windows" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Windows directory found"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Windows directory not found, skipping Windows build"
+          fi
+  version:
+    needs: check_windows
+    if: needs.check_windows.outputs.exists == 'true'
+    uses: ./.github/workflows/get-version.yml
+  build_shorebird:
+    needs: [check_windows, version]
+    if: needs.check_windows.outputs.exists == 'true'
+    uses: ./.github/workflows/deploy-windows-shorebird.yml
+    with:
+      flavor: dev
+      full_version: ${{ needs.version.outputs.full_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}

@@ -1,0 +1,56 @@
+name: Deploy Shorebird
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+    outputs:
+      full_version:
+        value: ${{ jobs.version.outputs.full_version }}
+      version_changed:
+        value: ${{ jobs.combine.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: true
+
+jobs:
+  version:
+    uses: ./.github/workflows/get-version.yml
+
+  android:
+    needs: version
+    uses: ./.github/workflows/deploy-android-shorebird.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      full_version: ${{ needs.version.outputs.full_version }}
+      base_version: ${{ needs.version.outputs.base_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+  windows:
+    needs: version
+    uses: ./.github/workflows/deploy-windows-shorebird.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      full_version: ${{ needs.version.outputs.full_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+  combine:
+    needs: [version, android, windows]
+    runs-on: ubuntu-latest
+    outputs:
+      full_version: ${{ needs.version.outputs.full_version }}
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - id: check
+        run: |
+          a="${{ needs.android.outputs.changed }}"
+          w="${{ needs.windows.outputs.changed }}"
+          if [ "$a" = "true" ] || [ "$w" = "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi

@@ -1,0 +1,70 @@
+name: Main
+on:
+    push:
+        branches: [devs, prods]
+jobs:
+    check_platforms:
+        runs-on: ubuntu-latest
+        outputs:
+            android_exists: ${{ steps.check_android.outputs.exists }}
+            ios_exists: ${{ steps.check_ios.outputs.exists }}
+            windows_exists: ${{ steps.check_windows.outputs.exists }}
+            linux_exists: ${{ steps.check_linux.outputs.exists }}
+            macos_exists: ${{ steps.check_macos.outputs.exists }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 1
+            - id: check_android
+              run: |
+                  if [ -d "android" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+            - id: check_ios
+              run: |
+                  if [ -d "ios" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+            - id: check_windows
+              run: |
+                  if [ -d "windows" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+            - id: check_linux
+              run: |
+                  if [ -d "linux" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+            - id: check_macos
+              run: |
+                  if [ -d "macos" ]; then echo "exists=true" >> $GITHUB_OUTPUT; else echo "exists=false" >> $GITHUB_OUTPUT; fi
+    deploy_shorebird:
+        needs: check_platforms
+        uses: ./.github/workflows/deploy-shorebird.yml
+        with:
+            flavor: ${{ github.ref_name }}
+        secrets:
+            SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+    build_installer:
+        needs: [check_platforms, deploy_shorebird]
+        if: needs.check_platforms.outputs.windows_exists == 'true'
+        uses: ./.github/workflows/deploy-installer.yml
+        with:
+            flavor: ${{ github.ref_name }}
+            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
+    github_release:
+        needs: [deploy_shorebird, build_installer]
+        uses: ./.github/workflows/deploy-release.yml
+        secrets: inherit
+        with:
+            flavor: ${{ github.ref_name }}
+            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
+            version_changed: ${{ needs.deploy_shorebird.outputs.version_changed }}
+            installer_name: ${{ needs.build_installer.outputs.installer_name }}
+    cleanup_releases:
+        needs: github_release
+        uses: ./.github/workflows/cleanup-releases.yml
+        secrets:
+            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+    distribute_android:
+        needs: [check_platforms, deploy_shorebird]
+        if: needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
+        uses: ./.github/workflows/distribute-android.yml
+        with:
+            flavor: ${{ github.ref_name }}
+        secrets:
+            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
