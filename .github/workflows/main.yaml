@@ -1,7 +1,22 @@
 name: Main
 on:
+    # 1. Called from other projects (reusable workflow)
+    workflow_call:
+        secrets:
+            SHOREBIRD_TOKEN:
+                required: true
+            FIREBASE_ADMIN_SDK:
+                required: true
+        inputs:
+            flavor:
+                type: string
+                required: true
+                default: dev
+    # 2. Direct push in this repository
     push:
         branches: [dev, prod]
+    # 3. Manual trigger
+    workflow_dispatch:
 
 jobs:
     check_platforms:
@@ -38,7 +53,7 @@ jobs:
             contents: write
         uses: ./.github/workflows/deploy-shorebird.yml
         with:
-            flavor: ${{ github.ref_name }}
+            flavor: ${{ inputs.flavor || github.ref_name }}
         secrets:
             SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 
@@ -47,9 +62,8 @@ jobs:
         if: always() && needs.check_platforms.outputs.android_exists == 'true' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
         uses: ./.github/workflows/build-firebase-apk.yml
         with:
-            flavor: ${{ github.ref_name }}
+            flavor: ${{ inputs.flavor || github.ref_name }}
         secrets:
-            FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
             FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
 
     build_windows_exe:
@@ -73,19 +87,39 @@ jobs:
                   SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
               run: |
                   $outputPath = "$env:TEMP\shorebird_output.txt"
-                  shorebird release windows --flutter-version=3.29.3 --flavor=${{ github.ref_name }} --no-confirm --verbose 2>&1 | Tee-Object -FilePath $outputPath
-                  if (Select-String -Path $outputPath -Pattern "SHOREBIRD_TOKEN not set") {
-                    Write-Host "❌ SHOREBIRD_TOKEN is not set"
-                    exit 1
+
+                  # Run command and capture output
+                  shorebird release windows --flutter-version=3.32.6 --flavor=${{ inputs.flavor || github.ref_name }} --no-confirm --verbose 2>&1 | Tee-Object -FilePath $outputPath
+                  $exitCode = $LASTEXITCODE
+
+                  # Check exit code first - most reliable indicator
+                  if ($exitCode -ne 0) {
+                      Write-Host "❌ Shorebird command failed with exit code $exitCode"
+                      exit 1
                   }
-                  if (Select-String -Path $outputPath -Pattern "Exception|Error|error|Failed") {
-                    Write-Host "❌ Build failed with errors"
-                    exit 1
+
+                  # Additional check for error patterns in output
+                  $errorPatterns = @(
+                      "SHOREBIRD_TOKEN not set",
+                      "required",
+                      "failed",
+                      "BUILD FAILED",
+                      "Process 'command.*flutter.*finished with non-zero exit",
+                      "No release exists",
+                      "Release not found"
+                  )
+
+                  foreach ($pattern in $errorPatterns) {
+                      if (Select-String -Path $outputPath -Pattern $pattern) {
+                          Write-Host "❌ Detected error pattern: $pattern"
+                          exit 1
+                      }
                   }
+
                   Write-Host "✅ Shorebird build succeeded"
             - shell: pwsh
               run: |
-                  $flavor = "${{ github.ref_name }}"
+                  $flavor = "${{ inputs.flavor || github.ref_name }}"
                   $basePath = "build/windows/x64/runner/Release"
                   $files = Get-ChildItem -Path $basePath -Filter "*.exe" -File
                   if ($flavor -eq "dev") {
@@ -99,7 +133,7 @@ jobs:
                   }
             - uses: actions/upload-artifact@v4
               with:
-                  name: windows-exe-${{ github.ref_name }}
+                  name: windows-exe-${{ inputs.flavor || github.ref_name }}
                   path: build/windows/x64/runner/Release/*.exe
                   retention-days: 5
 
@@ -108,7 +142,7 @@ jobs:
         if: needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-installer.yml
         with:
-            flavor: ${{ github.ref_name }}
+            flavor: ${{ inputs.flavor || github.ref_name }}
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
 
     github_release:
@@ -116,7 +150,7 @@ jobs:
         uses: ./.github/workflows/deploy-release.yml
         secrets: inherit
         with:
-            flavor: ${{ github.ref_name }}
+            flavor: ${{ inputs.flavor || github.ref_name }}
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
             version_changed: ${{ needs.deploy_shorebird.outputs.version_changed }}
             installer_name: ${{ needs.build_installer.outputs.installer_name }}
@@ -132,6 +166,6 @@ jobs:
         if: needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
         uses: ./.github/workflows/distribute-android.yml
         with:
-            flavor: ${{ github.ref_name }}
+            flavor: ${{ inputs.flavor || github.ref_name }}
         secrets:
             FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
