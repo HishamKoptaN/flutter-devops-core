@@ -38,23 +38,39 @@ jobs:
 
       - shell: pwsh
         run: |
+          # Debug: List files
+          Write-Host "📂 Current directory: $(Get-Location)"
+          ls -la
+          if (Test-Path "./installers") {
+            Write-Host "📂 Installers directory:"
+            ls -la ./installers/
+          }
+          if (Test-Path "./build/windows") {
+            Write-Host "📂 Build directory:"
+            ls -la ./build/windows/ -Recurse | Select-Object -First 20
+          }
+
+      - shell: pwsh
+        run: |
           $issPath = "./installers/setup.iss"
           if (Test-Path $issPath) {
             $content = Get-Content $issPath -Raw
             $newContent = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
             [System.IO.File]::WriteAllText($issPath, $newContent)
             Write-Host "✅ Template prepared" -ForegroundColor Green
+          } else {
+            Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red
+            exit 1
           }
 
       - shell: pwsh
         run: |
-          try {
-            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ./installers/setup.iss
-            Write-Host "✅ Installer built" -ForegroundColor Green
-          } catch {
-            Write-Host "❌ Build failed: $_" -ForegroundColor Red
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ./installers/setup.iss
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Inno Setup failed with exit code $LASTEXITCODE" -ForegroundColor Red
             exit 1
           }
+          Write-Host "✅ Installer built" -ForegroundColor Green
 
       - shell: pwsh
         id: assets
