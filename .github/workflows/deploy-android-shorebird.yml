@@ -111,7 +111,7 @@ jobs:
           path: build/app/outputs/bundle/*/*.aab
           retention-days: 1
 
-      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
@@ -120,7 +120,7 @@ jobs:
           echo "✅ APK built successfully"
           ls -la build/app/outputs/flutter-apk/
 
-      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
+      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
