@@ -19,6 +19,8 @@ jobs:
   release:
     runs-on: windows-latest
     environment: ${{ inputs.flavor }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
