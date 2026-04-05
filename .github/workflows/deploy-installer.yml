@@ -32,7 +32,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - shell: pwsh
+        run: |
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Listing files:"
+          Get-ChildItem -Recurse -Filter "*.iss" | ForEach-Object { Write-Host $_.FullName }
 
       - run: git config --system core.longpaths true
 
@@ -69,7 +75,8 @@ jobs:
 
       - shell: pwsh
         run: |
-          $issPath = "./installers/setup.iss"
+          $issPath = "${{ github.workspace }}/installers/setup.iss"
+          Write-Host "Looking for ISS file at: $issPath"
           if (Test-Path $issPath) {
             $content = Get-Content $issPath -Raw
             $content = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
@@ -77,16 +84,19 @@ jobs:
             $content = $content -replace "APP_PUBLISHER_PLACEHOLDER", "${{ inputs.app_publisher }}"
             $content = $content -replace "APP_EXE_PLACEHOLDER", "${{ inputs.exe_name }}"
             $content = $content -replace "APP_GUID_PLACEHOLDER", "$(New-Guid)"
+            $content = $content -replace "APP_SUFFIX_PLACEHOLDER", "${{ inputs.flavor == 'dev' && ' Dev' || '' }}"
             [System.IO.File]::WriteAllText($issPath, $content)
             Write-Host "✅ Template prepared" -ForegroundColor Green
           } else {
             Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red
+            Write-Host "Current directory: $(Get-Location)"
+            Get-ChildItem -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
 
       - shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ./installers/setup.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "${{ github.workspace }}/installers/setup.iss"
           if ($LASTEXITCODE -ne 0) {
             Write-Host "❌ Inno Setup failed with exit code $LASTEXITCODE" -ForegroundColor Red
             exit 1

@@ -29,6 +29,39 @@ jobs:
           name: installer
           path: ./Output
 
+      - shell: pwsh
+        run: |
+          # Delete existing releases with the same tag to keep only one release
+          $tag = "${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}"
+          Write-Host "Checking for existing release with tag: $tag"
+          
+          # Try to delete existing release
+          try {
+            $releases = gh release list --limit 100 | Where-Object { $_ -match $tag }
+            foreach ($release in $releases) {
+              $releaseTag = $release.Split()[0]
+              if ($releaseTag -eq $tag) {
+                Write-Host "Deleting existing release: $releaseTag"
+                gh release delete $releaseTag --yes 2>$null || Write-Host "No existing release to delete"
+              }
+            }
+          } catch {
+            Write-Host "No existing releases found or error occurred: $_"
+          }
+          
+          # Also delete any version-tagged releases that might be duplicates
+          try {
+            $versionReleases = gh release list --limit 100 | Where-Object { $_ -match '${{ inputs.full_version }}' }
+            foreach ($release in $versionReleases) {
+              $releaseTag = $release.Split()[0]
+              Write-Host "Found version release: $releaseTag"
+            }
+          } catch {
+            Write-Host "No version releases found"
+          }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - id: update_appcast
         shell: pwsh
         run: |
@@ -58,7 +91,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}
-          name: ${{ inputs.flavor == 'prod' && format('Release v{0}', inputs.full_version) || format('Release v{0} ({1})', inputs.full_version, inputs.flavor) }}
+          name: ${{ inputs.flavor == 'prod' && format('v{0}', inputs.full_version) || format('v{0} Dev', inputs.full_version) }}
           body: |
             ## 🚀 Release v${{ inputs.full_version }}
             ### Changes
