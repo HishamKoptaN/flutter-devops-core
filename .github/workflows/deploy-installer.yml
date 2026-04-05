@@ -107,14 +107,14 @@ jobs:
         id: assets
         run: |
           $flavor = "${{ inputs.flavor }}"
-          $version = "${{ inputs.full_version }}"
-          $baseName = "setup_v$version"
-          $name = if ($flavor -eq "dev") { "${baseName}_dev.exe" } else { "$baseName.exe" }
+          $appName = "${{ inputs.app_name }}"
+          $suffix = if ($flavor -eq "dev") { " Dev" } else { "" }
+          $name = "$appName$suffix`_setup.exe"
           echo "installer_name=$name" >> $env:GITHUB_OUTPUT
           Write-Host "Installer name: $name"
 
       - uses: actions/upload-artifact@v4
         with:
           name: installer
-          path: ./Output/setup_v*.exe
+          path: ./Output/*_setup.exe
           retention-days: 5
