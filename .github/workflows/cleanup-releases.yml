@@ -9,8 +9,6 @@ on:
     secrets:
       FIREBASE_TOKEN:
         required: true
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   cleanup:

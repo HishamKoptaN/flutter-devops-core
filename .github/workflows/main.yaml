@@ -76,7 +76,6 @@ jobs:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets:
             FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     distribute_android:
         needs: [check_platforms, deploy_shorebird]
         if: needs.check_platforms.result == 'success' && needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
