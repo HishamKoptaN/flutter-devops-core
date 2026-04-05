@@ -1,14 +1,9 @@
-; Abujena Installer Script
-#define MyAppName "APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER"
-#define MyAppVersion "APP_VERSION_PLACEHOLDER"
-#define MyAppPublisher "APP_PUBLISHER_PLACEHOLDER"
-#define MyAppExeName "APP_EXE_PLACEHOLDER"
 [Setup]
 AppId={{APP_GUID_PLACEHOLDER}}
-AppName={#MyAppName}
-AppVersion={#MyAppVersion}
-AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\{#MyAppName}
+AppName=APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER
+AppVersion=APP_VERSION_PLACEHOLDER
+AppPublisher=APP_PUBLISHER_PLACEHOLDER
+DefaultDirName={autopf}\APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER
 DisableProgramGroupPage=yes
 ShowLanguageDialog=no
 DisableWelcomePage=yes
@@ -17,8 +12,8 @@ DisableReadyPage=yes
 DisableFinishedPage=yes
 UsePreviousAppDir=yes
 CloseApplications=yes
-OutputDir={#SourcePath}
-OutputBaseFilename=setup_v{#MyAppVersion}
+OutputDir=.
+OutputBaseFilename=setup_vAPP_VERSION_PLACEHOLDER
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -28,10 +23,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 [Files]
-Source: "{#SourcePath}\..\build\windows\x64\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}\..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#MyAppExeName}"
+Source: "..\build\windows\x64\runner\Release\APP_EXE_PLACEHOLDER"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "APP_EXE_PLACEHOLDER"
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER"; Filename: "{app}\APP_EXE_PLACEHOLDER"
+Name: "{autodesktop}\APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER"; Filename: "{app}\APP_EXE_PLACEHOLDER"; Tasks: desktopicon
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\APP_EXE_PLACEHOLDER"; Description: "{cm:LaunchProgram,APP_NAME_PLACEHOLDERAPP_SUFFIX_PLACEHOLDER}"; Flags: nowait postinstall skipifsilent
