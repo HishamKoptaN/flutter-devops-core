@@ -106,11 +106,15 @@ jobs:
       - shell: pwsh
         id: assets
         run: |
-          $name = if ("${{ inputs.flavor }}" -eq "dev") { "abujena_setup_dev.exe" } else { "abujena_setup.exe" }
+          $flavor = "${{ inputs.flavor }}"
+          $version = "${{ inputs.full_version }}"
+          $baseName = "setup_v$version"
+          $name = if ($flavor -eq "dev") { "${baseName}_dev.exe" } else { "$baseName.exe" }
           echo "installer_name=$name" >> $env:GITHUB_OUTPUT
+          Write-Host "Installer name: $name"
 
       - uses: actions/upload-artifact@v4
         with:
           name: installer
-          path: ./Output/${{ steps.assets.outputs.installer_name }}
+          path: ./Output/setup_v*.exe
           retention-days: 5
