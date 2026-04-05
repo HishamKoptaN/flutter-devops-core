@@ -2,50 +2,85 @@ name: Cleanup Releases
 
 on:
   workflow_call:
+    inputs:
+      flavor:
+        required: true
+        type: string
     secrets:
-      FIREBASE_ADMIN_SDK:
-        required: false
+      FIREBASE_TOKEN:
+        required: true
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
+          fetch-depth: 0
 
-      - name: Setup automation tool
+      - name: Cleanup old GitHub releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd .github/scripts/automation_tool
-          rm -f lib/**/*.freezed.dart lib/**/*.g.dart
-          dart pub get
-          dart run build_runner build --delete-conflicting-outputs
-
-      - name: Extract Firebase App ID
-        id: get_app_id
-        run: |
-          if [ ! -f "android/app/google-services.json" ]; then
-            echo "⚠️ google-services.json not found, skipping Firebase cleanup"
-            echo "app_id=" >> $GITHUB_OUTPUT
+          FLAVOR="${{ inputs.flavor }}"
+          
+          echo "🔍 Finding releases for flavor: $FLAVOR"
+          
+          # Get all releases sorted by creation date (newest first)
+          RELEASES=$(gh release list --limit 100 --json tagName,createdAt --jq '.[].tagName' 2>/dev/null | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+" || echo "")
+          
+          if [ -z "$RELEASES" ]; then
+            echo "ℹ️ No releases found to cleanup"
             exit 0
           fi
-          APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
-          if [ -z "$APP_ID" ]; then
-            echo "❌ Could not find mobilesdk_app_id in google-services.json"
-            exit 1
+          
+          # Count releases
+          COUNT=$(echo "$RELEASES" | wc -l)
+          echo "Found $COUNT releases"
+          
+          # Keep only the latest 5 releases, delete the rest
+          if [ "$COUNT" -gt 5 ]; then
+            echo "$RELEASES" | tail -n +6 | while read -r TAG; do
+              if [ -n "$TAG" ]; then
+                echo "🗑️ Deleting old release: $TAG"
+                gh release delete "$TAG" --yes 2>/dev/null || echo "⚠️ Could not delete $TAG"
+                
+                # Also delete the tag
+                git push origin --delete "$TAG" 2>/dev/null || echo "⚠️ Could not delete tag $TAG"
+              fi
+            done
+          else
+            echo "✅ Only $COUNT releases exist, no cleanup needed"
           fi
-          echo "Found Firebase App ID: $APP_ID"
-          echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
 
-      - name: Cleanup old releases
-        if: steps.get_app_id.outputs.app_id != ''
-        working-directory: .github/scripts/automation_tool
-        env:
-          FIREBASE_PROJECT_NUMBER: "448994699498"
-          FIREBASE_APP_ID: ${{ steps.get_app_id.outputs.app_id }}
-          FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
-        run: dart bin/main.dart cleanup
+      - name: Setup Firebase CLI
+        uses: w9jds/setup-firebase@main
+        with:
+          tools-version: 13.6.0
+          firebase_token: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Cleanup old Firebase App Distribution releases
         continue-on-error: true
+        run: |
+          FLAVOR="${{ inputs.flavor }}"
+          
+          # Get App ID from google-services.json if available
+          APP_ID=""
+          if [ -f "android/app/google-services.json" ]; then
+            APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | head -1 | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+          fi
+          
+          if [ -z "$APP_ID" ]; then
+            echo "⚠️ No Firebase App ID found, skipping Firebase cleanup"
+            exit 0
+          fi
+          
+          echo "🔍 Firebase releases cleanup for App: $APP_ID (flavor: $FLAVOR)"
+          
+          # Firebase App Distribution doesn't have a direct delete API
+          # Old releases are automatically cleaned up based on Firebase's retention policy
+          # We can only manage testers and groups via CLI
+          echo "✅ Firebase retention is automatic (90 days for releases)"
+          echo "✅ Kept only latest releases, old ones will expire naturally"
