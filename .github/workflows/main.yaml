@@ -59,6 +59,8 @@ jobs:
             app_publisher: "Abujena Dawajen"
     github_release:
         needs: [deploy_shorebird, build_installer]
+        permissions:
+            contents: write
         uses: ./.github/workflows/deploy-release.yml
         secrets: inherit
         with:
