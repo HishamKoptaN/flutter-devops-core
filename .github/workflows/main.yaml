@@ -22,7 +22,6 @@ jobs:
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets: inherit
-
     windows_shorebird:
         needs: check_platforms
         if: needs.check_platforms.result == 'success' && needs.check_platforms.outputs.windows_exists == 'true'
