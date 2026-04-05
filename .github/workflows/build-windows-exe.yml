@@ -83,3 +83,9 @@ jobs:
             echo "exe_name=app.exe" >> $env:GITHUB_OUTPUT
           }
         shell: pwsh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: ${{ steps.find_build.outputs.path }}/*.exe
+          retention-days: 5
