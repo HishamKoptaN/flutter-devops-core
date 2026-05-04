@@ -15,12 +15,20 @@ on:
         description: 'Enable Android build'
       build_windows:
         type: boolean
-        default: false
+        default: true
         description: 'Enable Windows build'
       build_ios:
         type: boolean
         default: false
         description: 'Enable iOS build'
+      build_linux:
+        type: boolean
+        default: false
+        description: 'Enable Linux build'
+      build_macos:
+        type: boolean
+        default: false
+        description: 'Enable macOS build'
 
 permissions:
   contents: write
@@ -29,10 +37,10 @@ jobs:
   workflows:
     uses: ./.github/workflows/main.yaml
     with:
-      flavor: ${{ inputs.flavor }}
-      build_android: ${{ inputs.build_android }}
-      build_windows: ${{ inputs.build_windows }}
-      build_ios: ${{ inputs.build_ios }}
-      build_linux: false
-      build_macos: false
+      flavor: ${{ inputs.flavor || 'dev' }}
+      build_android: ${{ inputs.build_android || true }}
+      build_windows: ${{ inputs.build_windows || true }}
+      build_ios: ${{ inputs.build_ios || false }}
+      build_linux: ${{ inputs.build_linux || false }}
+      build_macos: ${{ inputs.build_macos || false }}
     secrets: inherit
