@@ -1,0 +1,44 @@
+name: Deploy Android Shorebird (Clean)
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      full_version:
+        type: string
+        required: true
+      base_version:
+        type: string
+        required: true
+      build_apk:
+        type: boolean
+        default: true
+      build_aab:
+        type: boolean
+        default: true
+    outputs:
+      changed:
+        value: ${{ jobs.shorebird.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: false
+
+jobs:
+  shorebird:
+    uses: ./.github/workflows/shorebird-android-core.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      base_version: ${{ inputs.base_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+  build:
+    needs: shorebird
+    if: needs.shorebird.outputs.changed == 'true'
+    uses: ./.github/workflows/build-android-artifacts.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      build_apk: ${{ inputs.build_apk }}
+      build_aab: ${{ inputs.build_aab }}

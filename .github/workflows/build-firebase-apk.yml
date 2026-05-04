@@ -26,15 +26,11 @@ jobs:
           path: build/app/outputs/flutter-apk/
         continue-on-error: true
 
-      - name: Find APK by Pattern
-        id: find_apk
+      - id: find_apk
         run: |
           echo " Looking for APK files..."
-
-          # Try specific flavor first
           APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
 
-          # If not found, try listing all artifacts
           if [ -z "$APK_PATH" ]; then
             echo " No APK in expected path, searching all artifacts..."
             ls -la build/app/outputs/ 2>/dev/null || echo "No outputs directory"
@@ -49,8 +45,7 @@ jobs:
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
           echo " Found APK: $APK_PATH"
 
-      - name: Extract Firebase App ID
-        id: get_app_id
+      - id: get_app_id
         run: |
           if [ ! -f "android/app/google-services.json" ]; then
             echo "⚠️ google-services.json not found, skipping Firebase"
@@ -73,9 +68,7 @@ jobs:
           groups: "apk"
           file: ${{ steps.find_apk.outputs.apk_path }}
         continue-on-error: true
-
-      - name: Check Firebase Result
-        run: |
+      - run: |
           if [ -z "${{ secrets.FIREBASE_ADMIN_SDK }}" ]; then
             echo "⚠️ FIREBASE_ADMIN_SDK not provided, skipping Firebase distribution"
             echo "📦 APK is available at: ${{ steps.find_apk.outputs.apk_path }}"

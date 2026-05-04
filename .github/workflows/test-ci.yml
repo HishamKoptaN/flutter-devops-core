@@ -1,0 +1,38 @@
+name: Test CI/CD Pipeline
+
+on:
+  push:
+    branches: [prod]
+  workflow_dispatch:
+    inputs:
+      flavor:
+        type: string
+        default: 'dev'
+        description: 'Flavor to test'
+      build_android:
+        type: boolean
+        default: true
+        description: 'Enable Android build'
+      build_windows:
+        type: boolean
+        default: false
+        description: 'Enable Windows build'
+      build_ios:
+        type: boolean
+        default: false
+        description: 'Enable iOS build'
+
+permissions:
+  contents: write
+
+jobs:
+  workflows:
+    uses: ./.github/workflows/main.yaml
+    with:
+      flavor: ${{ inputs.flavor }}
+      build_android: ${{ inputs.build_android }}
+      build_windows: ${{ inputs.build_windows }}
+      build_ios: ${{ inputs.build_ios }}
+      build_linux: false
+      build_macos: false
+    secrets: inherit

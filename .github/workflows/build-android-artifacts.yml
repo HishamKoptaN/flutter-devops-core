@@ -1,0 +1,69 @@
+name: Build Android Artifacts
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      build_apk:
+        type: boolean
+        default: true
+      build_aab:
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - run: git config --system core.longpaths true
+
+      - if: inputs.build_aab
+        name: Build AAB
+        run: |
+          flutter build appbundle --release --flavor=${{ inputs.flavor }} --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons
+
+      - if: inputs.build_apk
+        name: Build APK
+        run: |
+          shorebird release android --flavor=${{ inputs.flavor }} --artifact=apk --dart-define=ENV=${{ inputs.flavor }} '--' --no-tree-shake-icons || true
+
+      - if: inputs.build_aab
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab-${{ inputs.flavor }}
+          path: build/app/outputs/bundle/*/*.aab
+          retention-days: 1
+
+      - if: inputs.build_apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ inputs.flavor }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 1

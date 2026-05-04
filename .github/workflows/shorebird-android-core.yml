@@ -1,0 +1,90 @@
+name: Shorebird Android Core
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      base_version:
+        type: string
+        required: true
+    outputs:
+      changed:
+        value: ${{ jobs.shorebird.outputs.changed }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: false
+
+jobs:
+  shorebird:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.flavor }}
+    outputs:
+      changed: ${{ steps.run.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - id: run
+        shell: bash
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          flavor="${{ inputs.flavor }}"
+          baseVersion="${{ inputs.base_version }}"
+
+          # Set App ID
+          TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
+          if [ "$flavor" = "prod" ]; then
+            TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
+          fi
+
+          sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          echo "✅ App ID: $TARGET_ID"
+
+          versionChanged=false
+
+          # Try patch first
+          if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
+            echo "✅ Android patch succeeded"
+          else
+            if grep -q "Release not found\|No release exists\|UnpatchableChangeException\|asset changes" /tmp/patch_output; then
+              echo "🚀 Attempting release (patch not possible)..."
+              if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
+                versionChanged=true
+              else
+                if grep -q "existing.*release\|already exists" /tmp/release_output; then
+                  echo "⚠️ Release already exists for this version, skipping..."
+                  versionChanged=false
+                else
+                  echo "❌ Release failed"
+                  exit 1
+                fi
+              fi
+            else
+              echo "❌ Android failed"
+              exit 1
+            fi
+          fi
+
+          echo "changed=$versionChanged" >> $GITHUB_OUTPUT

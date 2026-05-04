@@ -5,10 +5,26 @@ on:
             flavor:
                 type: string
                 required: true
+            build_android:
+                type: boolean
+                default: false
+                description: 'Enable Android build'
+            build_ios:
+                type: boolean
+                default: false
+                description: 'Enable iOS build'
             build_windows:
                 type: boolean
-                default: true
+                default: false
                 description: 'Enable Windows build'
+            build_linux:
+                type: boolean
+                default: false
+                description: 'Enable Linux build'
+            build_macos:
+                type: boolean
+                default: false
+                description: 'Enable macOS build'
     push:
         branches: [dev, prod]
     workflow_dispatch:
@@ -16,22 +32,44 @@ on:
             flavor:
                 type: string
                 default: 'dev'
+            build_android:
+                type: boolean
+                default: false
+                description: 'Enable Android build'
+            build_ios:
+                type: boolean
+                default: false
+                description: 'Enable iOS build'
             build_windows:
                 type: boolean
-                default: true
+                default: false
                 description: 'Enable Windows build'
+            build_linux:
+                type: boolean
+                default: false
+                description: 'Enable Linux build'
+            build_macos:
+                type: boolean
+                default: false
+                description: 'Enable macOS build'
 jobs:
     check_platforms:
         runs-on: ubuntu-latest
         outputs:
             android_exists: ${{ steps.check.outputs.android_exists }}
+            ios_exists: ${{ steps.check.outputs.ios_exists }}
             windows_exists: ${{ steps.check.outputs.windows_exists }}
+            linux_exists: ${{ steps.check.outputs.linux_exists }}
+            macos_exists: ${{ steps.check.outputs.macos_exists }}
         steps:
             - uses: actions/checkout@v4
             - id: check
               run: |
                 if [ -d "android" ]; then echo "android_exists=true" >> $GITHUB_OUTPUT; else echo "android_exists=false" >> $GITHUB_OUTPUT; fi
+                if [ -d "ios" ]; then echo "ios_exists=true" >> $GITHUB_OUTPUT; else echo "ios_exists=false" >> $GITHUB_OUTPUT; fi
                 if [ -f "windows/CMakeLists.txt" ]; then echo "windows_exists=true" >> $GITHUB_OUTPUT; else echo "windows_exists=false" >> $GITHUB_OUTPUT; fi
+                if [ -f "linux/CMakeLists.txt" ]; then echo "linux_exists=true" >> $GITHUB_OUTPUT; else echo "linux_exists=false" >> $GITHUB_OUTPUT; fi
+                if [ -f "macos/CMakeLists.txt" ]; then echo "macos_exists=true" >> $GITHUB_OUTPUT; else echo "macos_exists=false" >> $GITHUB_OUTPUT; fi
 
     deploy_shorebird:
         needs: check_platforms
@@ -40,11 +78,16 @@ jobs:
         uses: ./.github/workflows/deploy-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
+            build_android: ${{ inputs.build_android }}
+            build_ios: ${{ inputs.build_ios }}
+            build_windows: ${{ inputs.build_windows }}
+            build_linux: ${{ inputs.build_linux }}
+            build_macos: ${{ inputs.build_macos }}
         secrets: inherit
 
     build_firebase_apk:
         needs: [check_platforms, deploy_shorebird]
-        if: always() && needs.check_platforms.outputs.android_exists == 'true' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
+        if: always() && inputs.build_android && needs.check_platforms.outputs.android_exists == 'true' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
         uses: ./.github/workflows/build-firebase-apk.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
@@ -111,7 +154,7 @@ jobs:
 
     distribute_android:
         needs: [check_platforms, deploy_shorebird]
-        if: needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
+        if: inputs.build_android && needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
         uses: ./.github/workflows/distribute-android.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
