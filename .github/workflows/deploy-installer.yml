@@ -30,19 +30,34 @@ jobs:
     outputs:
       installer_name: ${{ steps.assets.outputs.installer_name }}
     steps:
+      - shell: pwsh
+        id: check_windows
+        run: |
+          if (Test-Path "windows" -PathType Container) {
+            Write-Host "✅ Windows project found" -ForegroundColor Green
+            echo "has_windows=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "⚠️ No Windows project found, skipping Windows build" -ForegroundColor Yellow
+            echo "has_windows=false" >> $env:GITHUB_OUTPUT
+          }
+
       - uses: actions/checkout@v4
+        if: steps.check_windows.outputs.has_windows == 'true'
         with:
           fetch-depth: 0
 
       - shell: pwsh
+        if: steps.check_windows.outputs.has_windows == 'true'
         run: |
           Write-Host "Current directory: $(Get-Location)"
           Write-Host "Listing files:"
           Get-ChildItem -Recurse -Filter "*.iss" | ForEach-Object { Write-Host $_.FullName }
 
       - run: git config --system core.longpaths true
+        if: steps.check_windows.outputs.has_windows == 'true'
 
       - uses: actions/cache@v4
+        if: steps.check_windows.outputs.has_windows == 'true'
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
@@ -50,17 +65,20 @@ jobs:
             ${{ runner.os }}-pub-
 
       - uses: subosito/flutter-action@v2
+        if: steps.check_windows.outputs.has_windows == 'true'
         with:
           channel: stable
           cache: true
 
       - uses: actions/download-artifact@v4
+        if: steps.check_windows.outputs.has_windows == 'true'
         with:
           name: windows-exe-${{ inputs.flavor }}
           path: build/windows/x64/runner/Release/
         continue-on-error: true
 
       - shell: pwsh
+        if: steps.check_windows.outputs.has_windows == 'true'
         run: |
           # Check if we have pre-built artifact
           $exePath = "build/windows/x64/runner/Release/*.exe"
@@ -74,6 +92,7 @@ jobs:
           }
 
       - shell: pwsh
+        if: steps.check_windows.outputs.has_windows == 'true'
         run: |
           $issPath = "installers\setup.iss"
           Write-Host "Looking for ISS file at: $issPath"
@@ -95,6 +114,7 @@ jobs:
           }
 
       - shell: pwsh
+        if: steps.check_windows.outputs.has_windows == 'true'
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installers\setup.iss"
           if ($LASTEXITCODE -ne 0) {
@@ -105,6 +125,7 @@ jobs:
 
       - shell: pwsh
         id: assets
+        if: steps.check_windows.outputs.has_windows == 'true'
         run: |
           $flavor = "${{ inputs.flavor }}"
           $appName = "${{ inputs.app_name }}"
@@ -112,8 +133,16 @@ jobs:
           $name = "$appName$suffix`_setup.exe"
           echo "installer_name=$name" >> $env:GITHUB_OUTPUT
           Write-Host "Installer name: $name"
+        # Add a fallback step for projects without Windows support
+      - shell: pwsh
+        if: steps.check_windows.outputs.has_windows != 'true'
+        id: assets
+        run: |
+          Write-Host "⚠️ No Windows build - skipping installer" -ForegroundColor Yellow
+          echo "installer_name=none" >> $env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
+        if: steps.check_windows.outputs.has_windows == 'true'
         with:
           name: installer
           path: ./Output/*_setup.exe
