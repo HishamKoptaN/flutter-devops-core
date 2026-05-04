@@ -2,12 +2,16 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    ".github/workflows/core/*.yml": ".github/workflows/core/*.yaml",
-    ".github/workflows/deploy/*.yml": ".github/workflows/deploy/*.yaml",
-    ".github/workflows/build/*.yml": ".github/workflows/build/*.yaml",
-    ".github/workflows/utils/*.yml": ".github/workflows/utils/*.yaml",
-    ".github/workflows/manual/*.yml": ".github/workflows/manual/*.yaml",
-    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+    "00-core-main.yml": "00-core-*.yml",
+    "10-build-android-artifacts.yml": "10-build-*.yml",
+    "20-shorebird.yml": "20-shorebird-*.yml",
+    "30-deploy-installer.yml": "30-*.yml",
+    "40-distribute-android.yml": "40-*.yml",
+    "50-env-dev.yml": "50-env-*.yml",
+    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart",
+    "*.g.dart": "${capture}.dart",
+    "*.freezed.dart": "${capture}.dart",
+    "setup.iss": "installers/*.iss"
   },
   "files.associations": {
     "*.yaml": "yaml",

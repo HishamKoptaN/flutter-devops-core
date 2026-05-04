@@ -27,7 +27,7 @@ on:
 
 jobs:
   shorebird:
-    uses: ./.github/workflows/shorebird-android-core.yml
+    uses: ./.github/workflows/20-shorebird-android-core.yml
     with:
       flavor: ${{ inputs.flavor }}
       base_version: ${{ inputs.base_version }}
@@ -36,8 +36,8 @@ jobs:
 
   build:
     needs: shorebird
-    if: needs.shorebird.outputs.changed == 'true'
-    uses: ./.github/workflows/build-android-artifacts.yml
+    if: needs.shorebird.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
+    uses: ./.github/workflows/10-build-android-artifacts.yml
     with:
       flavor: ${{ inputs.flavor }}
       build_apk: ${{ inputs.build_apk }}

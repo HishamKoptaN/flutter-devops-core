@@ -1,0 +1,46 @@
+on:
+  push:
+    branches:
+      - devs
+name: Deploy
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      # !
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+      # !
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.0.0"
+          channel: stable
+          architecture: x64
+          cache: false
+          pub-cache-path: default
+          dry-run: false
+      # !
+      - name: Upgrade Flutter
+        run: flutter upgrade
+      # !
+      - name: Install dependencies
+        run: flutter pub get
+      # !
+      - name: Build web
+        run: flutter build web --dart-define=FLUTTER_ENV=dev
+      # !
+      - name: 🔧 Update base href
+        run: sed -i 's|<base href="/">|<base href="/m_d/">|' build/web/index.html
+      # !
+      - name: 📂 deploy build web
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          server-dir: /domains/hotpink-gnu-383634.hostingersite.com/public_html/m_d/
+          local-dir: ./build/web/

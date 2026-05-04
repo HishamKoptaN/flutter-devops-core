@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   workflows:
-    uses: ./.github/workflows/main.yaml
+    uses: ./.github/workflows/00-core-main.yml
     with:
       flavor: ${{ inputs.flavor || 'dev' }}
       build_android: ${{ inputs.build_android || true }}

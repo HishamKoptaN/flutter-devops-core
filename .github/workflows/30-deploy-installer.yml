@@ -80,7 +80,6 @@ jobs:
       - shell: pwsh
         if: steps.check_windows.outputs.has_windows == 'true'
         run: |
-          # Check if we have pre-built artifact
           $exePath = "build/windows/x64/runner/Release/*.exe"
           if (Test-Path $exePath) {
             Write-Host "✅ Using pre-built EXE from artifact" -ForegroundColor Green
@@ -133,7 +132,6 @@ jobs:
           $name = "$appName$suffix`_setup.exe"
           echo "installer_name=$name" >> $env:GITHUB_OUTPUT
           Write-Host "Installer name: $name"
-        # Add a fallback step for projects without Windows support
       - shell: pwsh
         if: steps.check_windows.outputs.has_windows != 'true'
         id: assets_fallback

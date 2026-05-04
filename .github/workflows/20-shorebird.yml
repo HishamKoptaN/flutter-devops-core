@@ -49,12 +49,12 @@ jobs:
 
   version:
     needs: check_platforms
-    uses: ./.github/workflows/get-version.yml
+    uses: ./.github/workflows/00-core-get-version.yml
 
   android:
     needs: [check_platforms, version]
     if: needs.check_platforms.outputs.android_exists == 'true'
-    uses: ./.github/workflows/deploy-android-shorebird.yml
+    uses: ./.github/workflows/20-shorebird-android.yml
     with:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
@@ -65,7 +65,7 @@ jobs:
   windows:
     needs: [check_platforms, version]
     if: needs.check_platforms.outputs.windows_exists == 'true'
-    uses: ./.github/workflows/deploy-windows-shorebird.yml
+    uses: ./.github/workflows/20-shorebird-windows.yml
     with:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}

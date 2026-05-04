@@ -1,4 +1,4 @@
-name: Deploy Android Shorebird
+name: Shorebird Android Core
 
 on:
   workflow_call:
@@ -6,36 +6,36 @@ on:
       flavor:
         type: string
         required: true
-      full_version:
-        type: string
-        required: true
       base_version:
         type: string
         required: true
     outputs:
       changed:
-        value: ${{ jobs.deploy.outputs.changed }}
+        value: ${{ jobs.shorebird.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
 
 jobs:
-  deploy:
+  shorebird:
     runs-on: ubuntu-latest
     environment: ${{ inputs.flavor }}
     outputs:
-      changed: ${{ steps.deploy.outputs.changed }}
+      changed: ${{ steps.run.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+
       - uses: actions/cache@v4
         with:
           path: |
@@ -45,36 +45,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - id: deploy
+      - id: run
         shell: bash
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          version="${{ inputs.full_version }}"
-          baseVersion="${{ inputs.base_version }}"
           flavor="${{ inputs.flavor }}"
-
-          version=$(echo "$version" | tr -d '\n' | tr -d '\r')
-          baseVersion=$(echo "$baseVersion" | tr -d '\n' | tr -d '\r')
-
+          baseVersion="${{ inputs.base_version }}"
           TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
           if [ "$flavor" = "prod" ]; then
             TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
           fi
-
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           echo "✅ App ID: $TARGET_ID"
-
-          androidReleaseVersion="$version"
-          if [ "$flavor" != "prod" ]; then
-            androidReleaseVersion=$(echo "$version" | sed "s/+/-$flavor+/")
-          fi
-
-          androidReleaseVersion=$(echo "$androidReleaseVersion" | tr -d '\n' | tr -d '\r')
-
-          echo "📱 Android version: '$androidReleaseVersion'"
           versionChanged=false
-
           if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
             echo "✅ Android patch succeeded"
           else
@@ -96,25 +80,5 @@ jobs:
               exit 1
             fi
           fi
-          echo "changed=$versionChanged" >> $GITHUB_OUTPUT
-      - if: inputs.flavor == 'prod' && hashFiles('build/app/outputs/bundle/*/*.aab') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-aab-${{ inputs.flavor }}
-          path: build/app/outputs/bundle/*/*.aab
-          retention-days: 1
-      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-        run: |
-          echo "🔨 Building APK with Shorebird release..."
-          shorebird release android --flavor=${{ inputs.flavor }} --artifact=apk --dart-define=ENV=${{ inputs.flavor }} '--' --no-tree-shake-icons || true
-          echo "✅ APK built successfully"
-          ls -la build/app/outputs/flutter-apk/
 
-      - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk-${{ inputs.flavor }}
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 1
+          echo "changed=$versionChanged" >> $GITHUB_OUTPUT
