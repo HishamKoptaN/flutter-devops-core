@@ -6,6 +6,26 @@ on:
       flavor:
         type: string
         required: true
+      build_android:
+        type: boolean
+        default: true
+        description: 'Enable Android build'
+      build_ios:
+        type: boolean
+        default: true
+        description: 'Enable iOS build'
+      build_windows:
+        type: boolean
+        default: true
+        description: 'Enable Windows build'
+      build_linux:
+        type: boolean
+        default: true
+        description: 'Enable Linux build'
+      build_macos:
+        type: boolean
+        default: true
+        description: 'Enable macOS build'
     outputs:
       full_version:
         value: ${{ jobs.version.outputs.full_version }}
