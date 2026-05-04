@@ -1,9 +1,25 @@
 name: Main
 on:
     workflow_call:
+        inputs:
+            flavor:
+                type: string
+                required: true
+            build_windows:
+                type: boolean
+                default: true
+                description: 'Enable Windows build'
     push:
         branches: [dev, prod]
     workflow_dispatch:
+        inputs:
+            flavor:
+                type: string
+                default: 'dev'
+            build_windows:
+                type: boolean
+                default: true
+                description: 'Enable Windows build'
 jobs:
     check_platforms:
         runs-on: ubuntu-latest
@@ -36,7 +52,7 @@ jobs:
 
     windows_shorebird:
         needs: [check_platforms, deploy_shorebird]
-        if: needs.check_platforms.outputs.windows_exists == 'true'
+        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-windows-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
@@ -45,14 +61,14 @@ jobs:
 
     windows_build:
         needs: [check_platforms, windows_shorebird]
-        if: needs.check_platforms.outputs.windows_exists == 'true'
+        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/build-windows-exe.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
 
     windows_upload:
         needs: [check_platforms, windows_shorebird, windows_build]
-        if: needs.check_platforms.outputs.windows_exists == 'true'
+        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
         permissions:
             contents: write
         uses: ./.github/workflows/upload-windows-release.yml
@@ -63,7 +79,7 @@ jobs:
 
     build_installer:
         needs: [check_platforms, windows_build, deploy_shorebird]
-        if: needs.check_platforms.outputs.windows_exists == 'true'
+        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-installer.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
