@@ -15,25 +15,12 @@ on:
       SHOREBIRD_TOKEN:
         required: false
 jobs:
-  check_platforms:
-    runs-on: ubuntu-latest
-    outputs:
-      android_exists: ${{ steps.check.outputs.android_exists }}
-      windows_exists: ${{ steps.check.outputs.windows_exists }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check
-        run: |
-          if [ -d "android" ]; then echo "android_exists=true" >> $GITHUB_OUTPUT; else echo "android_exists=false" >> $GITHUB_OUTPUT; fi
-          if [ -d "windows" ]; then echo "windows_exists=true" >> $GITHUB_OUTPUT; else echo "windows_exists=false" >> $GITHUB_OUTPUT; fi
-
   version:
-    needs: check_platforms
     uses: ./.github/workflows/get-version.yml
 
   android:
-    needs: [check_platforms, version]
-    if: needs.check_platforms.outputs.android_exists == 'true'
+    needs: version
+    if: hashFiles('android/**') != ''
     uses: ./.github/workflows/deploy-android-shorebird.yml
     with:
       flavor: ${{ inputs.flavor }}
@@ -43,8 +30,8 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 
   windows:
-    needs: [check_platforms, version]
-    if: needs.check_platforms.outputs.windows_exists == 'true'
+    needs: version
+    if: hashFiles('windows/CMakeLists.txt') != ''
     uses: ./.github/workflows/deploy-windows-shorebird.yml
     with:
       flavor: ${{ inputs.flavor }}

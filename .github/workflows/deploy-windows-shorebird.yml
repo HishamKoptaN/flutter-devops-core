@@ -38,6 +38,15 @@ jobs:
 
       - run: git config --system core.longpaths true
 
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Fix Windows Project
+        run: flutter create .
+
+      - name: Get Dependencies
+        run: flutter pub get
+
       - id: deploy
         shell: pwsh
         env:
