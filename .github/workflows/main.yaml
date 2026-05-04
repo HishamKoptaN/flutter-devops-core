@@ -5,37 +5,54 @@ on:
         branches: [dev, prod]
     workflow_dispatch:
 jobs:
+    check_platforms:
+        runs-on: ubuntu-latest
+        outputs:
+            android_exists: ${{ steps.check.outputs.android_exists }}
+            windows_exists: ${{ steps.check.outputs.windows_exists }}
+        steps:
+            - uses: actions/checkout@v4
+            - id: check
+              run: |
+                if [ -d "android" ]; then echo "android_exists=true" >> $GITHUB_OUTPUT; else echo "android_exists=false" >> $GITHUB_OUTPUT; fi
+                if [ -f "windows/CMakeLists.txt" ]; then echo "windows_exists=true" >> $GITHUB_OUTPUT; else echo "windows_exists=false" >> $GITHUB_OUTPUT; fi
+
     deploy_shorebird:
+        needs: check_platforms
         permissions:
             contents: write
         uses: ./.github/workflows/deploy-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets: inherit
+
     build_firebase_apk:
-        needs: deploy_shorebird
-        if: always() && hashFiles('android/**') != '' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
+        needs: [check_platforms, deploy_shorebird]
+        if: always() && needs.check_platforms.outputs.android_exists == 'true' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
         uses: ./.github/workflows/build-firebase-apk.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets: inherit
+
     windows_shorebird:
-        needs: deploy_shorebird
-        if: hashFiles('windows/CMakeLists.txt') != ''
+        needs: [check_platforms, deploy_shorebird]
+        if: needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-windows-shorebird.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
         secrets: inherit
+
     windows_build:
-        needs: windows_shorebird
-        if: hashFiles('windows/CMakeLists.txt') != ''
+        needs: [check_platforms, windows_shorebird]
+        if: needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/build-windows-exe.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
+
     windows_upload:
-        needs: [windows_shorebird, windows_build]
-        if: hashFiles('windows/CMakeLists.txt') != ''
+        needs: [check_platforms, windows_shorebird, windows_build]
+        if: needs.check_platforms.outputs.windows_exists == 'true'
         permissions:
             contents: write
         uses: ./.github/workflows/upload-windows-release.yml
@@ -43,9 +60,10 @@ jobs:
             flavor: ${{ inputs.flavor || github.ref_name }}
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
             exe_path: ${{ needs.windows_build.outputs.exe_path }}
+
     build_installer:
-        needs: [windows_build, deploy_shorebird]
-        if: hashFiles('windows/CMakeLists.txt') != ''
+        needs: [check_platforms, windows_build, deploy_shorebird]
+        if: needs.check_platforms.outputs.windows_exists == 'true'
         uses: ./.github/workflows/deploy-installer.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
@@ -53,6 +71,7 @@ jobs:
             exe_name: ${{ needs.windows_build.outputs.exe_name }}
             app_name: "Abujena"
             app_publisher: "Abujena Dawajen"
+
     github_release:
         needs: [deploy_shorebird, build_installer]
         permissions:
@@ -64,6 +83,7 @@ jobs:
             full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
             version_changed: ${{ needs.deploy_shorebird.outputs.version_changed }}
             installer_name: ${{ needs.build_installer.outputs.installer_name }}
+
     cleanup_releases:
         needs: github_release
         if: always()
@@ -72,9 +92,10 @@ jobs:
             flavor: ${{ inputs.flavor || github.ref_name }}
         secrets:
             FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
     distribute_android:
-        needs: deploy_shorebird
-        if: hashFiles('android/**') != '' && needs.deploy_shorebird.outputs.version_changed == 'true'
+        needs: [check_platforms, deploy_shorebird]
+        if: needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
         uses: ./.github/workflows/distribute-android.yml
         with:
             flavor: ${{ inputs.flavor || github.ref_name }}
