@@ -64,25 +64,12 @@ jobs:
       - name: Extract Firebase App ID from Dart Config
         id: get_app_id
         run: |
-          # Try Dart config files first (new architecture)
           DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
           if [ -f "$DART_FILE" ]; then
             echo "🔍 Searching in Dart config: $DART_FILE"
-            # Extract Android appId from commented code (e.g., // appId: '1:xxx:android:xxx')
-            APP_ID=$(grep -oE "//\s*appId:\s*'[^']+'" "$DART_FILE" | grep "android:" | head -1 | sed "s/.*'\([^']*\)'.*/\1/")
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
             if [ -n "$APP_ID" ]; then
-              echo "Found Firebase App ID (Dart): $APP_ID"
-              echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          fi
-
-          # Fallback to google-services.json (legacy)
-          if [ -f "android/app/google-services.json" ]; then
-            echo "🔍 Searching in google-services.json"
-            APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
-            if [ -n "$APP_ID" ]; then
-              echo "Found Firebase App ID (JSON): $APP_ID"
+              echo "Found Firebase App ID: $APP_ID"
               echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
               exit 0
             fi

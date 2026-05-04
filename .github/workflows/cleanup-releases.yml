@@ -56,9 +56,10 @@ jobs:
         continue-on-error: true
         run: |
           FLAVOR="${{ inputs.flavor }}"
+          DART_FILE="lib/config/firebase/$FLAVOR/firebase_options.dart"
           APP_ID=""
-          if [ -f "android/app/google-services.json" ]; then
-            APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | head -1 | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+          if [ -f "$DART_FILE" ]; then
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
           fi
           if [ -z "$APP_ID" ]; then
             echo "⚠️ No Firebase App ID found, skipping Firebase cleanup"

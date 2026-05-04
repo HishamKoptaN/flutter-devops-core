@@ -47,18 +47,19 @@ jobs:
 
       - id: get_app_id
         run: |
-          if [ ! -f "android/app/google-services.json" ]; then
-            echo "⚠️ google-services.json not found, skipping Firebase"
-            echo "app_id=" >> $GITHUB_OUTPUT
-            exit 0
+          DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
+          if [ -f "$DART_FILE" ]; then
+            echo "🔍 Searching in Dart config: $DART_FILE"
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
+            if [ -n "$APP_ID" ]; then
+              echo "Found Firebase App ID: $APP_ID"
+              echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
-          APP_ID=$(grep -o '"mobilesdk_app_id": "[^"]*"' android/app/google-services.json | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
-          if [ -z "$APP_ID" ]; then
-            echo "❌ Could not find mobilesdk_app_id in google-services.json"
-            exit 1
-          fi
-          echo "Found Firebase App ID: $APP_ID"
-          echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+
+          echo "⚠️ Firebase App ID not found, skipping Firebase"
+          echo "app_id=" >> $GITHUB_OUTPUT
 
       - uses: wzieba/Firebase-Distribution-Github-Action@v1
         if: steps.get_app_id.outputs.app_id != ''
