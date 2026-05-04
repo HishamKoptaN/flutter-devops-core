@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'config/firebase/firebase_config.dart';
+import 'config/env_config.dart';
+import 'firebase_debug_screen.dart';
 
 class AppConfig {
   final String flavor;
@@ -34,7 +36,7 @@ void main() async {
 
   appConfig = config;
 
-  await FirebaseConfig.initialize();
+  await Firebase.initializeApp(options: EnvConfig.config.firebaseOptions);
 
   if (kDebugMode) {
     print('🚀 Running in ${config.flavor} flavor');
@@ -94,10 +96,29 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FirebaseDebugScreen(),
+                ),
+              );
+            },
+            tooltip: 'Firebase Debug',
+            backgroundColor: Colors.orange,
+            child: const Icon(Icons.bug_report),
+          ),
+        ],
       ),
     );
   }
