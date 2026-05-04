@@ -136,7 +136,7 @@ jobs:
         # Add a fallback step for projects without Windows support
       - shell: pwsh
         if: steps.check_windows.outputs.has_windows != 'true'
-        id: assets
+        id: assets_fallback
         run: |
           Write-Host "⚠️ No Windows build - skipping installer" -ForegroundColor Yellow
           echo "installer_name=none" >> $env:GITHUB_OUTPUT
