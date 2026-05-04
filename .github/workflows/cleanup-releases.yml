@@ -1,5 +1,4 @@
 name: Cleanup Releases
-
 on:
   workflow_call:
     inputs:
@@ -9,7 +8,6 @@ on:
     secrets:
       FIREBASE_TOKEN:
         required: false
-
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -38,15 +36,13 @@ jobs:
               if [ -n "$TAG" ]; then
                 echo "🗑️ Deleting old release: $TAG"
                 gh release delete "$TAG" --yes 2>/dev/null || echo "⚠️ Could not delete $TAG"
-                
                 git push origin --delete "$TAG" 2>/dev/null || echo "⚠️ Could not delete tag $TAG"
               fi
             done
           else
             echo "✅ Only $COUNT releases exist, no cleanup needed"
           fi
-      - name: Firebase Cleanup (Optional)
-        env:
+      - env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         if: env.FIREBASE_TOKEN != ''
         uses: w9jds/setup-firebase@main
@@ -54,8 +50,7 @@ jobs:
           tools-version: latest
           firebase_token: ${{ secrets.FIREBASE_TOKEN }}
         continue-on-error: true
-      - name: Cleanup Firebase Releases
-        env:
+      - env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         if: env.FIREBASE_TOKEN != ''
         continue-on-error: true
