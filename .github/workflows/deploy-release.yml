@@ -25,7 +25,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
       - uses: actions/download-artifact@v4
         with:
           name: installer
@@ -36,8 +35,6 @@ jobs:
           # Delete existing releases with the same tag to keep only one release
           $tag = "${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}"
           Write-Host "Checking for existing release with tag: $tag"
-          
-          # Try to delete existing release
           try {
             $releases = gh release list --limit 100 | Where-Object { $_ -match $tag }
             foreach ($release in $releases) {
@@ -50,8 +47,6 @@ jobs:
           } catch {
             Write-Host "No existing releases found or error occurred: $_"
           }
-          
-          # Also delete any version-tagged releases that might be duplicates
           try {
             $versionReleases = gh release list --limit 100 | Where-Object { $_ -match '${{ inputs.full_version }}' }
             foreach ($release in $versionReleases) {

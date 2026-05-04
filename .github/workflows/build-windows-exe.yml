@@ -40,8 +40,7 @@ jobs:
           key: ${{ runner.os }}-windows-build-${{ hashFiles('**/pubspec.yaml', '**/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-windows-build-
-      - name: Build Windows EXE
-        run: |
+      - run: |
           flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
           if ($LASTEXITCODE -ne 0) { exit 1 }
         shell: pwsh

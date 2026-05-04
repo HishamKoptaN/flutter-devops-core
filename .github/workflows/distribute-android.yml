@@ -86,6 +86,7 @@ jobs:
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
           groups: "apk"
           file: ${{ steps.find_apk.outputs.apk_path }}
+        continue-on-error: true
 
       - name: Set Release Tag
         if: steps.find_apk.outputs.found == 'true'
