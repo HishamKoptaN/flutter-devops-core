@@ -20,22 +20,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
-          path: build/app/outputs/flutter-apk/
+          path: build/app/outputs/
         continue-on-error: true
       - run: |
           echo "📁 Listing build outputs..."
           find build/app/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
-          ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "No flutter-apk directory found"
       - id: find_apk
         run: |
-          APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
+          APK_PATH=$(find build/app/outputs -name "*.apk" -type f 2>/dev/null | head -1)
           if [ -n "$APK_PATH" ]; then
             echo "found=true" >> $GITHUB_OUTPUT
             echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
-            echo "✅ Found APK: $APK_PATH"
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "⚠️ No APK found"
           fi
       - if: steps.find_apk.outputs.found == 'true'
         id: apk_name
@@ -49,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.apk_name.outputs.name }}
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/**/*.apk
           retention-days: 30
       - id: get_app_id
         run: |
@@ -85,7 +82,7 @@ jobs:
         with:
           tag_name: ${{ steps.release_tag.outputs.tag }}
           name: ${{ inputs.flavor == 'prod' && 'Latest Release' || format('Latest {0}', inputs.flavor) }}
-          files: build/app/outputs/flutter-apk/*.apk
+          files: ${{ steps.find_apk.outputs.apk_path }}
           prerelease: ${{ inputs.flavor == 'dev' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
