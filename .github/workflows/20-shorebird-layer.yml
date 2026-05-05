@@ -11,10 +11,6 @@ on:
         required: false
         default: ""
         description: "Comma-separated platforms (e.g., android,windows,ios,macos,linux)"
-      version_changed:
-        type: boolean
-        required: false
-        default: true
     outputs:
       android_built:
         value: ${{ jobs.check.outputs.android_built }}
@@ -46,7 +42,6 @@ on:
 
 jobs:
   version:
-    if: inputs.version_changed == 'true'
     uses: ./.github/workflows/00-core-get-version.yml
   check:
     needs: version
@@ -54,7 +49,6 @@ jobs:
     uses: ./.github/workflows/30-deploy-check.yml
     with:
       platforms: ${{ inputs.platforms }}
-      version_changed: ${{ inputs.version_changed }}
 
   android:
     needs: [version, check]

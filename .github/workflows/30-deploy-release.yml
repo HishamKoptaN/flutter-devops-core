@@ -9,9 +9,6 @@ on:
       full_version:
         type: string
         required: true
-      version_changed:
-        type: string
-        required: true
       installer_name:
         type: string
         required: true
@@ -93,7 +90,7 @@ jobs:
             ## 🚀 Release v${{ inputs.full_version }}
             ### Changes
             - Automated release from ${{ inputs.flavor }} branch
-            - Shorebird deployment: ${{ inputs.version_changed == 'true' && 'New Release' || 'Patch' }}
+            - Shorebird deployment: New Release
             ### Downloads
             - **Installer**: `${{ inputs.installer_name }}`
           files: ./Output/${{ inputs.installer_name }}

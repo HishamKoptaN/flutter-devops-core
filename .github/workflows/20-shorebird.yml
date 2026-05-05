@@ -10,12 +10,9 @@ on:
         type: string
         required: false
         default: ""
-        description: "Comma-separated platforms (e.g., android,windows)"
     outputs:
       full_version:
         value: ${{ jobs.version.outputs.full_version }}
-      version_changed:
-        value: ${{ jobs.combine.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false

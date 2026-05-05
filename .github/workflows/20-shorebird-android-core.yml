@@ -60,11 +60,11 @@ jobs:
           versionChanged=false
           
           if [ "$usePatch" = "true" ]; then
-            if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
+            if shorebird patch android --flavor=$flavor --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
               versionChanged=false
             else
               if grep -q "Release not found\|No release exists\|UnpatchableChangeException\|asset changes" /tmp/patch_output; then
-                if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
+                if shorebird release android --flavor=$flavor --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
                   versionChanged=true
                 else
                   if grep -q "existing.*release\|already exists" /tmp/release_output; then
@@ -78,7 +78,7 @@ jobs:
               fi
             fi
           else
-            if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
+            if shorebird release android --flavor=$flavor --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
               versionChanged=true
             else
               if grep -q "existing.*release\|already exists" /tmp/release_output; then

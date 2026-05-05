@@ -8,10 +8,6 @@ on:
         required: false
         default: ""
         description: "Comma-separated platforms (e.g., android,windows,ios,macos,linux)"
-      version_changed:
-        type: boolean
-        required: false
-        default: true
     outputs:
       android_built:
         value: ${{ jobs.check.outputs.android_built }}
@@ -63,12 +59,11 @@ jobs:
           linux_patch="false"
           windows_patch="false"
           
-          if [ "${{ inputs.version_changed }}" = "true" ]; then
-            if [[ "${{ inputs.platforms }}" == *"android"* ]]; then
-              android_enabled="true"
-              android_patch="true"
-            fi
-            if [[ "${{ inputs.platforms }}" == *"ios"* ]]; then
+          if [[ "${{ inputs.platforms }}" == *"android"* ]]; then
+            android_enabled="true"
+            android_patch="true"
+          fi
+          if [[ "${{ inputs.platforms }}" == *"ios"* ]]; then
               ios_enabled="true"
               ios_patch="true"
             fi

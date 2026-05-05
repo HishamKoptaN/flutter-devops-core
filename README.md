@@ -63,7 +63,6 @@ Distribution Layer
 
 **Files**: `20-shorebird-*.yml`, `10-deploy-shorebird-android.yml`
 
-**Outputs**: `AAB/APK`, `version_changed`, `release_version`
 
 ---
 

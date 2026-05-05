@@ -76,14 +76,6 @@ if (release_exists && native_changes_unpatchable) {
 20-build-android.yml            # Android builds
 10-build-firebase-apk.yml      # Firebase APK builds
 ```
-
-**Outputs**:
-```txt
-artifacts (apk/aab/exe/app), version_changed, release_version
-```
-
----
-
 ## 🟥 Layer 3: Distribution Layer (Smart Distribution)
 
 **Purpose**: Distribute only what was built
@@ -184,7 +176,6 @@ Optimized resource usage
 android_built=true
 ios_built=false
 windows_built=true
-version_changed=true
 ```
 
 ### Distribution Layer Logic:

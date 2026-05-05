@@ -49,20 +49,14 @@ jobs:
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          echo "🚀 Starting Shorebird Linux deployment for flavor: ${{ inputs.flavor }}"
           TARGET_ID=$(if [ "${{ inputs.flavor }}" = "prod" ]; then echo "linux-prod-id"; else echo "linux-dev-id"; fi)
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          echo "✅ App ID set to: $TARGET_ID"
           release_completed="false"
           patch_completed="false"
           
-          # Linux doesn't support patching yet, always use release
-          echo "🚀 Release only mode for Linux..."
           if shorebird release linux --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
-            echo "✅ Release succeeded"
             release_completed="true"
           else
-            echo "❌ Release failed"
             exit 1
           fi
           

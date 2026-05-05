@@ -14,8 +14,6 @@ on:
     outputs:
       flavor:
         value: ${{ jobs.setup.outputs.flavor }}
-      version_changed:
-        value: ${{ jobs.setup.outputs.version_changed }}
       android_enabled:
         value: ${{ jobs.setup.outputs.android_enabled }}
       ios_enabled:
@@ -37,7 +35,6 @@ jobs:
       macos_enabled: ${{ steps.set.outputs.macos_enabled }}
       web_enabled: ${{ steps.set.outputs.web_enabled }}
       windows_enabled: ${{ steps.set.outputs.windows_enabled }}
-      version_changed: ${{ steps.set.outputs.version_changed }}
     steps:
       - uses: actions/checkout@v4
       - id: set
@@ -70,4 +67,3 @@ jobs:
           echo "macos_enabled=$macos_enabled" >> $GITHUB_OUTPUT
           echo "web_enabled=$web_enabled" >> $GITHUB_OUTPUT
           echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
-          echo "version_changed=true" >> $GITHUB_OUTPUT

@@ -9,10 +9,6 @@ on:
         type: string
         required: false
         default: ""
-      version_changed:
-        type: boolean
-        required: false
-        default: false
       windows_exe_name:
         type: string
         required: false
@@ -33,7 +29,6 @@ jobs:
       app_publisher: "Abujena Dawajen"
     secrets: inherit
   distribute:
-    if: inputs.version_changed == 'true'
     uses: ./.github/workflows/40-distribute-android.yml
     with:
       flavor: ${{ inputs.flavor }}
