@@ -18,6 +18,12 @@ on:
         value: ${{ jobs.setup.outputs.version_changed }}
       android_enabled:
         value: ${{ jobs.setup.outputs.android_enabled }}
+      ios_enabled:
+        value: ${{ jobs.setup.outputs.ios_enabled }}
+      macos_enabled:
+        value: ${{ jobs.setup.outputs.macos_enabled }}
+      web_enabled:
+        value: ${{ jobs.setup.outputs.web_enabled }}
       windows_enabled:
         value: ${{ jobs.setup.outputs.windows_enabled }}
 
@@ -27,6 +33,9 @@ jobs:
     outputs:
       flavor: ${{ steps.set.outputs.flavor }}
       android_enabled: ${{ steps.set.outputs.android_enabled }}
+      ios_enabled: ${{ steps.set.outputs.ios_enabled }}
+      macos_enabled: ${{ steps.set.outputs.macos_enabled }}
+      web_enabled: ${{ steps.set.outputs.web_enabled }}
       windows_enabled: ${{ steps.set.outputs.windows_enabled }}
       version_changed: ${{ steps.set.outputs.version_changed }}
     steps:
@@ -37,13 +46,28 @@ jobs:
           echo "flavor=$flavor" >> $GITHUB_OUTPUT
           platforms="${{ inputs.platforms }}"
           android_enabled="false"
+          ios_enabled="false"
+          macos_enabled="false"
+          web_enabled="false"
           windows_enabled="false"
           if echo "$platforms" | grep -qi "android"; then
             android_enabled="true"
+          fi
+          if echo "$platforms" | grep -qi "ios"; then
+            ios_enabled="true"
+          fi
+          if echo "$platforms" | grep -qi "macos"; then
+            macos_enabled="true"
+          fi
+          if echo "$platforms" | grep -qi "web"; then
+            web_enabled="true"
           fi
           if echo "$platforms" | grep -qi "windows"; then
             windows_enabled="true"
           fi
           echo "android_enabled=$android_enabled" >> $GITHUB_OUTPUT
+          echo "ios_enabled=$ios_enabled" >> $GITHUB_OUTPUT
+          echo "macos_enabled=$macos_enabled" >> $GITHUB_OUTPUT
+          echo "web_enabled=$web_enabled" >> $GITHUB_OUTPUT
           echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
           echo "version_changed=true" >> $GITHUB_OUTPUT

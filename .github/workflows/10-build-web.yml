@@ -1,0 +1,38 @@
+name: Build Web
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build web --release --dart-define=ENV=${{ inputs.flavor }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-app-${{ inputs.flavor }}
+          path: build/web/**
+          retention-days: 1
