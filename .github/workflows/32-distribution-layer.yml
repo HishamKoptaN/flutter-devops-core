@@ -1,5 +1,4 @@
 name: Distribution Layer
-
 on:
   workflow_call:
     inputs:
@@ -20,7 +19,6 @@ on:
       full_version:
         type: string
         required: false
-
 jobs:
   build_installer:
     if: |
@@ -34,14 +32,12 @@ jobs:
       app_name: "Abujena"
       app_publisher: "Abujena Dawajen"
     secrets: inherit
-
   distribute:
     if: inputs.version_changed == 'true'
     uses: ./.github/workflows/40-distribute-android.yml
     with:
       flavor: ${{ inputs.flavor }}
     secrets: inherit
-
   cleanup:
     needs: [build_installer, distribute]
     if: always()
