@@ -41,6 +41,19 @@ jobs:
       platforms: ${{ inputs.platforms || 'android,windows' }}
     secrets: inherit
 
+  build_android:
+    needs: [setup, shorebird]
+    if: |
+      always() && 
+      (needs.shorebird.result == 'success' || needs.shorebird.result == 'skipped') &&
+      needs.setup.outputs.android_enabled == 'true'
+    uses: ./.github/workflows/20-shorebird-android.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+      full_version: ${{ needs.shorebird.outputs.full_version }}
+      base_version: ${{ needs.shorebird.outputs.base_version }}
+    secrets: inherit
+
   build_windows:
     needs: [setup, shorebird]
     if: |
@@ -86,7 +99,7 @@ jobs:
     secrets: inherit
 
   build_installer:
-    needs: [setup, build_windows, build_ios, build_macos, build_web]
+    needs: [setup, build_android, build_windows, build_ios, build_macos, build_web]
     if: |
       always() && 
       (needs.build_windows.result == 'success') &&
@@ -101,7 +114,7 @@ jobs:
     secrets: inherit
 
   distribute:
-    needs: [setup, shorebird, build_ios, build_macos, build_web, build_windows, build_installer]
+    needs: [setup, shorebird, build_android, build_ios, build_macos, build_web, build_windows, build_installer]
     if: always() && needs.shorebird.outputs.version_changed == 'true'
     uses: ./.github/workflows/40-distribute-android.yml
     with:
