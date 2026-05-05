@@ -45,7 +45,7 @@ jobs:
           flavor="${{ inputs.flavor }}"
           echo "flavor=$flavor" >> $GITHUB_OUTPUT
           platforms="${{ inputs.platforms }}"
-          android_enabled="false"
+          android_enabled="true"
           ios_enabled="false"
           macos_enabled="false"
           web_enabled="false"
