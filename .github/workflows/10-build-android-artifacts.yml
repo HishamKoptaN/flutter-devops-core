@@ -12,6 +12,9 @@ on:
       build_aab:
         type: boolean
         default: true
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: false
 
 jobs:
   build:
@@ -50,9 +53,19 @@ jobs:
           flutter build appbundle --release --flavor=${{ inputs.flavor }} --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons
 
       - if: inputs.build_apk
-        name: Build APK
+        name: Build APK with Shorebird
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          shorebird release android --flavor=${{ inputs.flavor }} --artifact=apk --dart-define=ENV=${{ inputs.flavor }} '--' --no-tree-shake-icons || true
+          shorebird release android --flavor=${{ inputs.flavor }} --artifact=apk --dart-define=ENV=${{ inputs.flavor }} '--' --no-tree-shake-icons
+
+      - if: inputs.build_apk
+        name: Locate APK
+        run: |
+          echo "Searching for APK..."
+          find build/app/outputs -name "*.apk" -type f
+          echo "---"
+          ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "flutter-apk dir not found"
 
       - if: inputs.build_aab
         uses: actions/upload-artifact@v4
@@ -65,5 +78,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/**/*.apk
           retention-days: 1

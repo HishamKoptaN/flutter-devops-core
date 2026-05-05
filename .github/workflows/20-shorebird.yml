@@ -6,26 +6,11 @@ on:
       flavor:
         type: string
         required: true
-      build_android:
-        type: boolean
-        default: true
-        description: 'Enable Android build'
-      build_ios:
-        type: boolean
-        default: true
-        description: 'Enable iOS build'
-      build_windows:
-        type: boolean
-        default: true
-        description: 'Enable Windows build'
-      build_linux:
-        type: boolean
-        default: true
-        description: 'Enable Linux build'
-      build_macos:
-        type: boolean
-        default: true
-        description: 'Enable macOS build'
+      platforms:
+        type: string
+        required: false
+        default: ""
+        description: "Comma-separated platforms (e.g., android,windows)"
     outputs:
       full_version:
         value: ${{ jobs.version.outputs.full_version }}
@@ -35,25 +20,12 @@ on:
       SHOREBIRD_TOKEN:
         required: false
 jobs:
-  check_platforms:
-    runs-on: ubuntu-latest
-    outputs:
-      android_exists: ${{ steps.check.outputs.android_exists }}
-      windows_exists: ${{ steps.check.outputs.windows_exists }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check
-        run: |
-          if [ -d "android" ]; then echo "android_exists=true" >> $GITHUB_OUTPUT; else echo "android_exists=false" >> $GITHUB_OUTPUT; fi
-          if [ -f "windows/CMakeLists.txt" ]; then echo "windows_exists=true" >> $GITHUB_OUTPUT; else echo "windows_exists=false" >> $GITHUB_OUTPUT; fi
-
   version:
-    needs: check_platforms
     uses: ./.github/workflows/00-core-get-version.yml
 
   android:
-    needs: [check_platforms, version]
-    if: needs.check_platforms.outputs.android_exists == 'true'
+    needs: version
+    if: contains(inputs.platforms, 'android')
     uses: ./.github/workflows/20-shorebird-android.yml
     with:
       flavor: ${{ inputs.flavor }}
@@ -63,8 +35,8 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
 
   windows:
-    needs: [check_platforms, version]
-    if: needs.check_platforms.outputs.windows_exists == 'true'
+    needs: version
+    if: contains(inputs.platforms, 'windows')
     uses: ./.github/workflows/20-shorebird-windows.yml
     with:
       flavor: ${{ inputs.flavor }}

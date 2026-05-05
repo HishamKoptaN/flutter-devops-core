@@ -33,12 +33,3 @@ jobs:
       base_version: ${{ inputs.base_version }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-
-  build:
-    needs: shorebird
-    if: needs.shorebird.outputs.changed == 'true' || inputs.flavor == 'dev' || inputs.flavor == 'prod'
-    uses: ./.github/workflows/10-build-android-artifacts.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-      build_apk: ${{ inputs.build_apk }}
-      build_aab: ${{ inputs.build_aab }}

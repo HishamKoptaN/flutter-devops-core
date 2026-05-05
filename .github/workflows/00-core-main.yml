@@ -1,19 +1,19 @@
 name: Main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   workflow_call:
     inputs:
       flavor:
         type: string
         required: true
-      build_android:
-        type: boolean
-        default: false
-        description: 'Enable Android build'
-      build_windows:
-        type: boolean
-        default: false
-        description: 'Enable Windows build'
+      platforms:
+        type: string
+        required: false
+        default: ""
+        description: 'Platforms to build: android,windows'
   push:
     branches: [dev, prod]
   workflow_dispatch:
@@ -21,22 +21,17 @@ on:
       flavor:
         type: string
         default: 'dev'
-      build_android:
-        type: boolean
-        default: false
-        description: 'Enable Android build'
-      build_windows:
-        type: boolean
-        default: false
-        description: 'Enable Windows build'
+      platforms:
+        type: string
+        default: 'android,windows'
+        description: 'Platforms to build: android,windows'
 
 jobs:
   setup:
     uses: ./.github/workflows/00-setup.yml
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
-      build_android: ${{ inputs.build_android || false }}
-      build_windows: ${{ inputs.build_windows || false }}
+      platforms: ${{ inputs.platforms || 'android,windows' }}
 
   shorebird:
     needs: setup
@@ -46,8 +41,7 @@ jobs:
     uses: ./.github/workflows/20-shorebird.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      build_android: ${{ inputs.build_android || false }}
-      build_windows: ${{ inputs.build_windows || false }}
+      platforms: ${{ inputs.platforms || 'android,windows' }}
     secrets: inherit
 
   build_android:

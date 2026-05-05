@@ -6,30 +6,26 @@ on:
       flavor:
         type: string
         required: true
-      build_android:
-        type: boolean
-        default: false
-      build_windows:
-        type: boolean
-        default: false
+      platforms:
+        type: string
+        required: false
+        default: ""
+        description: "Comma-separated platforms to build (e.g., android,windows)"
     outputs:
       flavor:
         value: ${{ jobs.setup.outputs.flavor }}
-      platforms:
-        value: ${{ jobs.setup.outputs.platforms }}
+      version_changed:
+        value: ${{ jobs.setup.outputs.version_changed }}
       android_enabled:
         value: ${{ jobs.setup.outputs.android_enabled }}
       windows_enabled:
         value: ${{ jobs.setup.outputs.windows_enabled }}
-      version_changed:
-        value: ${{ jobs.setup.outputs.version_changed }}
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
       flavor: ${{ steps.set.outputs.flavor }}
-      platforms: ${{ steps.set.outputs.platforms }}
       android_enabled: ${{ steps.set.outputs.android_enabled }}
       windows_enabled: ${{ steps.set.outputs.windows_enabled }}
       version_changed: ${{ steps.set.outputs.version_changed }}
@@ -39,18 +35,17 @@ jobs:
         run: |
           flavor="${{ inputs.flavor }}"
           echo "flavor=$flavor" >> $GITHUB_OUTPUT
-          platforms=""
-          android_enabled="true"
-          windows_enabled="true"
-          if [ -d "android" ] && [ "${{ inputs.build_android }}" == "true" ]; then
-            platforms="$platforms android"
+          platforms="${{ inputs.platforms }}"
+          android_enabled="false"
+          windows_enabled="false"
+
+          if echo "$platforms" | grep -qi "android"; then
             android_enabled="true"
           fi
-          if [ -f "windows/CMakeLists.txt" ] && [ "${{ inputs.build_windows }}" == "true" ]; then
-            platforms="$platforms windows"
+          if echo "$platforms" | grep -qi "windows"; then
             windows_enabled="true"
           fi
-          echo "platforms=$platforms" >> $GITHUB_OUTPUT
+
           echo "android_enabled=$android_enabled" >> $GITHUB_OUTPUT
           echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
-          echo "version_changed=${{ inputs.build_android || inputs.build_windows }}" >> $GITHUB_OUTPUT
+          echo "version_changed=true" >> $GITHUB_OUTPUT

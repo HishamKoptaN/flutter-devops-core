@@ -26,23 +26,7 @@ on:
         value: ${{ jobs.build_installer.outputs.installer_name }}
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    outputs:
-      has_windows: ${{ steps.check.outputs.has_windows }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check
-        run: |
-          if [ -d "windows" ] && [ -f "windows/CMakeLists.txt" ]; then
-            echo "has_windows=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_windows=false" >> $GITHUB_OUTPUT
-          fi
-
   prepare:
-    needs: check
-    if: needs.check.outputs.has_windows == 'true'
     uses: ./.github/workflows/20-prepare-installer.yml
     with:
       flavor: ${{ inputs.flavor }}
@@ -52,8 +36,7 @@ jobs:
       app_publisher: ${{ inputs.app_publisher }}
 
   build_installer:
-    needs: [check, prepare]
-    if: needs.check.outputs.has_windows == 'true'
+    needs: prepare
     uses: ./.github/workflows/30-build-installer.yml
     with:
       flavor: ${{ inputs.flavor }}

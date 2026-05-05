@@ -9,26 +9,10 @@ on:
         type: string
         default: 'dev'
         description: 'Flavor to test'
-      build_android:
-        type: boolean
-        default: true
-        description: 'Enable Android build'
-      build_windows:
-        type: boolean
-        default: true
-        description: 'Enable Windows build'
-      build_ios:
-        type: boolean
-        default: false
-        description: 'Enable iOS build'
-      build_linux:
-        type: boolean
-        default: false
-        description: 'Enable Linux build'
-      build_macos:
-        type: boolean
-        default: false
-        description: 'Enable macOS build'
+      platforms:
+        type: string
+        default: 'android,windows'
+        description: 'Platforms to build: android,windows'
 
 permissions:
   contents: write
@@ -38,6 +22,5 @@ jobs:
     uses: ./.github/workflows/00-core-main.yml
     with:
       flavor: ${{ inputs.flavor || 'dev' }}
-      build_android: ${{ inputs.build_android || true }}
-      build_windows: ${{ inputs.build_windows || true }}
+      platforms: ${{ inputs.platforms || 'android,windows' }}
     secrets: inherit
