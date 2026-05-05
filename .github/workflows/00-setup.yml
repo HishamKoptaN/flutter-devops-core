@@ -38,14 +38,12 @@ jobs:
           platforms="${{ inputs.platforms }}"
           android_enabled="false"
           windows_enabled="false"
-
           if echo "$platforms" | grep -qi "android"; then
             android_enabled="true"
           fi
           if echo "$platforms" | grep -qi "windows"; then
             windows_enabled="true"
           fi
-
           echo "android_enabled=$android_enabled" >> $GITHUB_OUTPUT
           echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
           echo "version_changed=true" >> $GITHUB_OUTPUT

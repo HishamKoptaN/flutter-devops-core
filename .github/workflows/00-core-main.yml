@@ -44,17 +44,6 @@ jobs:
       platforms: ${{ inputs.platforms || 'android,windows' }}
     secrets: inherit
 
-  build_android:
-    needs: [setup, shorebird]
-    if: |
-      always() && 
-      (needs.shorebird.result == 'success' || needs.shorebird.result == 'skipped') &&
-      needs.setup.outputs.android_enabled == 'true'
-    uses: ./.github/workflows/10-build-android-artifacts.yml
-    with:
-      flavor: ${{ needs.setup.outputs.flavor }}
-    secrets: inherit
-
   build_windows:
     needs: [setup, shorebird]
     if: |
