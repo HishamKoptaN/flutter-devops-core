@@ -85,13 +85,11 @@ jobs:
               windows_patch="true"
             fi
           fi
-          
           echo "android_built=$android_enabled" >> $GITHUB_OUTPUT
           echo "ios_built=$ios_enabled" >> $GITHUB_OUTPUT
           echo "macos_built=$macos_enabled" >> $GITHUB_OUTPUT
           echo "linux_built=$linux_enabled" >> $GITHUB_OUTPUT
           echo "windows_built=$windows_enabled" >> $GITHUB_OUTPUT
-          
           echo "android_patch=$android_patch" >> $GITHUB_OUTPUT
           echo "ios_patch=$ios_patch" >> $GITHUB_OUTPUT
           echo "macos_patch=$macos_patch" >> $GITHUB_OUTPUT

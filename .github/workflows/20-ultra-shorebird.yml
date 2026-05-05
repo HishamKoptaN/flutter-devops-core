@@ -25,34 +25,20 @@ jobs:
     environment: ${{ inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
-      
-      # 🔥 Setup Ultra Cache
-      - name: 🔥 Setup Ultra Cache
-        uses: ./.github/workflows/00-ultra-cache-setup.yml
+      - uses: ./.github/workflows/00-ultra-cache-setup.yml
         with:
           platforms: ${{ inputs.platforms }}
           strategy: ultra
         id: cache
-      
-      # 🔥 Flutter Setup
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: false  # We use our own cache
-      
+          cache: false
       - run: flutter pub get
-      
-      # 🔥 Ultra Smart Execution
-      - name: Ultra Smart Shorebird Execution
-        run: |
+      - run: |
           DECISION="${{ inputs.shorebird_decision }}"
           FLAVOR="${{ inputs.flavor }}"
           
-          echo "Ultra Shorebird Engine"
-          echo "Decision: $DECISION"
-          echo "Flavor: $FLAVOR"
-          
-          # Set Shorebird App ID
           TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
           if [ "$FLAVOR" = "prod" ]; then
             TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
@@ -60,7 +46,6 @@ jobs:
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           echo "App ID set to: $TARGET_ID"
           
-          # Ultra intelligent execution
           case "$DECISION" in
             "full_release")
               echo "Full Release Mode"
@@ -95,16 +80,14 @@ jobs:
             "reuse_artifacts")
               echo "Reuse Artifacts Mode - No build needed"
               echo "Downloading previous artifacts..."
-              # Download logic here
               ;;
             "config_only")
-              echo "🔧 Config Only Mode - No build"
+              echo "Config Only Mode - No build"
               echo "✅ Skipping build - config updated"
               exit 0
               ;;
             *)
               echo "Auto Mode - Smart Detection"
-              # Auto-detect and execute
               shorebird release android \
                 --flavor=$FLAVOR \
                 --dart-define=ENV=$FLAVOR \
@@ -113,17 +96,14 @@ jobs:
               ;;
           esac
       
-      # 🔥 Upload Artifacts
-      - name: Upload Ultra Artifacts
-        if: steps.cache.outputs.shorebird_decision != 'reuse_artifacts' && steps.cache.outputs.shorebird_decision != 'config_only'
+      - if: steps.cache.outputs.shorebird_decision != 'reuse_artifacts' && steps.cache.outputs.shorebird_decision != 'config_only'
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
       
-      - name: Upload Build Logs
-        if: always()
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: shorebird-logs-${{ inputs.flavor }}

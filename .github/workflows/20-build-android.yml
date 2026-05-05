@@ -32,29 +32,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
       - uses: actions/cache@v4
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-pub-
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
       - run: flutter pub get
-
       - id: build
         run: |
-          echo "🔧 Building Android artifacts for flavor: ${{ inputs.flavor }}"
-          
           apk_path=""
           aab_path=""
-          
-          # Build APK
           if [ "${{ inputs.build_apk }}" = "true" ]; then
             echo "📱 Building APK..."
             flutter build apk --release --dart-define=ENV=${{ inputs.flavor }}
@@ -67,8 +59,6 @@ jobs:
               exit 1
             fi
           fi
-          
-          # Build AAB
           if [ "${{ inputs.build_aab }}" = "true" ]; then
             echo "📦 Building AAB..."
             flutter build appbundle --release --dart-define=ENV=${{ inputs.flavor }}
@@ -81,38 +71,29 @@ jobs:
               exit 1
             fi
           fi
-
       - id: upload
         run: |
           echo "📤 Uploading artifacts..."
           uploaded="false"
-          
-          # Upload APK
           if [ -n "${{ steps.build.outputs.apk_path }}" ] && [ -f "${{ steps.build.outputs.apk_path }}" ]; then
             echo "Uploading APK artifact..."
             # This will be handled by actions/upload-artifact below
             uploaded="true"
           fi
-          
-          # Upload AAB
           if [ -n "${{ steps.build.outputs.aab_path }}" ] && [ -f "${{ steps.build.outputs.aab_path }}" ]; then
             echo "Uploading AAB artifact..."
             # This will be handled by actions/upload-artifact below
             uploaded="true"
           fi
-          
           echo "uploaded=$uploaded" >> $GITHUB_OUTPUT
-
-      - name: Upload APK Artifact
-        if: inputs.build_apk && steps.build.outputs.apk_path != ''
+      - if: inputs.build_apk && steps.build.outputs.apk_path != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}
           path: ${{ steps.build.outputs.apk_path }}
           retention-days: 30
 
-      - name: Upload AAB Artifact
-        if: inputs.build_aab && steps.build.outputs.aab_path != ''
+      - if: inputs.build_aab && steps.build.outputs.aab_path != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-aab-${{ inputs.flavor }}

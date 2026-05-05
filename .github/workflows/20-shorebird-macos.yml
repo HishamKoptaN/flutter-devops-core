@@ -43,6 +43,7 @@ jobs:
         with:
           channel: stable
           cache: true
+      - run: flutter config --enable-macos-desktop
       - run: flutter pub get
       - id: deploy
         shell: bash
@@ -84,3 +85,9 @@ jobs:
           
           echo "release_completed=$release_completed" >> $GITHUB_OUTPUT
           echo "patch_completed=$patch_completed" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-app-${{ inputs.flavor }}
+          path: build/macos/**/*.app
+          retention-days: 1

@@ -10,14 +10,6 @@ on:
         type: string
         required: false
         default: ""
-      android_built:
-        type: boolean
-        required: false
-        default: false
-      windows_built:
-        type: boolean
-        required: false
-        default: false
       full_version:
         type: string
         required: false
@@ -25,54 +17,10 @@ on:
         type: string
         required: false
     outputs:
-      android_path:
-        value: ${{ jobs.build_android.outputs.path }}
-      windows_exe_path:
-        value: ${{ jobs.build_windows.outputs.exe_path }}
-      windows_exe_name:
-        value: ${{ jobs.build_windows.outputs.exe_name }}
-      ios_path:
-        value: ${{ jobs.build_ios.outputs.path }}
-      macos_path:
-        value: ${{ jobs.build_macos.outputs.path }}
       web_path:
         value: ${{ jobs.build_web.outputs.path }}
 
 jobs:
-  build_android:
-    if: |
-      contains(inputs.platforms, 'android') && 
-      inputs.android_built == 'false'
-    uses: ./.github/workflows/20-shorebird-android.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-      full_version: ${{ inputs.full_version }}
-      base_version: ${{ inputs.base_version }}
-    secrets: inherit
-
-  build_windows:
-    if: |
-      contains(inputs.platforms, 'windows') && 
-      inputs.windows_built == 'false'
-    uses: ./.github/workflows/10-build-windows-exe.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-    secrets: inherit
-
-  build_ios:
-    if: contains(inputs.platforms, 'ios')
-    uses: ./.github/workflows/10-build-ios.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-    secrets: inherit
-
-  build_macos:
-    if: contains(inputs.platforms, 'macos')
-    uses: ./.github/workflows/10-build-macos.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-    secrets: inherit
-
   build_web:
     if: contains(inputs.platforms, 'web')
     uses: ./.github/workflows/10-build-web.yml
