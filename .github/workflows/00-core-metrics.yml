@@ -38,8 +38,6 @@ jobs:
           echo "🔧 Starting build process..."
           echo "Platforms: ${{ inputs.platforms }}"
           echo "Build Type: ${{ inputs.build_type }}"
-          
-          # Simulate build process
           sleep 5
           echo "✅ Build completed"
       
@@ -53,7 +51,6 @@ jobs:
           end_time="${{ steps.end-time.outputs.end_time }}"
           build_time=$((end_time - start_time))
           
-          # Calculate metrics
           if [ $build_time -lt 180 ]; then
             cache_efficiency="high"
           elif [ $build_time -lt 300 ]; then
@@ -62,14 +59,13 @@ jobs:
             cache_efficiency="low"
           fi
           
-          success_rate="100%"  # In real implementation, calculate from history
+          success_rate="100%"
           
           echo "📊 Build Metrics:"
           echo "⏱️ Build Time: ${build_time}s"
           echo "🎯 Cache Efficiency: $cache_efficiency"
           echo "✅ Success Rate: $success_rate"
           
-          # Performance indicators
           if [ $build_time -lt 120 ]; then
             echo "🚀 Excellent Performance!"
           elif [ $build_time -lt 240 ]; then

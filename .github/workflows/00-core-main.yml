@@ -1,7 +1,7 @@
-name: Main
+name: main
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  force_javascript_actions_to_node24: true
+  actions_allow_use_unsecure_node_version: true
 on:
   workflow_call:
     inputs:
