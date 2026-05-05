@@ -15,15 +15,12 @@ class EnvConfig {
       case 'dev':
         return DevEnv();
       default:
-        // Log warning for unknown environment
         print('⚠️ Unknown environment: $_envTag, defaulting to dev');
         return DevEnv();
     }
   }
 
   static Env get config => _config;
-
-  // Helper method to check current environment
   static bool get isDev => _envTag == 'dev';
   static bool get isProd => _envTag == 'prod';
   static String get currentEnv => _envTag;
