@@ -1,5 +1,4 @@
 name: Deploy Linux
-
 on:
   workflow_call:
     inputs:
@@ -19,7 +18,6 @@ on:
     secrets:
       SHOREBIRD_TOKEN:
         required: false
-
 jobs:
   linux:
     uses: ./.github/workflows/20-shorebird-linux.yml

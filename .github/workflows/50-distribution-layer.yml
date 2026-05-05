@@ -15,6 +15,14 @@ on:
       full_version:
         type: string
         required: false
+      app_name:
+        type: string
+        required: false
+        default: "MyApp"
+      app_publisher:
+        type: string
+        required: false
+        default: "MyCompany"
 jobs:
   build_installer:
     if: |
@@ -25,8 +33,8 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ inputs.full_version }}
       exe_name: ${{ inputs.windows_exe_name }}
-      app_name: "Abujena"
-      app_publisher: "Abujena Dawajen"
+      app_name: ${{ inputs.app_name }}
+      app_publisher: ${{ inputs.app_publisher }}
     secrets: inherit
   distribute:
     uses: ./.github/workflows/40-distribute-android.yml

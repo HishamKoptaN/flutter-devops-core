@@ -1,5 +1,4 @@
 name: Deploy Installer
-
 on:
   workflow_call:
     inputs:
@@ -24,7 +23,6 @@ on:
     outputs:
       installer_name:
         value: ${{ jobs.build_installer.outputs.installer_name }}
-
 jobs:
   prepare:
     uses: ./.github/workflows/20-prepare-installer.yml
@@ -34,7 +32,6 @@ jobs:
       exe_name: ${{ inputs.exe_name }}
       app_name: ${{ inputs.app_name }}
       app_publisher: ${{ inputs.app_publisher }}
-
   build_installer:
     needs: prepare
     uses: ./.github/workflows/30-build-installer.yml

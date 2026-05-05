@@ -1,5 +1,4 @@
 name: Deploy Platform Check
-
 on:
   workflow_call:
     inputs:
@@ -52,13 +51,11 @@ jobs:
           macos_enabled="false"
           linux_enabled="false"
           windows_enabled="false"
-          
           android_patch="false"
           ios_patch="false"
           macos_patch="false"
           linux_patch="false"
           windows_patch="false"
-          
           if [[ "${{ inputs.platforms }}" == *"android"* ]]; then
             android_enabled="true"
             android_patch="true"
@@ -79,7 +76,6 @@ jobs:
               windows_enabled="true"
               windows_patch="true"
             fi
-          fi
           echo "android_built=$android_enabled" >> $GITHUB_OUTPUT
           echo "ios_built=$ios_enabled" >> $GITHUB_OUTPUT
           echo "macos_built=$macos_enabled" >> $GITHUB_OUTPUT

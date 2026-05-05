@@ -12,6 +12,14 @@ on:
         type: string
         required: false
         default: "android"
+      app_name:
+        type: string
+        required: false
+        default: "MyApp"
+      app_publisher:
+        type: string
+        required: false
+        default: "MyCompany"
   push:
     branches: [dev, prod]
   workflow_dispatch:
@@ -53,4 +61,6 @@ jobs:
       flavor: ${{ needs.setup.outputs.flavor }}
       platforms: ${{ inputs.platforms || 'android' }}
       full_version: ${{ needs.deploy_layer.outputs.full_version }}
+      app_name: ${{ inputs.app_name }}
+      app_publisher: ${{ inputs.app_publisher }}
     secrets: inherit
