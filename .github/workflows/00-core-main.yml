@@ -11,7 +11,7 @@ on:
       platforms:
         type: string
         required: false
-        default: ""
+        default: "android,windows,ios,macos,linux"
   push:
     branches: [dev, prod]
   workflow_dispatch:
