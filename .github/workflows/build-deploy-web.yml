@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+      - dev
+      - prod
+name: Deploy
+jobs:
+  web-deploy:
+    name: 🎉 Deploy to ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.0.0"
+          channel: stable
+          architecture: x64
+          cache: false
+          pub-cache-path: default
+          dry-run: false
+      - run: flutter upgrade
+      - run: flutter pub get
+      - run: flutter build web --dart-define=FLUTTER_ENV=${{ github.ref_name }}
+      - run: |
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            sed -i 's|<base href="/">|<base href="/m_d/">|' build/web/index.html
+          elif [ "${{ github.ref_name }}" = "prod" ]; then
+            sed -i 's|<base href="/">|<base href="/dashboard/">|' build/web/index.html
+          fi
+      - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          server-dir: ${{ (github.ref_name == 'dev' && secrets.FTP_SERVER_DIR_DEV) || (github.ref_name == 'prod' && secrets.FTP_SERVER_DIR_PROD) || '' }}
+          local-dir: ./build/web/
+          dangerous-clean-slate: ${{ (github.ref_name == 'dev' && vars.DANGEROUS_CLEAN_SLATE_DEV) || (github.ref_name == 'prod' && vars.DANGEROUS_CLEAN_SLATE_PROD) || 'false' }}

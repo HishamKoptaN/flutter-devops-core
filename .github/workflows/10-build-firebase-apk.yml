@@ -57,8 +57,6 @@ jobs:
               exit 0
             fi
           fi
-
-          echo "⚠️ Firebase App ID not found, skipping Firebase"
           echo "app_id=" >> $GITHUB_OUTPUT
 
       - uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -71,7 +69,6 @@ jobs:
         continue-on-error: true
       - run: |
           if [ -z "${{ secrets.FIREBASE_ADMIN_SDK }}" ]; then
-            echo "⚠️ FIREBASE_ADMIN_SDK not provided, skipping Firebase distribution"
             echo "📦 APK is available at: ${{ steps.find_apk.outputs.apk_path }}"
           else
             echo "✅ Firebase distribution attempted"

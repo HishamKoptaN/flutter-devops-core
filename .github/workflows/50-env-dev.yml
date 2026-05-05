@@ -8,12 +8,8 @@ jobs:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      # !
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v4
-      # !
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.0.0"
           channel: stable
@@ -21,21 +17,11 @@ jobs:
           cache: false
           pub-cache-path: default
           dry-run: false
-      # !
-      - name: Upgrade Flutter
-        run: flutter upgrade
-      # !
-      - name: Install dependencies
-        run: flutter pub get
-      # !
-      - name: Build web
-        run: flutter build web --dart-define=FLUTTER_ENV=dev
-      # !
-      - name: 🔧 Update base href
-        run: sed -i 's|<base href="/">|<base href="/m_d/">|' build/web/index.html
-      # !
-      - name: 📂 deploy build web
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - run: flutter upgrade
+      - run: flutter pub get
+      - run: flutter build web --dart-define=FLUTTER_ENV=dev
+      - run: sed -i 's|<base href="/">|<base href="/m_d/">|' build/web/index.html
+      - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
