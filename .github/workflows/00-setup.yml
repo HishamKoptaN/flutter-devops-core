@@ -39,29 +39,18 @@ jobs:
         run: |
           flavor="${{ inputs.flavor }}"
           echo "flavor=$flavor" >> $GITHUB_OUTPUT
-
-          # Detect platforms from project structure
           platforms=""
-          android_enabled="false"
-          windows_enabled="false"
-
+          android_enabled="true"
+          windows_enabled="true"
           if [ -d "android" ] && [ "${{ inputs.build_android }}" == "true" ]; then
             platforms="$platforms android"
             android_enabled="true"
           fi
-
           if [ -f "windows/CMakeLists.txt" ] && [ "${{ inputs.build_windows }}" == "true" ]; then
             platforms="$platforms windows"
             windows_enabled="true"
           fi
-
           echo "platforms=$platforms" >> $GITHUB_OUTPUT
           echo "android_enabled=$android_enabled" >> $GITHUB_OUTPUT
           echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
           echo "version_changed=${{ inputs.build_android || inputs.build_windows }}" >> $GITHUB_OUTPUT
-
-          echo "📋 Setup complete:"
-          echo "  Flavor: $flavor"
-          echo "  Platforms: $platforms"
-          echo "  Android: $android_enabled"
-          echo "  Windows: $windows_enabled"
