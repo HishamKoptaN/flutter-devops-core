@@ -1,0 +1,71 @@
+name: Shorebird Intelligence Engine
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      platform:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      has_native_changes:
+        type: boolean
+        required: false
+        default: false
+      has_release:
+        type: boolean
+        required: false
+        default: false
+    outputs:
+      decision:
+        value: ${{ jobs.intelligence.outputs.decision }}
+      action:
+        value: ${{ jobs.intelligence.outputs.action }}
+      reason:
+        value: ${{ jobs.intelligence.outputs.reason }}
+
+jobs:
+  intelligence:
+    runs-on: ubuntu-latest
+    outputs:
+      decision: ${{ steps.decide.outputs.decision }}
+      action: ${{ steps.decide.outputs.action }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - id: decide
+        run: |
+          platform="${{ inputs.platform }}"
+          has_native="${{ inputs.has_native_changes }}"
+          has_release="${{ inputs.has_release }}"
+          
+          echo "🧠 Shorebird Intelligence Engine"
+          echo "Platform: $platform"
+          echo "Native Changes: $has_native"
+          echo "Has Release: $has_release"
+          
+          # Decision Logic
+          if [ "$has_release" = "false" ]; then
+            decision="release"
+            action="shorebird release $platform"
+            reason="No existing release - first time deployment"
+          elif [ "$has_native" = "true" ]; then
+            decision="release"
+            action="shorebird release $platform"
+            reason="Native changes detected - patch not possible"
+          else
+            decision="patch"
+            action="shorebird patch $platform"
+            reason="Code changes only - patch possible"
+          fi
+          
+          echo "🎯 Decision: $decision"
+          echo "🚀 Action: $action"
+          echo "📝 Reason: $reason"
+          
+          echo "decision=$decision" >> $GITHUB_OUTPUT
+          echo "action=$action" >> $GITHUB_OUTPUT
+          echo "reason=$reason" >> $GITHUB_OUTPUT

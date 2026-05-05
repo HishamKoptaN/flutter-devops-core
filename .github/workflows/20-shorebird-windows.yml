@@ -9,6 +9,13 @@ on:
       full_version:
         type: string
         required: true
+      base_version:
+        type: string
+        required: false
+      use_patch:
+        type: boolean
+        required: false
+        default: true
     outputs:
       changed:
         value: ${{ jobs.shorebird.outputs.changed }}
@@ -50,34 +57,47 @@ jobs:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
           $flavor = "${{ inputs.flavor }}"
+          $baseVersion = "${{ inputs.base_version }}"
+          $usePatch = "${{ inputs.use_patch }}"
           $TARGET_ID = if ($flavor -eq "prod") { "ed427ccb-5edb-4594-a376-2ee9636bef4e" } else { "e962126d-ee7a-48f2-b89d-fb0349f4a05f" }
           (Get-Content shorebird.yaml) -replace '^app_id:.*', "app_id: $TARGET_ID" | Set-Content shorebird.yaml
-          Write-Host "✅ App ID: $TARGET_ID"
 
           $versionChanged = $false
-          shorebird patch windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable patchOutput
-          $patchExitCode = $LASTEXITCODE
+          
+          if ($usePatch -eq "true") {
+            shorebird patch windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable patchOutput
+            $patchExitCode = $LASTEXITCODE
 
-          if ($patchExitCode -ne 0) {
-            if ($patchOutput -match "Release not found|No release exists|UnpatchableChangeException|asset changes") {
-              Write-Host "🚀 Attempting release (patch not possible)..."
-              shorebird release windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable releaseOutput
-              $releaseExitCode = $LASTEXITCODE
-              if ($releaseExitCode -ne 0) {
-                if ($releaseOutput -match "existing.*release|already exists") {
-                  $versionChanged = $false
+            if ($patchExitCode -ne 0) {
+              if ($patchOutput -match "Release not found|No release exists|UnpatchableChangeException|asset changes") {
+                shorebird release windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable releaseOutput
+                $releaseExitCode = $LASTEXITCODE
+                if ($releaseExitCode -ne 0) {
+                  if ($releaseOutput -match "existing.*release|already exists") {
+                    $versionChanged = $false
+                  } else {
+                    exit 1
+                  }
                 } else {
-                  Write-Host "❌ Release failed" -ForegroundColor Red
-                  exit 1
+                  $versionChanged = $true
                 }
               } else {
-                $versionChanged = $true
+                exit 1
               }
             } else {
-              Write-Host "❌ Shorebird failed" -ForegroundColor Red
-              exit 1
+              $versionChanged = $false
             }
           } else {
-            Write-Host "✅ Shorebird patch succeeded" -ForegroundColor Green
+            shorebird release windows --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | Tee-Object -Variable releaseOutput
+            $releaseExitCode = $LASTEXITCODE
+            if ($releaseExitCode -ne 0) {
+              if ($releaseOutput -match "existing.*release|already exists") {
+                $versionChanged = $false
+              } else {
+                exit 1
+              }
+            } else {
+              $versionChanged = $true
+            }
           }
           echo "changed=$versionChanged" >> $env:GITHUB_OUTPUT

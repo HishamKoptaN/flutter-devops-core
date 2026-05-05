@@ -1,4 +1,4 @@
-name: Deploy Android (Shorebird Release Only)
+name: Shorebird Linux Deploy
 
 on:
   workflow_call:
@@ -6,9 +6,16 @@ on:
       flavor:
         type: string
         required: true
-      version:
+      full_version:
         type: string
         required: true
+      base_version:
+        type: string
+        required: false
+      use_patch:
+        type: boolean
+        required: false
+        default: false
     outputs:
       release_completed:
         value: ${{ jobs.shorebird.outputs.release_completed }}
@@ -42,24 +49,22 @@ jobs:
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          echo "🚀 Starting Shorebird deployment for flavor: ${{ inputs.flavor }}"
-          TARGET_ID=$(if [ "${{ inputs.flavor }}" = "prod" ]; then echo "ed427ccb-5edb-4594-a376-2ee9636bef4e"; else echo "e962126d-ee7a-48f2-b89d-fb0349f4a05f"; fi)
+          echo "🚀 Starting Shorebird Linux deployment for flavor: ${{ inputs.flavor }}"
+          TARGET_ID=$(if [ "${{ inputs.flavor }}" = "prod" ]; then echo "linux-prod-id"; else echo "linux-dev-id"; fi)
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           echo "✅ App ID set to: $TARGET_ID"
           release_completed="false"
           patch_completed="false"
-          echo "🔧 Attempting patch..."
-          if shorebird patch android --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee patch.log; then
-            echo "✅ Patch succeeded"
-            patch_completed="true"
+          
+          # Linux doesn't support patching yet, always use release
+          echo "🚀 Release only mode for Linux..."
+          if shorebird release linux --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
+            echo "✅ Release succeeded"
+            release_completed="true"
           else
-            if shorebird release android --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
-              echo "✅ Release succeeded"
-              release_completed="true"
-            else
-              echo "❌ Both patch and release failed"
-              exit 1
-            fi
+            echo "❌ Release failed"
+            exit 1
           fi
+          
           echo "release_completed=$release_completed" >> $GITHUB_OUTPUT
           echo "patch_completed=$patch_completed" >> $GITHUB_OUTPUT

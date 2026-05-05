@@ -2,23 +2,17 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    // 🔵 CORE LAYER
-    "00-core-main.yml": "00-core-*.yml,00-setup.yml",
+    // � SETUP LAYER
+    "00-core-main.yml": "00-core-*.yml,00-setup.yml,50-env-*.yml",
     
-    // 🟣 DEPLOY LAYER (SHOREBIRD + OTA)
-    "20-shorebird.yml": "20-shorebird-*.yml,10-deploy-shorebird-android.yml",
+    // � DECISION + BUILD LAYER
+    "20-shorebird.yml": "20-shorebird-*.yml,10-deploy-shorebird-android.yml,31-build-layer.yml,10-build-*.yml,20-build-*.yml",
     
-    // 🟢 BUILD LAYER
-    "31-build-layer.yml": "10-build-*.yml,20-build-*.yml",
+    // � DISTRIBUTION LAYER
+    "32-distribution-layer.yml": "30-deploy-*.yml,40-distribute-*.yml,30-upload-*.yml",
     
-    // 🟡 PACKAGING LAYER
+    // 🟪 PACKAGING LAYER
     "30-build-installer.yml": "20-prepare-installer.yml,30-package-*.yml",
-    
-    // 🔴 DISTRIBUTION LAYER
-    "32-distribution-layer.yml": "30-deploy-*.yml,30-upload-*.yml,40-distribute-*.yml",
-    
-    // ⚪ ENVIRONMENT LAYER
-    "50-env-dev.yml": "50-env-*.yml",
     
     // 🌐 WEB PIPELINE
     "build-deploy-web.yml": "build-deploy-web.yml",

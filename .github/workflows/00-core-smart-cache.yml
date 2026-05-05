@@ -1,0 +1,127 @@
+name: Smart Cache System
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: ""
+      cache_level:
+        type: string
+        required: false
+        default: "full"
+        description: "basic, standard, full"
+    outputs:
+      cache_hit:
+        value: ${{ jobs.setup.outputs.cache_hit }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache_hit: ${{ steps.cache-check.outputs.cache_hit }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Flutter SDK Cache (Level 3)
+      - name: 🚀 Cache Flutter SDK
+        if: inputs.cache_level == 'full'
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+          key: flutter-${{ runner.os }}-3.41.9
+        id: flutter-cache
+      
+      # Pub Dependencies Cache (Level 1 - Must)
+      - name: 📦 Cache Pub Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+        id: pub-cache
+      
+      # Platform-specific caches
+      - name: 🤖 Cache Android Dependencies
+        if: contains(inputs.platforms, 'android')
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+        id: gradle-cache
+      
+      - name: 🍎 Cache iOS Dependencies
+        if: contains(inputs.platforms, 'ios')
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cocoapods
+            ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            pods-${{ runner.os }}-
+        id: pods-cache
+      
+      - name: 🖥️ Cache Windows Build
+        if: contains(inputs.platforms, 'windows')
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/windows/
+          key: windows-${{ runner.os }}-${{ github.ref_name }}
+          restore-keys: |
+            windows-${{ runner.os }}-
+        id: windows-cache
+      
+      - name: 🌐 Cache Web Build
+        if: contains(inputs.platforms, 'web')
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/web/
+          key: web-${{ runner.os }}-${{ github.sha }}
+        id: web-cache
+      
+      # Build Directory Cache (Level 2)
+      - name: 🗂️ Cache Build Directory
+        if: inputs.cache_level == 'standard' || inputs.cache_level == 'full'
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/
+          key: build-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            build-${{ runner.os }}-${{ github.ref_name }}-
+            build-${{ runner.os }}-
+        id: build-cache
+      
+      - id: cache-check
+        run: |
+          cache_hit="false"
+          if [ "${{ steps.flutter-cache.outputs.cache-hit }}" == "true" ] || \
+             [ "${{ steps.pub-cache.outputs.cache-hit }}" == "true" ] || \
+             [ "${{ steps.gradle-cache.outputs.cache-hit }}" == "true" ] || \
+             [ "${{ steps.pods-cache.outputs.cache-hit }}" == "true" ] || \
+             [ "${{ steps.windows-cache.outputs.cache-hit }}" == "true" ] || \
+             [ "${{ steps.build-cache.outputs.cache-hit }}" == "true" ]; then
+            cache_hit="true"
+          fi
+          
+          echo "🎯 Cache Status:"
+          echo "Flutter SDK: ${{ steps.flutter-cache.outputs.cache-hit || 'N/A' }}"
+          echo "Pub Dependencies: ${{ steps.pub-cache.outputs.cache-hit }}"
+          echo "Gradle: ${{ steps.gradle-cache.outputs.cache-hit || 'N/A' }}"
+          echo "CocoaPods: ${{ steps.pods-cache.outputs.cache-hit || 'N/A' }}"
+          echo "Windows Build: ${{ steps.windows-cache.outputs.cache-hit || 'N/A' }}"
+          echo "Build Directory: ${{ steps.build-cache.outputs.cache-hit }}"
+          echo "Overall Cache Hit: $cache_hit"
+          
+          echo "cache_hit=$cache_hit" >> $GITHUB_OUTPUT

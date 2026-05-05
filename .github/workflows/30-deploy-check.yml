@@ -1,0 +1,99 @@
+name: Deploy Platform Check
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: ""
+        description: "Comma-separated platforms (e.g., android,windows,ios,macos,linux)"
+      version_changed:
+        type: boolean
+        required: false
+        default: true
+    outputs:
+      android_built:
+        value: ${{ jobs.check.outputs.android_built }}
+      ios_built:
+        value: ${{ jobs.check.outputs.ios_built }}
+      macos_built:
+        value: ${{ jobs.check.outputs.macos_built }}
+      linux_built:
+        value: ${{ jobs.check.outputs.linux_built }}
+      windows_built:
+        value: ${{ jobs.check.outputs.windows_built }}
+      android_patch:
+        value: ${{ jobs.check.outputs.android_patch }}
+      ios_patch:
+        value: ${{ jobs.check.outputs.ios_patch }}
+      macos_patch:
+        value: ${{ jobs.check.outputs.macos_patch }}
+      linux_patch:
+        value: ${{ jobs.check.outputs.linux_patch }}
+      windows_patch:
+        value: ${{ jobs.check.outputs.windows_patch }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      android_built: ${{ steps.platforms.outputs.android_built }}
+      ios_built: ${{ steps.platforms.outputs.ios_built }}
+      macos_built: ${{ steps.platforms.outputs.macos_built }}
+      linux_built: ${{ steps.platforms.outputs.linux_built }}
+      windows_built: ${{ steps.platforms.outputs.windows_built }}
+      android_patch: ${{ steps.platforms.outputs.android_patch }}
+      ios_patch: ${{ steps.platforms.outputs.ios_patch }}
+      macos_patch: ${{ steps.platforms.outputs.macos_patch }}
+      linux_patch: ${{ steps.platforms.outputs.linux_patch }}
+      windows_patch: ${{ steps.platforms.outputs.windows_patch }}
+    steps:
+      - id: platforms
+        run: |
+          android_enabled="false"
+          ios_enabled="false"
+          macos_enabled="false"
+          linux_enabled="false"
+          windows_enabled="false"
+          
+          android_patch="false"
+          ios_patch="false"
+          macos_patch="false"
+          linux_patch="false"
+          windows_patch="false"
+          
+          if [ "${{ inputs.version_changed }}" = "true" ]; then
+            if [[ "${{ inputs.platforms }}" == *"android"* ]]; then
+              android_enabled="true"
+              android_patch="true"
+            fi
+            if [[ "${{ inputs.platforms }}" == *"ios"* ]]; then
+              ios_enabled="true"
+              ios_patch="true"
+            fi
+            if [[ "${{ inputs.platforms }}" == *"macos"* ]]; then
+              macos_enabled="true"
+              macos_patch="true"
+            fi
+            if [[ "${{ inputs.platforms }}" == *"linux"* ]]; then
+              linux_enabled="true"
+              linux_patch="false"
+            fi
+            if [[ "${{ inputs.platforms }}" == *"windows"* ]]; then
+              windows_enabled="true"
+              windows_patch="true"
+            fi
+          fi
+          
+          echo "android_built=$android_enabled" >> $GITHUB_OUTPUT
+          echo "ios_built=$ios_enabled" >> $GITHUB_OUTPUT
+          echo "macos_built=$macos_enabled" >> $GITHUB_OUTPUT
+          echo "linux_built=$linux_enabled" >> $GITHUB_OUTPUT
+          echo "windows_built=$windows_enabled" >> $GITHUB_OUTPUT
+          
+          echo "android_patch=$android_patch" >> $GITHUB_OUTPUT
+          echo "ios_patch=$ios_patch" >> $GITHUB_OUTPUT
+          echo "macos_patch=$macos_patch" >> $GITHUB_OUTPUT
+          echo "linux_patch=$linux_patch" >> $GITHUB_OUTPUT
+          echo "windows_patch=$windows_patch" >> $GITHUB_OUTPUT

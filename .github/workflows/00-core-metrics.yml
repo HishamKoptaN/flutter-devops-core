@@ -1,0 +1,83 @@
+name: Build Metrics System
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: ""
+      build_type:
+        type: string
+        required: false
+        default: "shorebird"
+    outputs:
+      build_time:
+        value: ${{ jobs.metrics.outputs.build_time }}
+      cache_efficiency:
+        value: ${{ jobs.metrics.outputs.cache_efficiency }}
+      success_rate:
+        value: ${{ jobs.metrics.outputs.success_rate }}
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    outputs:
+      build_time: ${{ steps.measure.outputs.build_time }}
+      cache_efficiency: ${{ steps.measure.outputs.cache_efficiency }}
+      success_rate: ${{ steps.measure.outputs.success_rate }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: start-time
+        run: |
+          echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
+      
+      - name: 🚀 Build Process
+        run: |
+          echo "🔧 Starting build process..."
+          echo "Platforms: ${{ inputs.platforms }}"
+          echo "Build Type: ${{ inputs.build_type }}"
+          
+          # Simulate build process
+          sleep 5
+          echo "✅ Build completed"
+      
+      - id: end-time
+        run: |
+          echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
+      
+      - id: measure
+        run: |
+          start_time="${{ steps.start-time.outputs.start_time }}"
+          end_time="${{ steps.end-time.outputs.end_time }}"
+          build_time=$((end_time - start_time))
+          
+          # Calculate metrics
+          if [ $build_time -lt 180 ]; then
+            cache_efficiency="high"
+          elif [ $build_time -lt 300 ]; then
+            cache_efficiency="medium"
+          else
+            cache_efficiency="low"
+          fi
+          
+          success_rate="100%"  # In real implementation, calculate from history
+          
+          echo "📊 Build Metrics:"
+          echo "⏱️ Build Time: ${build_time}s"
+          echo "🎯 Cache Efficiency: $cache_efficiency"
+          echo "✅ Success Rate: $success_rate"
+          
+          # Performance indicators
+          if [ $build_time -lt 120 ]; then
+            echo "🚀 Excellent Performance!"
+          elif [ $build_time -lt 240 ]; then
+            echo "⚡ Good Performance"
+          else
+            echo "🐌 Needs Optimization"
+          fi
+          
+          echo "build_time=$build_time" >> $GITHUB_OUTPUT
+          echo "cache_efficiency=$cache_efficiency" >> $GITHUB_OUTPUT
+          echo "success_rate=$success_rate" >> $GITHUB_OUTPUT

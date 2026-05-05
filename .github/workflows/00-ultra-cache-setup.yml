@@ -1,0 +1,154 @@
+name: Ultra Cache Setup (Production-Ready)
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: ""
+      strategy:
+        type: string
+        required: false
+        default: "ultra"
+        description: "conservative, standard, intelligent, ultra"
+    outputs:
+      pub_cache_key:
+        value: ${{ jobs.setup.outputs.pub_cache_key }}
+      gradle_cache_key:
+        value: ${{ jobs.setup.outputs.gradle_cache_key }}
+      flutter_cache_key:
+        value: ${{ jobs.setup.outputs.flutter_cache_key }}
+      build_cache_key:
+        value: ${{ jobs.setup.outputs.build_cache_key }}
+      shorebird_decision:
+        value: ${{ jobs.setup.outputs.shorebird_decision }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      pub_cache_key: ${{ steps.keys.outputs.pub_cache_key }}
+      gradle_cache_key: ${{ steps.keys.outputs.gradle_cache_key }}
+      flutter_cache_key: ${{ steps.keys.outputs.flutter_cache_key }}
+      build_cache_key: ${{ steps.keys.outputs.build_cache_key }}
+      shorebird_decision: ${{ steps.decide.outputs.shorebird_decision }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      # 🔥 Ultra Smart Key Generation
+      - name: 🔑 Generate Ultra Cache Keys
+        id: keys
+        run: |
+          # Content-based cache keys
+          PUB_HASH=$(sha256sum pubspec.lock 2>/dev/null | cut -d' ' -f1 || echo 'no-lock')
+          GRADLE_HASH=$(find android -name '*.gradle*' -type f -exec sha256sum {} + 2>/dev/null | sha256sum | cut -d' ' -f1 || echo 'no-gradle')
+          DART_HASH=$(find lib -name '*.dart' -type f -exec sha256sum {} + 2>/dev/null | sha256sum | cut -d' ' -f1 || echo 'no-dart')
+          
+          # Ultra smart keys with branch awareness
+          PUB_CACHE_KEY="pub-${{ runner.os }}-${{ github.ref_name }}-$PUB_HASH"
+          GRADLE_CACHE_KEY="gradle-${{ runner.os }}-${{ github.ref_name }}-$GRADLE_HASH"
+          FLUTTER_CACHE_KEY="flutter-${{ runner.os }}-${{ hashFiles('**/*.dart') }}"
+          BUILD_CACHE_KEY="build-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pubspec.lock') }}"
+          
+          echo "🔑 Ultra Cache Keys Generated:"
+          echo "Pub: $PUB_CACHE_KEY"
+          echo "Gradle: $GRADLE_CACHE_KEY"
+          echo "Flutter: $FLUTTER_CACHE_KEY"
+          echo "Build: $BUILD_CACHE_KEY"
+          
+          echo "pub_cache_key=$PUB_CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "gradle_cache_key=$GRADLE_CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "flutter_cache_key=$FLUTTER_CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "build_cache_key=$BUILD_CACHE_KEY" >> $GITHUB_OUTPUT
+      
+      # 🔥 Shorebird Decision Engine
+      - name: 🧠 Shorebird Decision Engine
+        id: decide
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          
+          # Deep change analysis
+          DART_CHANGED=false
+          ANDROID_CHANGED=false
+          NATIVE_CHANGED=false
+          CONFIG_CHANGED=false
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^lib/.*\.dart$"; then
+            DART_CHANGED=true
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^android/.*\.(kt|java|gradle|xml)$"; then
+            ANDROID_CHANGED=true
+            NATIVE_CHANGED=true
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^(pubspec\.yaml|\.env|shorebird\.yaml)$"; then
+            CONFIG_CHANGED=true
+          fi
+          
+          # Ultra intelligent decision
+          if [ "$NATIVE_CHANGED" = "true" ]; then
+            SHOREBIRD_DECISION="full_release"
+            REASON="Native changes - full release required"
+          elif [ "$DART_CHANGED" = "true" ]; then
+            SHOREBIRD_DECISION="patch_first"
+            REASON="Dart changes - try patch first"
+          elif [ "$CONFIG_CHANGED" = "true" ]; then
+            SHOREBIRD_DECISION="config_only"
+            REASON="Config only - no build needed"
+          else
+            SHOREBIRD_DECISION="reuse_artifacts"
+            REASON="No changes - reuse existing"
+          fi
+          
+          echo "Shorebird Decision: $SHOREBIRD_DECISION"
+          echo "Reason: $REASON"
+          
+          echo "shorebird_decision=$SHOREBIRD_DECISION" >> $GITHUB_OUTPUT
+      
+      # Setup Multi-Layer Cache
+      - name: Setup Pub Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ steps.keys.outputs.pub_cache_key }}
+          restore-keys: |
+            pub-${{ runner.os }}-${{ github.ref_name }}-
+            pub-${{ runner.os }}-
+      
+      - name: Setup Flutter SDK Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+          key: ${{ steps.keys.outputs.flutter_cache_key }}
+          restore-keys: |
+            flutter-${{ runner.os }}-
+      
+      - name: Setup Gradle Cache
+        if: contains(inputs.platforms, 'android')
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: ${{ steps.keys.outputs.gradle_cache_key }}
+          restore-keys: |
+            gradle-${{ runner.os }}-${{ github.ref_name }}-
+            gradle-${{ runner.os }}-
+      
+      - name: Setup Build Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/
+          key: ${{ steps.keys.outputs.build_cache_key }}
+          restore-keys: |
+            build-${{ runner.os }}-${{ github.ref_name }}-
+            build-${{ runner.os }}-

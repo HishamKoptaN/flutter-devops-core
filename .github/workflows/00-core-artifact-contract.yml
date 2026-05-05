@@ -1,0 +1,42 @@
+name: Artifact Contract System
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: false
+        default: ""
+    outputs:
+      android_apk:
+        value: ${{ jobs.contract.outputs.android_apk }}
+      android_aab:
+        value: ${{ jobs.contract.outputs.android_aab }}
+      windows_exe:
+        value: ${{ jobs.contract.outputs.windows_exe }}
+      ios_app:
+        value: ${{ jobs.contract.outputs.ios_app }}
+      macos_app:
+        value: ${{ jobs.contract.outputs.macos_app }}
+      linux_app:
+        value: ${{ jobs.contract.outputs.linux_app }}
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    outputs:
+      android_apk: ${{ steps.paths.outputs.android_apk }}
+      android_aab: ${{ steps.paths.outputs.android_aab }}
+      windows_exe: ${{ steps.paths.outputs.windows_exe }}
+      ios_app: ${{ steps.paths.outputs.ios_app }}
+      macos_app: ${{ steps.paths.outputs.macos_app }}
+      linux_app: ${{ steps.paths.outputs.linux_app }}
+    steps:
+      - id: paths
+        run: |
+          echo "android_apk=build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_OUTPUT
+          echo "android_aab=build/app/outputs/bundle/release/app-release.aab" >> $GITHUB_OUTPUT
+          echo "windows_exe=build/windows/x64/runner/Release/abujena.exe" >> $GITHUB_OUTPUT
+          echo "ios_app=build/ios/iphoneos/Runner.app" >> $GITHUB_OUTPUT
+          echo "macos_app=build/macos/Build/Products/Release/abujena.app" >> $GITHUB_OUTPUT
+          echo "linux_app=build/linux/x64/release/bundle/abujena.deb" >> $GITHUB_OUTPUT

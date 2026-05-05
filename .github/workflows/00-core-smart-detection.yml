@@ -1,0 +1,99 @@
+name: Smart Change Detection
+
+on:
+  workflow_call:
+    inputs:
+      base_branch:
+        type: string
+        required: false
+        default: "main"
+    outputs:
+      android_changed:
+        value: ${{ jobs.detect.outputs.android_changed }}
+      ios_changed:
+        value: ${{ jobs.detect.outputs.ios_changed }}
+      windows_changed:
+        value: ${{ jobs.detect.outputs.windows_changed }}
+      macos_changed:
+        value: ${{ jobs.detect.outputs.macos_changed }}
+      linux_changed:
+        value: ${{ jobs.detect.outputs.linux_changed }}
+      web_changed:
+        value: ${{ jobs.detect.outputs.web_changed }}
+      native_changes:
+        value: ${{ jobs.detect.outputs.native_changes }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      android_changed: ${{ steps.changes.outputs.android_changed }}
+      ios_changed: ${{ steps.changes.outputs.ios_changed }}
+      windows_changed: ${{ steps.changes.outputs.windows_changed }}
+      macos_changed: ${{ steps.changes.outputs.macos_changed }}
+      linux_changed: ${{ steps.changes.outputs.linux_changed }}
+      web_changed: ${{ steps.changes.outputs.web_changed }}
+      native_changes: ${{ steps.changes.outputs.native_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: changes
+        run: |
+          # Detect changed files
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          
+          android_changed="false"
+          ios_changed="false"
+          windows_changed="false"
+          macos_changed="false"
+          linux_changed="false"
+          web_changed="false"
+          native_changes="false"
+          
+          # Check for platform-specific changes
+          if echo "$CHANGED_FILES" | grep -q -E "^android/|^pubspec\.yaml|^lib/"; then
+            android_changed="true"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^ios/|^pubspec\.yaml|^lib/"; then
+            ios_changed="true"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^windows/|^pubspec\.yaml|^lib/"; then
+            windows_changed="true"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^macos/|^pubspec\.yaml|^lib/"; then
+            macos_changed="true"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^linux/|^pubspec\.yaml|^lib/"; then
+            linux_changed="true"
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q -E "^web/|^pubspec\.yaml|^lib/"; then
+            web_changed="true"
+          fi
+          
+          # Check for native changes (unpatchable)
+          if echo "$CHANGED_FILES" | grep -q -E "android/app/src/|^ios/Runner/|^windows/runner/|^macos/Runner/"; then
+            native_changes="true"
+          fi
+          
+          echo "🔍 Smart Detection Results:"
+          echo "Android: $android_changed"
+          echo "iOS: $ios_changed"
+          echo "Windows: $windows_changed"
+          echo "macOS: $macos_changed"
+          echo "Linux: $linux_changed"
+          echo "Web: $web_changed"
+          echo "Native Changes: $native_changes"
+          
+          echo "android_changed=$android_changed" >> $GITHUB_OUTPUT
+          echo "ios_changed=$ios_changed" >> $GITHUB_OUTPUT
+          echo "windows_changed=$windows_changed" >> $GITHUB_OUTPUT
+          echo "macos_changed=$macos_changed" >> $GITHUB_OUTPUT
+          echo "linux_changed=$linux_changed" >> $GITHUB_OUTPUT
+          echo "web_changed=$web_changed" >> $GITHUB_OUTPUT
+          echo "native_changes=$native_changes" >> $GITHUB_OUTPUT

@@ -1,4 +1,4 @@
-name: Deploy Android Shorebird (Clean)
+name: Deploy iOS
 
 on:
   workflow_call:
@@ -16,24 +16,16 @@ on:
         type: boolean
         required: false
         default: true
-      build_apk:
-        type: boolean
-        default: true
-      build_aab:
-        type: boolean
-        default: true
-    outputs:
-      changed:
-        value: ${{ jobs.shorebird.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
 
 jobs:
-  shorebird:
-    uses: ./.github/workflows/20-shorebird-android-core.yml
+  ios:
+    uses: ./.github/workflows/20-shorebird-ios.yml
     with:
       flavor: ${{ inputs.flavor }}
+      full_version: ${{ inputs.full_version }}
       base_version: ${{ inputs.base_version }}
       use_patch: ${{ inputs.use_patch }}
     secrets:
