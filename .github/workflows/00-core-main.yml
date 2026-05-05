@@ -21,17 +21,16 @@ on:
         default: 'dev'
       platforms:
         type: string
-        default: ''
+        default: 'android'
 jobs: 
   setup:
     uses: ./.github/workflows/00-setup.yml
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
       platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
-
   deploy_layer:
     needs: setup
-    if: needs.setup.outputs.version_changed == 'true' || needs.setup.outputs.version_changed == true
+    if: needs.setup.outputs.version_changed == 'true'
     uses: ./.github/workflows/30-deploy-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
