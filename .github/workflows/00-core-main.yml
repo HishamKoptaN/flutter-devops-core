@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/00-setup.yml
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
-      platforms: ${{ inputs.platforms || 'android,windows' }}
+      platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
 
   deploy_layer:
     needs: setup
@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/30-deploy-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android,windows' }}
+      platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
       version_changed: ${{ needs.setup.outputs.version_changed }}
     secrets: inherit
 
@@ -47,7 +47,7 @@ jobs:
     uses: ./.github/workflows/31-build-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android,windows' }}
+      platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
       android_built: ${{ needs.deploy_layer.outputs.android_built || 'false' }}
       windows_built: ${{ needs.deploy_layer.outputs.windows_built || 'false' }}
       full_version: ${{ needs.deploy_layer.outputs.full_version }}
@@ -60,7 +60,7 @@ jobs:
     uses: ./.github/workflows/32-distribution-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android,windows' }}
+      platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
       version_changed: ${{ needs.setup.outputs.version_changed }}
       windows_exe_name: ${{ needs.build_layer.outputs.windows_exe_name }}
       full_version: ${{ needs.deploy_layer.outputs.full_version }}
