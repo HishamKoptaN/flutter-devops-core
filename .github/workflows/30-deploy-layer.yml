@@ -67,7 +67,7 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-      use_patch: ${{ needs.check.outputs.android_patch }}
+      use_patch: ${{ needs.check.outputs.android_patch == 'true' }}
     secrets: inherit
 
   ios:
@@ -81,7 +81,7 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-      use_patch: ${{ needs.check.outputs.ios_patch }}
+      use_patch: ${{ needs.check.outputs.ios_patch == 'true' }}
     secrets: inherit
 
   macos:
@@ -95,7 +95,7 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-      use_patch: ${{ needs.check.outputs.macos_patch }}
+      use_patch: ${{ needs.check.outputs.macos_patch == 'true' }}
     secrets: inherit
 
   linux:
@@ -109,7 +109,7 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-      use_patch: ${{ needs.check.outputs.linux_patch }}
+      use_patch: ${{ needs.check.outputs.linux_patch == 'true' }}
     secrets: inherit
 
   windows:
@@ -123,5 +123,5 @@ jobs:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ needs.version.outputs.full_version }}
       base_version: ${{ needs.version.outputs.base_version }}
-      use_patch: ${{ needs.check.outputs.windows_patch }}
+      use_patch: ${{ needs.check.outputs.windows_patch == 'true' }}
     secrets: inherit
