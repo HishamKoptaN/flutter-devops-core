@@ -48,7 +48,6 @@ jobs:
   version:
     if: inputs.version_changed == 'true'
     uses: ./.github/workflows/00-core-get-version.yml
-
   check:
     needs: version
     if: always() && (needs.version.result == 'success' || needs.version.result == 'skipped')

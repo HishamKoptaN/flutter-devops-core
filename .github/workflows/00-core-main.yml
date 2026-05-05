@@ -1,6 +1,7 @@
 name: Main
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 on:
   workflow_call:
     inputs:
@@ -30,7 +31,7 @@ jobs:
 
   deploy_layer:
     needs: setup
-    if: needs.setup.outputs.version_changed == 'true'
+    if: needs.setup.outputs.version_changed == 'true' || needs.setup.outputs.version_changed == true
     uses: ./.github/workflows/30-deploy-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
