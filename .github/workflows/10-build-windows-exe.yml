@@ -1,5 +1,4 @@
 name: Build Windows Executable
-
 on:
   workflow_call:
     inputs:
@@ -11,7 +10,6 @@ on:
         value: ${{ jobs.build.outputs.exe_path }}
       exe_name:
         value: ${{ jobs.build.outputs.exe_name }}
-
 jobs:
   build:
     runs-on: windows-latest
@@ -41,6 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-windows-build-
       - run: |
+          # Clean CMake cache to avoid generator mismatch
+          if (Test-Path "build\windows\CMakeCache.txt") {
+            Remove-Item "build\windows\CMakeCache.txt" -Force
+          }
+          if (Test-Path "build\windows\CMakeFiles") {
+            Remove-Item "build\windows\CMakeFiles" -Recurse -Force
+          }
+          
           flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
           if ($LASTEXITCODE -ne 0) { exit 1 }
         shell: pwsh

@@ -1,0 +1,162 @@
+name: Package Windows Installer
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      exe_name:
+        type: string
+        required: false
+        default: "abujena_windows.exe"
+      app_name:
+        type: string
+        required: false
+        default: "Abujena"
+      app_publisher:
+        type: string
+        required: false
+        default: "Abujena Dawajen"
+    outputs:
+      installer_path:
+        value: ${{ jobs.package.outputs.installer_path }}
+      installer_uploaded:
+        value: ${{ jobs.package.outputs.installer_uploaded }}
+
+jobs:
+  package:
+    runs-on: windows-latest
+    environment: ${{ inputs.flavor }}
+    outputs:
+      installer_path: ${{ steps.create_installer.outputs.installer_path }}
+      installer_uploaded: ${{ steps.upload.outputs.uploaded }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: git config --global core.longpaths true
+
+      - run: flutter config --enable-windows-desktop
+
+      - run: flutter create .
+
+      - run: flutter pub get
+
+      - name: Download Windows EXE
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: ./downloaded_exe/
+        continue-on-error: true
+
+      - id: create_installer
+        run: |
+          echo "📦 Creating Windows installer for flavor: ${{ inputs.flavor }}"
+          
+          $installerPath = ""
+          $uploaded = "false"
+          
+          # Check if we have the EXE file
+          $exeFiles = Get-ChildItem -Path "./downloaded_exe/" -Filter "*.exe" -File -Recurse
+          
+          if ($exeFiles.Count -gt 0) {
+            $sourceExe = $exeFiles[0].FullName
+            Write-Host "✅ Found EXE: $sourceExe"
+            
+            # Create installer directory
+            New-Item -ItemType Directory -Path "./installer/" -Force
+            
+            # Copy EXE to installer directory
+            $targetExe = "./installer/${{ inputs.exe_name }}"
+            Copy-Item -Path $sourceExe -Destination $targetExe -Force
+            
+            # Create installer using Inno Setup (if available) or simple ZIP
+            if (Get-Command "iscc" -ErrorAction SilentlyContinue) {
+              Write-Host "🔧 Creating Inno Setup installer..."
+              
+              # Create simple ISS script
+              $issContent = @"
+              [Setup]
+              AppId={{{ inputs.app_name }}}
+              AppName=${{ inputs.app_name }}
+              AppVersion=1.0.0
+              AppPublisher=${{ inputs.app_publisher }}
+              DefaultDirName={pf}\${{ inputs.app_name }}
+              DefaultGroupName=${{ inputs.app_name }}
+              OutputDir=./installer/
+              OutputBaseInstaller=${{ inputs.app_name }}_installer_${{ inputs.flavor }}
+              SetupIconFile=installer.ico
+              Compression=lzma
+              SolidCompression=yes
+
+              [Files]
+              Source: "${{ inputs.exe_name }}"; DestDir: "{app}"; Flags: ignoreversion
+              "@
+              
+              $issContent | Out-File -FilePath "./installer/setup.iss" -Encoding UTF8
+              
+              # Compile installer
+              & iscc "./installer/setup.iss"
+              
+              if ($LASTEXITCODE -eq 0) {
+                $installerFiles = Get-ChildItem -Path "./installer/" -Filter "*.exe" -File
+                if ($installerFiles.Count -gt 0) {
+                  $installerPath = $installerFiles[0].FullName
+                  Write-Host "✅ Installer created: $installerPath"
+                }
+              }
+            } else {
+              Write-Host "📦 Inno Setup not found, creating ZIP package..."
+              
+              # Create ZIP as fallback
+              $zipPath = "./installer/${{ inputs.app_name }}_${{ inputs.flavor }}.zip"
+              Compress-Archive -Path "./installer/${{ inputs.exe_name }}" -DestinationPath $zipPath -Force
+              $installerPath = $zipPath
+              Write-Host "✅ ZIP package created: $installerPath"
+            }
+            
+            if ($installerPath -and (Test-Path $installerPath)) {
+              $uploaded = "true"
+            }
+          } else {
+            Write-Host "❌ No EXE file found to package"
+            exit 1
+          }
+          
+          echo "installer_path=$installerPath" >> $env:GITHUB_OUTPUT
+          echo "uploaded=$uploaded" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - id: upload
+        run: |
+          echo "📤 Uploading installer artifact..."
+          $uploaded = "false"
+          
+          if (Test-Path "${{ steps.create_installer.outputs.installer_path }}") {
+            $uploaded = "true"
+          }
+          
+          echo "uploaded=$uploaded" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Upload Installer Artifact
+        if: steps.create_installer.outputs.installer_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-${{ inputs.flavor }}
+          path: ${{ steps.create_installer.outputs.installer_path }}
+          retention-days: 30

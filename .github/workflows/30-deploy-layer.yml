@@ -1,0 +1,88 @@
+name: Deploy Layer (Shorebird)
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      platforms:
+        type: string
+        required: false
+        default: ""
+        description: "Comma-separated platforms (e.g., android,windows)"
+      version_changed:
+        type: boolean
+        required: false
+        default: true
+    outputs:
+      android_built:
+        value: ${{ jobs.deploy.outputs.android_built }}
+      windows_built:
+        value: ${{ jobs.deploy.outputs.windows_built }}
+      full_version:
+        value: ${{ jobs.version.outputs.full_version }}
+      base_version:
+        value: ${{ jobs.version.outputs.base_version }}
+    secrets:
+      SHOREBIRD_TOKEN:
+        required: false
+
+jobs:
+  version:
+    if: inputs.version_changed == 'true'
+    uses: ./.github/workflows/00-core-get-version.yml
+
+  deploy:
+    needs: version
+    if: always() && (needs.version.result == 'success' || needs.version.result == 'skipped')
+    runs-on: ubuntu-latest
+    outputs:
+      android_built: ${{ steps.check.outputs.android_built }}
+      windows_built: ${{ steps.check.outputs.windows_built }}
+      full_version: ${{ needs.version.outputs.full_version }}
+      base_version: ${{ needs.version.outputs.base_version }}
+    steps:
+      - id: check
+        run: |
+          android_enabled="false"
+          windows_enabled="false"
+          
+          if [ "${{ inputs.version_changed }}" = "true" ]; then
+            if [[ "${{ inputs.platforms }}" == *"android"* ]]; then
+              android_enabled="true"
+            fi
+            if [[ "${{ inputs.platforms }}" == *"windows"* ]]; then
+              windows_enabled="true"
+            fi
+          fi
+          
+          echo "android_built=$android_enabled" >> $GITHUB_OUTPUT
+          echo "windows_built=$windows_enabled" >> $GITHUB_OUTPUT
+
+  android:
+    needs: [version, deploy]
+    if: |
+      always() && 
+      needs.deploy.result == 'success' && 
+      needs.deploy.outputs.android_built == 'true'
+    uses: ./.github/workflows/20-shorebird-android.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      full_version: ${{ needs.version.outputs.full_version }}
+      base_version: ${{ needs.version.outputs.base_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+  windows:
+    needs: [version, deploy]
+    if: |
+      always() && 
+      needs.deploy.result == 'success' && 
+      needs.deploy.outputs.windows_built == 'true'
+    uses: ./.github/workflows/20-shorebird-windows.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      full_version: ${{ needs.version.outputs.full_version }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
