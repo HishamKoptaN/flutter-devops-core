@@ -40,7 +40,4 @@ jobs:
       flavor: ${{ inputs.flavor || 'dev' }}
       build_android: ${{ inputs.build_android || true }}
       build_windows: ${{ inputs.build_windows || true }}
-      build_ios: ${{ inputs.build_ios || false }}
-      build_linux: ${{ inputs.build_linux || false }}
-      build_macos: ${{ inputs.build_macos || false }}
     secrets: inherit
