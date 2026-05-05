@@ -2,6 +2,8 @@ name: main
 env:
   force_javascript_actions_to_node24: true
   actions_allow_use_unsecure_node_version: true
+permissions:
+  contents: write
 on:
   workflow_call:
     inputs:
@@ -15,11 +17,11 @@ on:
       app_name:
         type: string
         required: false
-        default: "MyApp"
+        default: "devops"
       app_publisher:
         type: string
         required: false
-        default: "MyCompany"
+        default: "devops"
   push:
     branches: [dev, prod]
   workflow_dispatch:
