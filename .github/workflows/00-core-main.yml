@@ -31,38 +31,34 @@ on:
         default: 'dev'
       platforms:
         type: string
-        default: 'android'
+        default: 'web'
 jobs: 
   setup:
     uses: ./.github/workflows/00-setup.yml
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
-      platforms: ${{ inputs.platforms || 'android' }}
-  deploy_layer:
+      platforms: ${{ inputs.platforms }}
+  shorebird_layer:
     needs: setup
     uses: ./.github/workflows/20-shorebird-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android' }}
+      platforms: ${{ inputs.platforms }}
     secrets: inherit
-  # build_layer:
-  #   needs: [setup, deploy_layer]
-  #   if: |
-  #     always() && 
-  #     (needs.deploy_layer.result == 'success' || needs.deploy_layer.result == 'skipped')
-  #   uses: ./.github/workflows/31-build-layer.yml
-  #   with:
-  #     flavor: ${{ needs.setup.outputs.flavor }}
-  #     platforms: ${{ inputs.platforms || 'android' }}
-  #   secrets: inherit
+  build_layer:
+    needs: [setup]
+    uses: ./.github/workflows/40-build-layer.yml
+    with: 
+      flavor: ${{ needs.setup.outputs.flavor }}
+    secrets: inherit
   distribution_layer:
-    needs: [setup, deploy_layer]
+    needs: [setup, shorebird_layer]
     if: always()
     uses: ./.github/workflows/50-distribution-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android' }}
-      full_version: ${{ needs.deploy_layer.outputs.full_version }}
+      platforms: ${{ inputs.platforms }}
+      full_version: ${{ needs.shorebird_layer.outputs.full_version }}
       app_name: ${{ inputs.app_name }}
       app_publisher: ${{ inputs.app_publisher }}
     secrets: inherit

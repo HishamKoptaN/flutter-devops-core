@@ -10,14 +10,10 @@ on:
         type: string
         required: false
         default: ""
-    outputs:
-      web_path:
-        value: ${{ jobs.build_web.outputs.path }}
-
 jobs:
   build_web:
     if: contains(inputs.platforms, 'web')
-    uses: ./.github/workflows/10-build-web.yml
+    uses: ./.github/workflows/40-build-web.yml
     with:
       flavor: ${{ inputs.flavor }}
     secrets: inherit
