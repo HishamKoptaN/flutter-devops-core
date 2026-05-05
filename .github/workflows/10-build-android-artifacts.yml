@@ -9,9 +9,6 @@ on:
       build_apk:
         type: boolean
         default: true
-      build_aab:
-        type: boolean
-        default: true
     secrets:
       SHOREBIRD_TOKEN:
         required: false
@@ -47,10 +44,9 @@ jobs:
 
       - run: git config --global core.longpaths true
 
-      - if: inputs.build_aab
-        name: Build AAB
-        run: |
-          flutter build appbundle --release --flavor=${{ inputs.flavor }} --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
 
       - if: inputs.build_apk
         name: Build APK with Shorebird
@@ -66,13 +62,6 @@ jobs:
           find build/app/outputs -name "*.apk" -type f
           echo "---"
           ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "flutter-apk dir not found"
-
-      - if: inputs.build_aab
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-aab-${{ inputs.flavor }}
-          path: build/app/outputs/bundle/*/*.aab
-          retention-days: 1
 
       - if: inputs.build_apk
         uses: actions/upload-artifact@v4
