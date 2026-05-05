@@ -110,7 +110,7 @@ windows:
 ```yaml
 32-distribution-layer.yml      # Main distributor
 
-30-deploy-layer.yml           # Deploy orchestrator
+30-shorebird-layer.yml           # Deploy orchestrator
 30-deploy-check.yml           # Platform detection
 30-deploy-android.yml        # Android deploy
 30-deploy-ios.yml            # iOS deploy

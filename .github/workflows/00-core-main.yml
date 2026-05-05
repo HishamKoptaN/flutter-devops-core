@@ -31,27 +31,26 @@ jobs:
   deploy_layer:
     needs: setup
     if: needs.setup.outputs.version_changed == 'true'
-    uses: ./.github/workflows/30-deploy-layer.yml
+    uses: ./.github/workflows/20-shorebird-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
       platforms: ${{ inputs.platforms || 'android' }}
       version_changed: ${{ needs.setup.outputs.version_changed == 'true' }}
     secrets: inherit
-
-  build_layer:
-    needs: [setup, deploy_layer]
-    if: |
-      always() && 
-      (needs.deploy_layer.result == 'success' || needs.deploy_layer.result == 'skipped')
-    uses: ./.github/workflows/31-build-layer.yml
-    with:
-      flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms || 'android' }}
-    secrets: inherit
+  # build_layer:
+  #   needs: [setup, deploy_layer]
+  #   if: |
+  #     always() && 
+  #     (needs.deploy_layer.result == 'success' || needs.deploy_layer.result == 'skipped')
+  #   uses: ./.github/workflows/31-build-layer.yml
+  #   with:
+  #     flavor: ${{ needs.setup.outputs.flavor }}
+  #     platforms: ${{ inputs.platforms || 'android' }}
+  #   secrets: inherit
   distribution_layer:
-    needs: [setup, deploy_layer, build_layer]
+    needs: [setup, deploy_layer]
     if: always()
-    uses: ./.github/workflows/32-distribution-layer.yml
+    uses: ./.github/workflows/50-distribution-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
       platforms: ${{ inputs.platforms || 'android' }}

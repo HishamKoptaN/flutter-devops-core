@@ -1,4 +1,4 @@
-name: Deploy Layer (Shorebird)
+name: Shorebird Layer
 
 on:
   workflow_call:
@@ -97,7 +97,6 @@ jobs:
       base_version: ${{ needs.version.outputs.base_version }}
       use_patch: ${{ needs.check.outputs.macos_patch == 'true' }}
     secrets: inherit
-
   linux:
     needs: [version, check]
     if: |

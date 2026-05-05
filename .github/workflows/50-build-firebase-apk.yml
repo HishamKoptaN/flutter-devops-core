@@ -30,21 +30,17 @@ jobs:
         run: |
           echo " Looking for APK files..."
           APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
-
           if [ -z "$APK_PATH" ]; then
             echo " No APK in expected path, searching all artifacts..."
             ls -la build/app/outputs/ 2>/dev/null || echo "No outputs directory"
             APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -1)
           fi
-
           if [ -z "$APK_PATH" ]; then
             echo " No APK file found"
             exit 1
           fi
-
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
           echo " Found APK: $APK_PATH"
-
       - id: get_app_id
         run: |
           DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
@@ -58,7 +54,6 @@ jobs:
             fi
           fi
           echo "app_id=" >> $GITHUB_OUTPUT
-
       - uses: wzieba/Firebase-Distribution-Github-Action@v1
         if: steps.get_app_id.outputs.app_id != ''
         with:

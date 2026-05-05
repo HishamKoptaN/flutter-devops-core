@@ -89,7 +89,7 @@ jobs:
             fi
           fi
           echo "changed=$versionChanged" >> $GITHUB_OUTPUT
-      - if: steps.run.outputs.changed == 'true'
+      - if: success()
         uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ inputs.flavor }}

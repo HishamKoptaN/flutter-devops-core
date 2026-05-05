@@ -61,11 +61,6 @@ jobs:
             action="shorebird patch $platform"
             reason="Code changes only - patch possible"
           fi
-          
-          echo "🎯 Decision: $decision"
-          echo "🚀 Action: $action"
-          echo "📝 Reason: $reason"
-          
           echo "decision=$decision" >> $GITHUB_OUTPUT
           echo "action=$action" >> $GITHUB_OUTPUT
           echo "reason=$reason" >> $GITHUB_OUTPUT

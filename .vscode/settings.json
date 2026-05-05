@@ -2,23 +2,14 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    // � SETUP LAYER
-    "00-core-main.yml": "00-core-*.yml,00-setup.yml,50-env-*.yml",
-    
-    // � DECISION + BUILD LAYER
-    "20-shorebird.yml": "20-shorebird-*.yml,10-deploy-shorebird-android.yml,31-build-layer.yml,10-build-*.yml,20-build-*.yml",
-    
-    // � DISTRIBUTION LAYER
-    "32-distribution-layer.yml": "30-deploy-*.yml,40-distribute-*.yml,30-upload-*.yml",
-    
-    // 🟪 PACKAGING LAYER
-    "30-build-installer.yml": "20-prepare-installer.yml,30-package-*.yml",
-    
-    // 🌐 WEB PIPELINE
-    "build-deploy-web.yml": "build-deploy-web.yml",
-    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart",
-    "*.g.dart": "${capture}.dart",
-    "*.freezed.dart": "${capture}.dart",
+    "00-core-main.yml":"00-*.yml",
+    "20-shorebird-layer.yml": "20-*.yml",
+    "30-build-installer.yml": "30-*.yml",
+    "40-build-layer.yml": "40-*.yml",
+    "50-distribution-layer.yml": "50-*.yml",
+    "*.dart": "*.g.dart, *.freezed.dart",
+    "*.g.dart": "*.dart",
+    "*.freezed.dart": "*.dart",
     "setup.iss": "installers/*.iss",
     "pubspec.yaml": "pubspec.lock, .metadata, .packages",
     "android/app/build.gradle.kts": "android/build.gradle.kts, android/settings.gradle.kts, android/gradle.properties",
