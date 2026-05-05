@@ -1,0 +1,67 @@
+name: Setup
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      build_android:
+        type: boolean
+        default: false
+      build_windows:
+        type: boolean
+        default: false
+    outputs:
+      flavor:
+        value: ${{ jobs.setup.outputs.flavor }}
+      platforms:
+        value: ${{ jobs.setup.outputs.platforms }}
+      android_enabled:
+        value: ${{ jobs.setup.outputs.android_enabled }}
+      windows_enabled:
+        value: ${{ jobs.setup.outputs.windows_enabled }}
+      version_changed:
+        value: ${{ jobs.setup.outputs.version_changed }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      flavor: ${{ steps.set.outputs.flavor }}
+      platforms: ${{ steps.set.outputs.platforms }}
+      android_enabled: ${{ steps.set.outputs.android_enabled }}
+      windows_enabled: ${{ steps.set.outputs.windows_enabled }}
+      version_changed: ${{ steps.set.outputs.version_changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set
+        run: |
+          flavor="${{ inputs.flavor }}"
+          echo "flavor=$flavor" >> $GITHUB_OUTPUT
+
+          # Detect platforms from project structure
+          platforms=""
+          android_enabled="false"
+          windows_enabled="false"
+
+          if [ -d "android" ] && [ "${{ inputs.build_android }}" == "true" ]; then
+            platforms="$platforms android"
+            android_enabled="true"
+          fi
+
+          if [ -f "windows/CMakeLists.txt" ] && [ "${{ inputs.build_windows }}" == "true" ]; then
+            platforms="$platforms windows"
+            windows_enabled="true"
+          fi
+
+          echo "platforms=$platforms" >> $GITHUB_OUTPUT
+          echo "android_enabled=$android_enabled" >> $GITHUB_OUTPUT
+          echo "windows_enabled=$windows_enabled" >> $GITHUB_OUTPUT
+          echo "version_changed=${{ inputs.build_android || inputs.build_windows }}" >> $GITHUB_OUTPUT
+
+          echo "📋 Setup complete:"
+          echo "  Flavor: $flavor"
+          echo "  Platforms: $platforms"
+          echo "  Android: $android_enabled"
+          echo "  Windows: $windows_enabled"

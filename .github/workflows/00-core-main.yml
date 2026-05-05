@@ -1,161 +1,105 @@
 name: Main
+
 on:
-    workflow_call:
-        inputs:
-            flavor:
-                type: string
-                required: true
-            build_android:
-                type: boolean
-                default: false
-                description: 'Enable Android build'
-            build_ios:
-                type: boolean
-                default: false
-                description: 'Enable iOS build'
-            build_windows:
-                type: boolean
-                default: false
-                description: 'Enable Windows build'
-            build_linux:
-                type: boolean
-                default: false
-                description: 'Enable Linux build'
-            build_macos:
-                type: boolean
-                default: false
-                description: 'Enable macOS build'
-    push:
-        branches: [dev, prod]
-    workflow_dispatch:
-        inputs:
-            flavor:
-                type: string
-                default: 'dev'
-            build_android:
-                type: boolean
-                default: false
-                description: 'Enable Android build'
-            build_ios:
-                type: boolean
-                default: false
-                description: 'Enable iOS build'
-            build_windows:
-                type: boolean
-                default: false
-                description: 'Enable Windows build'
-            build_linux:
-                type: boolean
-                default: false
-                description: 'Enable Linux build'
-            build_macos:
-                type: boolean
-                default: false
-                description: 'Enable macOS build'
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      build_android:
+        type: boolean
+        default: false
+        description: 'Enable Android build'
+      build_windows:
+        type: boolean
+        default: false
+        description: 'Enable Windows build'
+  push:
+    branches: [dev, prod]
+  workflow_dispatch:
+    inputs:
+      flavor:
+        type: string
+        default: 'dev'
+      build_android:
+        type: boolean
+        default: false
+        description: 'Enable Android build'
+      build_windows:
+        type: boolean
+        default: false
+        description: 'Enable Windows build'
+
 jobs:
-    check_platforms:
-        runs-on: ubuntu-latest
-        outputs:
-            android_exists: ${{ steps.check.outputs.android_exists }}
-            ios_exists: ${{ steps.check.outputs.ios_exists }}
-            windows_exists: ${{ steps.check.outputs.windows_exists }}
-            linux_exists: ${{ steps.check.outputs.linux_exists }}
-            macos_exists: ${{ steps.check.outputs.macos_exists }}
-        steps:
-            - uses: actions/checkout@v4
-            - id: check
-              run: |
-                if [ -d "android" ]; then echo "android_exists=true" >> $GITHUB_OUTPUT; else echo "android_exists=false" >> $GITHUB_OUTPUT; fi
-                if [ -d "ios" ]; then echo "ios_exists=true" >> $GITHUB_OUTPUT; else echo "ios_exists=false" >> $GITHUB_OUTPUT; fi
-                if [ -f "windows/CMakeLists.txt" ]; then echo "windows_exists=true" >> $GITHUB_OUTPUT; else echo "windows_exists=false" >> $GITHUB_OUTPUT; fi
-                if [ -f "linux/CMakeLists.txt" ]; then echo "linux_exists=true" >> $GITHUB_OUTPUT; else echo "linux_exists=false" >> $GITHUB_OUTPUT; fi
-                if [ -f "macos/CMakeLists.txt" ]; then echo "macos_exists=true" >> $GITHUB_OUTPUT; else echo "macos_exists=false" >> $GITHUB_OUTPUT; fi
+  setup:
+    uses: ./.github/workflows/00-setup.yml
+    with:
+      flavor: ${{ inputs.flavor || github.ref_name }}
+      build_android: ${{ inputs.build_android }}
+      build_windows: ${{ inputs.build_windows }}
 
-    deploy_shorebird:
-        needs: check_platforms
-        permissions:
-            contents: write
-        uses: ./.github/workflows/20-shorebird.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-            build_android: ${{ inputs.build_android }}
-            build_ios: ${{ inputs.build_ios }}
-            build_windows: ${{ inputs.build_windows }}
-            build_linux: ${{ inputs.build_linux }}
-            build_macos: ${{ inputs.build_macos }}
-        secrets: inherit
+  shorebird:
+    needs: setup
+    if: needs.setup.outputs.version_changed == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/20-shorebird.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+      build_android: ${{ inputs.build_android }}
+      build_windows: ${{ inputs.build_windows }}
+    secrets: inherit
 
-    build_firebase_apk:
-        needs: [check_platforms, deploy_shorebird]
-        if: always() && inputs.build_android && needs.check_platforms.outputs.android_exists == 'true' && (needs.deploy_shorebird.outputs.version_changed == 'true' || needs.deploy_shorebird.result == 'success')
-        uses: ./.github/workflows/10-build-firebase-apk.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets: inherit
+  build_android:
+    needs: [setup, shorebird]
+    if: |
+      always() && 
+      (needs.shorebird.result == 'success' || needs.shorebird.result == 'skipped') &&
+      needs.setup.outputs.android_enabled == 'true'
+    uses: ./.github/workflows/10-build-android-artifacts.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+    secrets: inherit
 
-    windows_shorebird:
-        needs: [check_platforms, deploy_shorebird]
-        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
-        uses: ./.github/workflows/20-shorebird-windows.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
-        secrets: inherit
+  build_windows:
+    needs: [setup, shorebird]
+    if: |
+      always() && 
+      (needs.shorebird.result == 'success' || needs.shorebird.result == 'skipped') &&
+      needs.setup.outputs.windows_enabled == 'true'
+    uses: ./.github/workflows/10-build-windows-exe.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+    secrets: inherit
 
-    windows_build:
-        needs: [check_platforms, windows_shorebird]
-        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
-        uses: ./.github/workflows/10-build-windows-exe.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
+  build_installer:
+    needs: [setup, build_windows]
+    if: |
+      always() && 
+      (needs.build_windows.result == 'success') &&
+      needs.setup.outputs.windows_enabled == 'true'
+    uses: ./.github/workflows/30-deploy-installer.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+      full_version: ${{ needs.shorebird.outputs.full_version }}
+      exe_name: ${{ needs.build_windows.outputs.exe_name }}
+      app_name: "Abujena"
+      app_publisher: "Abujena Dawajen"
+    secrets: inherit
 
-    windows_upload:
-        needs: [check_platforms, windows_shorebird, windows_build]
-        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
-        permissions:
-            contents: write
-        uses: ./.github/workflows/30-upload-windows-release.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
-            exe_path: ${{ needs.windows_build.outputs.exe_path }}
+  distribute:
+    needs: [setup, shorebird, build_android, build_windows, build_installer]
+    if: always() && needs.shorebird.outputs.version_changed == 'true'
+    uses: ./.github/workflows/40-distribute-android.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+    secrets: inherit
 
-    build_installer:
-        needs: [check_platforms, windows_build, deploy_shorebird]
-        if: inputs.build_windows && needs.check_platforms.outputs.windows_exists == 'true'
-        uses: ./.github/workflows/30-deploy-installer.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
-            exe_name: ${{ needs.windows_build.outputs.exe_name }}
-            app_name: "Abujena"
-            app_publisher: "Abujena Dawajen"
-
-    github_release:
-        needs: [deploy_shorebird, build_installer]
-        permissions:
-            contents: write
-        uses: ./.github/workflows/30-deploy-release.yml
-        secrets: inherit
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-            full_version: ${{ needs.deploy_shorebird.outputs.full_version }}
-            version_changed: ${{ needs.deploy_shorebird.outputs.version_changed }}
-            installer_name: ${{ needs.build_installer.outputs.installer_name }}
-
-    cleanup_releases:
-        needs: github_release
-        if: always()
-        uses: ./.github/workflows/00-core-cleanup-releases.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets:
-            FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-
-    distribute_android:
-        needs: [check_platforms, deploy_shorebird]
-        if: inputs.build_android && needs.check_platforms.outputs.android_exists == 'true' && needs.deploy_shorebird.outputs.version_changed == 'true'
-        uses: ./.github/workflows/40-distribute-android.yml
-        with:
-            flavor: ${{ inputs.flavor || github.ref_name }}
-        secrets: inherit
+  cleanup:
+    needs: distribute
+    if: always()
+    uses: ./.github/workflows/00-core-cleanup-releases.yml
+    with:
+      flavor: ${{ needs.setup.outputs.flavor }}
+    secrets:
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -42,7 +42,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - run: git config --system core.longpaths true
+      - run: git config --global core.longpaths true
 
       - if: inputs.build_aab
         name: Build AAB

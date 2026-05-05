@@ -1,4 +1,5 @@
-name: Build Installer
+name: Deploy Installer
+
 on:
   workflow_call:
     inputs:
@@ -22,126 +23,38 @@ on:
         default: "MyCompany"
     outputs:
       installer_name:
-        value: ${{ jobs.build.outputs.installer_name }}
+        value: ${{ jobs.build_installer.outputs.installer_name }}
+
 jobs:
-  build:
-    runs-on: windows-latest
-    environment: ${{ inputs.flavor }}
+  check:
+    runs-on: ubuntu-latest
     outputs:
-      installer_name: ${{ steps.assets.outputs.installer_name }}
+      has_windows: ${{ steps.check.outputs.has_windows }}
     steps:
-      - shell: pwsh
-        id: check_windows
-        run: |
-          if (Test-Path "windows" -PathType Container) {
-            Write-Host "✅ Windows project found" -ForegroundColor Green
-            echo "has_windows=true" >> $env:GITHUB_OUTPUT
-          } else {
-            Write-Host "⚠️ No Windows project found, skipping Windows build" -ForegroundColor Yellow
-            echo "has_windows=false" >> $env:GITHUB_OUTPUT
-          }
-
       - uses: actions/checkout@v4
-        if: steps.check_windows.outputs.has_windows == 'true'
-        with:
-          fetch-depth: 0
-
-      - shell: pwsh
-        if: steps.check_windows.outputs.has_windows == 'true'
+      - id: check
         run: |
-          Write-Host "Current directory: $(Get-Location)"
-          Write-Host "Listing files:"
-          Get-ChildItem -Recurse -Filter "*.iss" | ForEach-Object { Write-Host $_.FullName }
+          if [ -d "windows" ] && [ -f "windows/CMakeLists.txt" ]; then
+            echo "has_windows=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_windows=false" >> $GITHUB_OUTPUT
+          fi
 
-      - run: git config --system core.longpaths true
-        if: steps.check_windows.outputs.has_windows == 'true'
+  prepare:
+    needs: check
+    if: needs.check.outputs.has_windows == 'true'
+    uses: ./.github/workflows/20-prepare-installer.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      full_version: ${{ inputs.full_version }}
+      exe_name: ${{ inputs.exe_name }}
+      app_name: ${{ inputs.app_name }}
+      app_publisher: ${{ inputs.app_publisher }}
 
-      - uses: actions/cache@v4
-        if: steps.check_windows.outputs.has_windows == 'true'
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - uses: subosito/flutter-action@v2
-        if: steps.check_windows.outputs.has_windows == 'true'
-        with:
-          channel: stable
-          cache: true
-
-      - uses: actions/download-artifact@v4
-        if: steps.check_windows.outputs.has_windows == 'true'
-        with:
-          name: windows-exe-${{ inputs.flavor }}
-          path: build/windows/x64/runner/Release/
-        continue-on-error: true
-
-      - shell: pwsh
-        if: steps.check_windows.outputs.has_windows == 'true'
-        run: |
-          $exePath = "build/windows/x64/runner/Release/*.exe"
-          if (Test-Path $exePath) {
-            Write-Host "✅ Using pre-built EXE from artifact" -ForegroundColor Green
-          } else {
-            Write-Host "🔨 Building Windows app..." -ForegroundColor Yellow
-            flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
-            if ($LASTEXITCODE -ne 0) { exit 1 }
-            Write-Host "✅ Windows app built" -ForegroundColor Green
-          }
-
-      - shell: pwsh
-        if: steps.check_windows.outputs.has_windows == 'true'
-        run: |
-          $issPath = "installers\setup.iss"
-          Write-Host "Looking for ISS file at: $issPath"
-          if (Test-Path $issPath) {
-            $content = Get-Content $issPath -Raw
-            $content = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
-            $content = $content -replace "APP_NAME_PLACEHOLDER", "${{ inputs.app_name }}"
-            $content = $content -replace "APP_PUBLISHER_PLACEHOLDER", "${{ inputs.app_publisher }}"
-            $content = $content -replace "APP_EXE_PLACEHOLDER", "${{ inputs.exe_name }}"
-            $content = $content -replace "APP_GUID_PLACEHOLDER", "$(New-Guid)"
-            $content = $content -replace "APP_SUFFIX_PLACEHOLDER", "${{ inputs.flavor == 'dev' && ' Dev' || '' }}"
-            [System.IO.File]::WriteAllText($issPath, $content)
-            Write-Host "✅ Template prepared" -ForegroundColor Green
-          } else {
-            Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red
-            Write-Host "Current directory: $(Get-Location)"
-            Get-ChildItem -Recurse | ForEach-Object { Write-Host $_.FullName }
-            exit 1
-          }
-
-      - shell: pwsh
-        if: steps.check_windows.outputs.has_windows == 'true'
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installers\setup.iss"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "❌ Inno Setup failed with exit code $LASTEXITCODE" -ForegroundColor Red
-            exit 1
-          }
-          Write-Host "✅ Installer built" -ForegroundColor Green
-
-      - shell: pwsh
-        id: assets
-        if: steps.check_windows.outputs.has_windows == 'true'
-        run: |
-          $flavor = "${{ inputs.flavor }}"
-          $appName = "${{ inputs.app_name }}"
-          $suffix = if ($flavor -eq "dev") { " Dev" } else { "" }
-          $name = "$appName$suffix`_setup.exe"
-          echo "installer_name=$name" >> $env:GITHUB_OUTPUT
-          Write-Host "Installer name: $name"
-      - shell: pwsh
-        if: steps.check_windows.outputs.has_windows != 'true'
-        id: assets_fallback
-        run: |
-          Write-Host "⚠️ No Windows build - skipping installer" -ForegroundColor Yellow
-          echo "installer_name=none" >> $env:GITHUB_OUTPUT
-
-      - uses: actions/upload-artifact@v4
-        if: steps.check_windows.outputs.has_windows == 'true'
-        with:
-          name: installer
-          path: ./Output/*_setup.exe
-          retention-days: 5
+  build_installer:
+    needs: [check, prepare]
+    if: needs.check.outputs.has_windows == 'true'
+    uses: ./.github/workflows/30-build-installer.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+      app_name: ${{ inputs.app_name }}

@@ -1,0 +1,93 @@
+name: Build Installer
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      app_name:
+        type: string
+        required: true
+    outputs:
+      installer_name:
+        value: ${{ jobs.build.outputs.installer_name }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    environment: ${{ inputs.flavor }}
+    outputs:
+      installer_name: ${{ steps.name.outputs.installer_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: prepared-installer
+          path: installers/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-exe-${{ inputs.flavor }}
+          path: build/windows/x64/runner/Release/
+        continue-on-error: true
+
+      - shell: pwsh
+        run: |
+          $exePath = "build/windows/x64/runner/Release/*.exe"
+          if (!(Test-Path $exePath)) {
+            Write-Host "🔨 Building Windows app..." -ForegroundColor Yellow
+            flutter build windows --release --dart-define=ENV=${{ inputs.flavor }}
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            Write-Host "✅ Windows app built successfully" -ForegroundColor Green
+          } else {
+            Write-Host "✅ Using pre-built EXE from artifact" -ForegroundColor Green
+          }
+
+      - shell: pwsh
+        run: |
+          $issPath = "installers\setup.iss"
+          if (!(Test-Path $issPath)) {
+            Write-Host "❌ ISS file not found" -ForegroundColor Red
+            exit 1
+          }
+          
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" $issPath
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Inno Setup failed with exit code $LASTEXITCODE" -ForegroundColor Red
+            exit 1
+          }
+          Write-Host "✅ Installer built successfully" -ForegroundColor Green
+
+      - shell: pwsh
+        id: name
+        run: |
+          $flavor = "${{ inputs.flavor }}"
+          $appName = "${{ inputs.app_name }}"
+          $suffix = if ($flavor -eq "dev") { " Dev" } else { "" }
+          $installerName = "$appName$suffix`_setup.exe"
+          
+          # Verify the installer was created
+          $outputPath = "Output\$installerName"
+          if (!(Test-Path $outputPath)) {
+            # Try to find any _setup.exe file
+            $found = Get-ChildItem -Path "Output" -Filter "*_setup.exe" | Select-Object -First 1
+            if ($found) {
+              $installerName = $found.Name
+            } else {
+              Write-Host "❌ Installer file not found" -ForegroundColor Red
+              exit 1
+            }
+          }
+          
+          echo "installer_name=$installerName" >> $env:GITHUB_OUTPUT
+          Write-Host "📦 Installer: $installerName" -ForegroundColor Green
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ inputs.flavor }}
+          path: Output/*_setup.exe
+          retention-days: 5

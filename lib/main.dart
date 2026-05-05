@@ -8,8 +8,7 @@ class AppConfig {
   final String flavor;
   final String appName;
   final Color primaryColor;
-
-  const AppConfig({
+  AppConfig({
     required this.flavor,
     required this.appName,
     required this.primaryColor,
@@ -17,17 +16,15 @@ class AppConfig {
 }
 
 late final AppConfig appConfig;
-
 void main() async {
   const flavor = String.fromEnvironment('ENV', defaultValue: 'dev');
-
   final config = switch (flavor) {
-    'prod' => const AppConfig(
+    'prod' => AppConfig(
         flavor: 'prod',
         appName: 'DevOps',
         primaryColor: Colors.deepPurple,
       ),
-    _ => const AppConfig(
+    _ => AppConfig(
         flavor: 'dev',
         appName: 'DevOps Dev',
         primaryColor: Colors.blue,
@@ -42,11 +39,11 @@ void main() async {
     print('🚀 Running in ${config.flavor} flavor');
   }
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +59,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title});
   final String title;
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -110,7 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FirebaseDebugScreen(),
+                  builder: (context) {
+                    return FirebaseDebugScreen();
+                  },
                 ),
               );
             },

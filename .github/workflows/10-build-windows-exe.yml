@@ -33,7 +33,7 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: git config --system core.longpaths true
+      - run: git config --global core.longpaths true
       - uses: actions/cache@v4
         with:
           path: build/windows

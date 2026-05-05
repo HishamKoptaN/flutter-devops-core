@@ -1,0 +1,66 @@
+name: Prepare Installer
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+      full_version:
+        type: string
+        required: true
+      exe_name:
+        type: string
+        required: true
+      app_name:
+        type: string
+        required: true
+      app_publisher:
+        type: string
+        required: true
+    outputs:
+      prepared:
+        value: ${{ jobs.prepare.outputs.prepared }}
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    outputs:
+      prepared: ${{ steps.prepare.outputs.prepared }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - shell: pwsh
+        id: prepare
+        run: |
+          $issPath = "installers\setup.iss"
+
+          if (!(Test-Path $issPath)) {
+            Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red
+            exit 1
+          }
+
+          $content = Get-Content $issPath -Raw
+
+          # Replace placeholders with actual values
+          $content = $content -replace "APP_VERSION_PLACEHOLDER", "${{ inputs.full_version }}"
+          $content = $content -replace "APP_NAME_PLACEHOLDER", "${{ inputs.app_name }}"
+          $content = $content -replace "APP_PUBLISHER_PLACEHOLDER", "${{ inputs.app_publisher }}"
+          $content = $content -replace "APP_EXE_PLACEHOLDER", "${{ inputs.exe_name }}"
+          $content = $content -replace "APP_GUID_PLACEHOLDER", "$(New-Guid)"
+          
+          $suffix = ""
+          if ("${{ inputs.flavor }}" -eq "dev") { $suffix = " Dev" }
+          $content = $content -replace "APP_SUFFIX_PLACEHOLDER", $suffix
+
+          Set-Content $issPath $content
+          Write-Host "✅ Installer template prepared successfully" -ForegroundColor Green
+          echo "prepared=true" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prepared-installer
+          path: installers/setup.iss
+          retention-days: 1
