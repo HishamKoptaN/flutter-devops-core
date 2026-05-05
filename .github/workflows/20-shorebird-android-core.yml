@@ -57,26 +57,21 @@ jobs:
             TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
           fi
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          echo "✅ App ID: $TARGET_ID"
           versionChanged=false
           if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
-            echo "✅ Android patch succeeded"
+            :
           else
             if grep -q "Release not found\|No release exists\|UnpatchableChangeException\|asset changes" /tmp/patch_output; then
-              echo "🚀 Attempting release (patch not possible)..."
               if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
                 versionChanged=true
               else
                 if grep -q "existing.*release\|already exists" /tmp/release_output; then
-                  echo "⚠️ Release already exists for this version, skipping..."
                   versionChanged=false
                 else
-                  echo "❌ Release failed"
                   exit 1
                 fi
               fi
             else
-              echo "❌ Android failed"
               exit 1
             fi
           fi
