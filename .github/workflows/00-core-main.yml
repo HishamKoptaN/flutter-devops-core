@@ -11,7 +11,7 @@ on:
       platforms:
         type: string
         required: false
-        default: "android,windows,ios,macos,linux"
+        default: "android,ios,windows,web,macos,linux,"
   push:
     branches: [dev, prod]
   workflow_dispatch:
@@ -48,8 +48,6 @@ jobs:
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
       platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
-      android_built: ${{ needs.deploy_layer.outputs.android_built || 'false' }}
-      windows_built: ${{ needs.deploy_layer.outputs.windows_built || 'false' }}
       full_version: ${{ needs.deploy_layer.outputs.full_version }}
       base_version: ${{ needs.deploy_layer.outputs.base_version }}
     secrets: inherit
@@ -62,6 +60,5 @@ jobs:
       flavor: ${{ needs.setup.outputs.flavor }}
       platforms: ${{ inputs.platforms || 'android,windows,ios,macos,linux' }}
       version_changed: ${{ needs.setup.outputs.version_changed == 'true' }}
-      windows_exe_name: ${{ needs.build_layer.outputs.windows_exe_name }}
       full_version: ${{ needs.deploy_layer.outputs.full_version }}
     secrets: inherit
