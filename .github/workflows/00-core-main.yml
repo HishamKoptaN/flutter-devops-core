@@ -37,6 +37,9 @@ on:
       platforms:
         type: string
         default: 'android'
+      test_type:
+        type: string
+        default: 'both'
 jobs: 
   setup:
     uses: ./.github/workflows/00-setup.yml
@@ -49,6 +52,7 @@ jobs:
     uses: ./.github/workflows/99-test-firebase.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
+      test_type: ${{ inputs.test_type }}
     secrets: inherit
   # shorebird_layer:
   #   needs: setup

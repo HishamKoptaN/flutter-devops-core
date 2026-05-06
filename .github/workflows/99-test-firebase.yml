@@ -1,6 +1,16 @@
 name: Test Firebase Connection
 
 on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+        description: 'App flavor (dev/prod)'
+      test_type:
+        type: string
+        default: 'both'
+        description: 'What to test'
   workflow_dispatch:
     inputs:
       flavor:
