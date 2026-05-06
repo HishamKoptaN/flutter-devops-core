@@ -43,28 +43,35 @@ jobs:
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
       platforms: ${{ inputs.platforms }}
-  shorebird_layer:
+  test_firebase:
+    if: github.event_name == 'workflow_dispatch'
     needs: setup
-    uses: ./.github/workflows/20-shorebird-layer.yml
+    uses: ./.github/workflows/99-test-firebase.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms }}
     secrets: inherit
-  build_layer:
-    needs: setup
-    uses: ./.github/workflows/40-build-layer.yml
-    with: 
-      flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms }}
-    secrets: inherit
-  distribution_layer:
-    needs: [setup, shorebird_layer]
-    if: always()
-    uses: ./.github/workflows/50-distribution-layer.yml
-    with:
-      flavor: ${{ needs.setup.outputs.flavor }}
-      platforms: ${{ inputs.platforms }}
-      full_version: ${{ needs.shorebird_layer.outputs.full_version }}
-      app_name: ${{ inputs.app_name }}
-      app_publisher: ${{ inputs.app_publisher }}
-    secrets: inherit
+  # shorebird_layer:
+  #   needs: setup
+  #   uses: ./.github/workflows/20-shorebird-layer.yml
+  #   with:
+  #     flavor: ${{ needs.setup.outputs.flavor }}
+  #     platforms: ${{ inputs.platforms }}
+  #   secrets: inherit
+  # build_layer:
+  #   needs: setup
+  #   uses: ./.github/workflows/40-build-layer.yml
+  #   with: 
+  #     flavor: ${{ needs.setup.outputs.flavor }}
+  #     platforms: ${{ inputs.platforms }}
+  #   secrets: inherit
+  # distribution_layer:
+  #   needs: [setup, shorebird_layer]
+  #   if: always()
+  #   uses: ./.github/workflows/50-distribution-layer.yml
+  #   with:
+  #     flavor: ${{ needs.setup.outputs.flavor }}
+  #     platforms: ${{ inputs.platforms }}
+  #     full_version: ${{ needs.shorebird_layer.outputs.full_version }}
+  #     app_name: ${{ inputs.app_name }}
+  #     app_publisher: ${{ inputs.app_publisher }}
+  #   secrets: inherit

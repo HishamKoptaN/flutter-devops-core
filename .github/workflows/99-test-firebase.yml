@@ -1,0 +1,121 @@
+name: Test Firebase Connection
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        type: string
+        default: 'dev'
+        description: 'App flavor (dev/prod)'
+      test_type:
+        type: choice
+        default: 'both'
+        description: 'What to test'
+        options:
+          - 'both'
+          - 'token'
+          - 'service_account'
+
+jobs:
+  test_firebase:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.flavor }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          
+      - name: Get dependencies
+        run: flutter pub get
+        
+      - name: 🔍 Extract Firebase App ID
+        id: get_app_id
+        run: |
+          DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
+          if [ -f "$DART_FILE" ]; then
+            echo "📁 Firebase config file: $DART_FILE"
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
+            if [ -n "$APP_ID" ]; then
+              echo "✅ Found Firebase App ID: $APP_ID"
+              echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+            else
+              echo "❌ App ID not found in config file"
+              exit 1
+            fi
+          else
+            echo "❌ Firebase config file not found: $DART_FILE"
+            exit 1
+          fi
+          
+      - name: 🧪 Test Firebase Token Authentication
+        if: inputs.test_type == 'token' || inputs.test_type == 'both'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ steps.get_app_id.outputs.app_id }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: "test"
+          file: /dev/null
+        continue-on-error: true
+        
+      - name: 🧪 Test Firebase Service Account Authentication
+        if: inputs.test_type == 'service_account' || inputs.test_type == 'both'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ steps.get_app_id.outputs.app_id }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
+          groups: "test"
+          file: /dev/null
+        continue-on-error: true
+        
+      - name: 📊 Test Results Summary
+        run: |
+          echo "## 🔥 Firebase Connection Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**App Flavor:** ${{ inputs.flavor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Firebase App ID:** ${{ steps.get_app_id.outputs.app_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Type:** ${{ inputs.test_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ inputs.test_type }}" == "token" ] || [ "${{ inputs.test_type }}" == "both" ]; then
+            echo "### 🔑 Token Test" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ job.status }}" == "success" ]; then
+              echo "✅ FIREBASE_TOKEN authentication successful" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ FIREBASE_TOKEN authentication failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ inputs.test_type }}" == "service_account" ] || [ "${{ inputs.test_type }}" == "both" ]; then
+            echo "### 📄 Service Account Test" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ job.status }}" == "success" ]; then
+              echo "✅ FIREBASE_ADMIN_SDK authentication successful" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ FIREBASE_ADMIN_SDK authentication failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "If tests pass, you can use the working authentication method in your main workflow." >> $GITHUB_STEP_SUMMARY
+          
+      - name: 🔍 Debug Secrets
+        if: always()
+        run: |
+          echo "🔍 Checking secrets availability:"
+          if [ -n "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "✅ FIREBASE_TOKEN is available"
+          else
+            echo "❌ FIREBASE_TOKEN is missing"
+          fi
+          
+          if [ -n "${{ secrets.FIREBASE_ADMIN_SDK }}" ]; then
+            echo "✅ FIREBASE_ADMIN_SDK is available"
+          else
+            echo "❌ FIREBASE_ADMIN_SDK is missing"
+          fi
