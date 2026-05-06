@@ -46,7 +46,7 @@ jobs:
       platforms: ${{ inputs.platforms }}
     secrets: inherit
   build_layer:
-    needs: [setup]
+    needs: setup
     uses: ./.github/workflows/40-build-layer.yml
     with: 
       flavor: ${{ needs.setup.outputs.flavor }}
