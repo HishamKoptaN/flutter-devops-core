@@ -37,7 +37,7 @@ jobs:
       app_publisher: ${{ inputs.app_publisher }}
     secrets: inherit
   distribute:
-    uses: ./.github/workflows/40-distribute-android.yml
+    uses: ./.github/workflows/50-distribute-android.yml
     with:
       flavor: ${{ inputs.flavor }}
     secrets: inherit
