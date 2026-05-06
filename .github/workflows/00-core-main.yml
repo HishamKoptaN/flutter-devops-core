@@ -22,10 +22,26 @@ on:
         type: string
         required: false
         default: "devops"
+      environment:
+        type: string
+        required: false
+        description: 'Target environment (dev/prod)'
+      firebase_app_id:
+        type: string
+        required: false
+        description: 'Firebase App ID override'
+      windows_exe_name:
+        type: string
+        required: false
+        description: 'Windows executable name'
     secrets:
       FIREBASE_ADMIN_SDK:
         required: false
       SHOREBIRD_TOKEN:
+        required: false
+      FIREBASE_TOKEN:
+        required: false
+      GITHUB_TOKEN:
         required: false
   push:
     branches: [dev, prod]
