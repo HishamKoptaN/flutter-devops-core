@@ -47,12 +47,11 @@ jobs:
       flavor: ${{ inputs.flavor || github.ref_name }}
       platforms: ${{ inputs.platforms }}
   test_firebase:
-    if: github.event_name == 'workflow_dispatch'
     needs: setup
     uses: ./.github/workflows/99-test-firebase.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
-      test_type: ${{ inputs.test_type }}
+      test_type: ${{ inputs.test_type || 'both' }}
     secrets: inherit
   # shorebird_layer:
   #   needs: setup
