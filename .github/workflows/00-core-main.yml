@@ -22,6 +22,11 @@ on:
         type: string
         required: false
         default: "devops"
+    secrets:
+      FIREBASE_ADMIN_SDK:
+        required: false
+      SHOREBIRD_TOKEN:
+        required: false
   push:
     branches: [dev, prod]
   workflow_dispatch:
