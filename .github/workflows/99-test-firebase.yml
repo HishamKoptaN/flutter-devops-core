@@ -11,6 +11,11 @@ on:
         type: string
         default: 'both'
         description: 'What to test'
+    secrets:
+      FIREBASE_TOKEN:
+        required: false
+      FIREBASE_ADMIN_SDK:
+        required: false
   workflow_dispatch:
     inputs:
       flavor:
@@ -32,19 +37,15 @@ jobs:
     environment: ${{ inputs.flavor }}
     
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
           
-      - name: Get dependencies
-        run: flutter pub get
+      - run: flutter pub get
         
-      - name: 🔍 Extract Firebase App ID
-        id: get_app_id
+      - id: get_app_id
         run: |
           DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
           if [ -f "$DART_FILE" ]; then
@@ -62,8 +63,7 @@ jobs:
             exit 1
           fi
           
-      - name: 🧪 Test Firebase Token Authentication
-        if: inputs.test_type == 'token' || inputs.test_type == 'both'
+      - if: inputs.test_type == 'token' || inputs.test_type == 'both'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ steps.get_app_id.outputs.app_id }}
@@ -72,8 +72,7 @@ jobs:
           file: /dev/null
         continue-on-error: true
         
-      - name: 🧪 Test Firebase Service Account Authentication
-        if: inputs.test_type == 'service_account' || inputs.test_type == 'both'
+      - if: inputs.test_type == 'service_account' || inputs.test_type == 'both'
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ steps.get_app_id.outputs.app_id }}
@@ -82,8 +81,7 @@ jobs:
           file: /dev/null
         continue-on-error: true
         
-      - name: 📊 Test Results Summary
-        run: |
+      - run: |
           echo "## 🔥 Firebase Connection Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**App Flavor:** ${{ inputs.flavor }}" >> $GITHUB_STEP_SUMMARY

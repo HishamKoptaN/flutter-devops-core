@@ -52,7 +52,9 @@ jobs:
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
       test_type: ${{ inputs.test_type || 'both' }}
-    secrets: inherit
+    secrets:
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
   # shorebird_layer:
   #   needs: setup
   #   uses: ./.github/workflows/20-shorebird-layer.yml
