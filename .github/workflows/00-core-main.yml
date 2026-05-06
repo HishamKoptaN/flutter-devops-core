@@ -50,6 +50,7 @@ jobs:
     uses: ./.github/workflows/40-build-layer.yml
     with: 
       flavor: ${{ needs.setup.outputs.flavor }}
+      platforms: ${{ inputs.platforms }}
     secrets: inherit
   distribution_layer:
     needs: [setup, shorebird_layer]
