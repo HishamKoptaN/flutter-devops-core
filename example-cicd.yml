@@ -1,0 +1,21 @@
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches: [ dev, prod ]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    workflows:
+        uses: HishamKoptaN/flutter-devops-core/.github/workflows/00-core-main.yml@prod
+        with:
+            flavor: dev
+            platforms: "android"
+        secrets:
+            # Secrets needed by the reusable workflow
+            FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+            SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+            # Add any other secrets your project needs
