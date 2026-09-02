@@ -75,14 +75,11 @@ jobs:
                   $outputPath = "$env:TEMP\shorebird_output.txt"
                   shorebird release windows --flutter-version=3.29.3 --flavor=${{ github.ref_name }} --no-confirm --verbose 2>&1 | Tee-Object -FilePath $outputPath
                   if (Select-String -Path $outputPath -Pattern "SHOREBIRD_TOKEN not set") {
-                    Write-Host "❌ SHOREBIRD_TOKEN is not set"
                     exit 1
                   }
                   if (Select-String -Path $outputPath -Pattern "Exception|Error|error|Failed") {
-                    Write-Host "❌ Build failed with errors"
                     exit 1
                   }
-                  Write-Host "✅ Shorebird build succeeded"
             - shell: pwsh
               run: |
                   $flavor = "${{ github.ref_name }}"
@@ -95,7 +92,6 @@ jobs:
                   }
                   if ($files.Count -gt 0) {
                     Rename-Item -Path $files[0].FullName -NewName $newName
-                    Write-Host "✅ Renamed executable to $newName"
                   }
             - uses: actions/upload-artifact@v4
               with:

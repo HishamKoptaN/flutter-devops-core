@@ -29,16 +29,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -56,63 +53,45 @@ jobs:
           version="${{ inputs.full_version }}"
           baseVersion="${{ inputs.base_version }}"
           flavor="${{ inputs.flavor }}"
-
           TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
           if [ "$flavor" = "prod" ]; then
             TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
           fi
-
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          echo "✅ App ID: $TARGET_ID"
-
           androidReleaseVersion="$version"
           if [ "$flavor" != "prod" ]; then
             androidReleaseVersion=$(echo "$version" | sed "s/+/-$flavor+/")
           fi
-
-          echo "📱 Android version: $androidReleaseVersion"
           versionChanged=false
-
           if shorebird patch android --flavor=$flavor --build-name="$baseVersion" --release-version="$androidReleaseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
-            echo "✅ Android patch succeeded"
           else
-            if grep -q "Release not found\|No release exists\|UnpatchableChangeException\|asset changes" /tmp/patch_output; then
-              echo "🚀 Attempting release (patch not possible)..."
+            if grep -qi "Release not found\|No release exists\|UnpatchableChangeException\|asset changes\|native changes" /tmp/patch_output; then
               if shorebird release android --flavor=$flavor --build-name="$baseVersion" --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
                 versionChanged=true
               else
                 if grep -q "existing.*release\|already exists" /tmp/release_output; then
-                  echo "⚠️ Release already exists for this version, skipping..."
                   versionChanged=false
                 else
-                  echo "❌ Release failed"
                   exit 1
                 fi
               fi
             else
-              echo "❌ Android failed"
               exit 1
             fi
           fi
-
           echo "changed=$versionChanged" >> $GITHUB_OUTPUT
-
       - if: inputs.flavor == 'prod' && hashFiles('build/app/outputs/bundle/*/*.aab') != ''
         uses: actions/upload-artifact@v4
         with:
           name: android-aab-${{ inputs.flavor }}
           path: build/app/outputs/bundle/*/*.aab
           retention-days: 1
-
       - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          echo "🔨 Building APK with Shorebird release..."
           shorebird release android --flavor=${{ inputs.flavor }} --artifact=apk --dart-define=ENV=${{ inputs.flavor }} '--' --no-tree-shake-icons || true
-          echo "✅ APK built successfully"
           ls -la build/app/outputs/flutter-apk/
-
       - if: steps.deploy.outputs.changed == 'true' || inputs.flavor == 'dev'
         uses: actions/upload-artifact@v4
         with:
