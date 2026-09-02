@@ -2,7 +2,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
-    "00-core-main.yml":"00-*.yml",
+    "00-core-main.yml": "00-*.yml",
     "20-shorebird-layer.yml": "20-*.yml",
     "30-build-installer.yml": "30-*.yml",
     "40-build-layer.yml": "40-*.yml",

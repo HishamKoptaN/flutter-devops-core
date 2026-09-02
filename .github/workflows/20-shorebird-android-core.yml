@@ -5,9 +5,6 @@ on:
       flavor:
         type: string
         required: true
-      base_version:
-        type: string
-        required: true
       use_patch:
         type: boolean
         required: false
@@ -49,7 +46,6 @@ jobs:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
          flavor="${{ inputs.flavor }}"
-         baseVersion="${{ inputs.base_version }}"
          usePatch="${{ inputs.use_patch }}"
          TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
          if [ "$flavor" = "prod" ]; then
@@ -57,33 +53,46 @@ jobs:
          fi
          sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
          versionChanged=false
+
+         get_next_release_version() {
+           releases_json=$(shorebird releases list --platform=android --format=json 2>/dev/null || echo "[]")
+           latest_version=$(echo "$releases_json" | jq -r '.[0].version // empty')
+           
+           if [ -z "$latest_version" ]; then
+             echo "1.0.0+1"
+           else
+             base_ver=$(echo "$latest_version" | cut -d'+' -f1)
+             build_num=$(echo "$latest_version" | cut -d'+' -f2)
+             
+             if [ "$base_ver" = "$build_num" ]; then
+               echo "${base_ver}+2"
+             else
+               echo "${base_ver}+$((build_num + 1))"
+             fi
+           fi
+         }
+
          create_release() {
-           echo "Creating a new release..."
+           NEXT_VERSION=$(get_next_release_version)
+           echo "Creating new release version on Shorebird: $NEXT_VERSION"
            if shorebird release android --flavor=$flavor --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
              versionChanged=true
            else
              if grep -qi "existing.*release\|already exists" /tmp/release_output; then
-               echo "Release already exists."
                versionChanged=false
              else
-               echo "Failed to create release:"
                cat /tmp/release_output
                exit 1
              fi
            fi
          }
-       
          if [ "$usePatch" = "true" ]; then
-           echo "Attempting to apply patch..."
            if shorebird patch android --flavor=$flavor --dart-define=ENV=$flavor '--' --no-tree-shake-icons 2>&1 | tee /tmp/patch_output; then
-             echo "Patch applied successfully."
              versionChanged=false
            else
              if grep -qi "Release not found\|No release exists\|UnpatchableChangeException\|asset changes\|native changes" /tmp/patch_output; then
-               echo "Patch failed due to native changes or missing release. Switching to release..."
                create_release
              else
-               echo "Patch failed with unhandled error:"
                cat /tmp/patch_output
                exit 1
              fi
