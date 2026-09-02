@@ -49,28 +49,19 @@ jobs:
           flavor="${{ inputs.flavor }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          raw_output=$(shorebird releases list --platform=android --format=json 2>/dev/null || echo "[]")
+          raw_output=$(shorebird releases list --format=json 2>/dev/null || echo "[]")
           releases_json=$(echo "$raw_output" | sed -n '/^\[/,$p')
-          if echo "$releases_json" | jq empty 2>/dev/null; then
-            latest_version=$(echo "$releases_json" | jq -r '.[0].version // empty')
-          else
-            latest_version=""
-          fi
-
+          latest_version=$(echo "$releases_json" | jq -r '[.[] | select(.platform == "android" or (.platforms? != null and (.platforms | contains(["android"]))))] | .[0].version // empty')
+          echo "Latest Android Version Found: '$latest_version'"
           if [ -z "$latest_version" ]; then
-            NEXT_VERSION="1.0.0+1"
+            BUILD_NAME="1.0.0"
+            BUILD_NUMBER="1"
           else
-            base_ver=$(echo "$latest_version" | cut -d'+' -f1)
-            build_num=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "")
-
-            if [ -z "$build_num" ]; then
-              NEXT_VERSION="${base_ver}+1"
-            else
-              NEXT_VERSION="${base_ver}+$((build_num + 1))"
-            fi
+            raw_base=$(echo "$latest_version" | cut -d'+' -f1)
+            BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
+            raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
+            BUILD_NUMBER=$((raw_build + 1))
           fi
-          BUILD_NAME=$(echo "$NEXT_VERSION" | cut -d'+' -f1)
-          BUILD_NUMBER=$(echo "$NEXT_VERSION" | cut -d'+' -f2)
           echo "Creating Shorebird Release..."
           echo "Flavor: $flavor"
           echo "Target App ID: $TARGET_ID"
