@@ -40,9 +40,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-
-
       - id: run
         shell: bash
         env:
@@ -62,8 +59,8 @@ jobs:
             raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
             BUILD_NUMBER=$((raw_build + 1))
           fi
-          FULL_RELEASE_VERSION="${BUILD_NAME}+${BUILD_NUMBER}"
-          sed -i "s/^version:.*/version: $FULL_RELEASE_VERSION/" pubspec.yaml
+          #FULL_RELEASE_VERSION="${BUILD_NAME}+${BUILD_NUMBER}"
+          #sed -i "s/^version:.*/version: $FULL_RELEASE_VERSION/" pubspec.yaml
           echo "Build Name: $BUILD_NAME"
           echo "Build Number: $BUILD_NUMBER"
           if shorebird release android \
