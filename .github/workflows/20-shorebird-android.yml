@@ -6,13 +6,14 @@ on:
       flavor:
         type: string
         required: true
+      shorebird_app_id:
+        type: string
+        required: true  
       use_patch:
         type: boolean
         required: false
         default: true
-      shorebird_app_id:
-        type: string
-        required: true
+    
     outputs:
       changed:
         value: ${{ jobs.shorebird_patch.outputs.changed || jobs.shorebird_release.outputs.changed }}

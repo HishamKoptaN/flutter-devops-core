@@ -10,6 +10,9 @@ on:
       flavor:
         type: string
         required: true
+      shorebird_app_id:
+        type: string
+        required: true
       platforms:
         type: string
         required: false
@@ -65,6 +68,7 @@ jobs:
     uses: ./.github/workflows/20-shorebird-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
+      shorebird_app_id : ${{ inputs.shorebird_app_id }}
       platforms: ${{ inputs.platforms }}
     secrets: inherit
   build_layer:
