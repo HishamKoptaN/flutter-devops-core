@@ -41,12 +41,10 @@ jobs:
       inputs.build_android == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 Android Build
-        run: |
+      - run: |
           echo "🤖 Building Android in parallel..."
           echo "Flavor: ${{ inputs.flavor }}"
           echo "Version: ${{ inputs.version }}"
-          # Build logic here
 
   ios:
     if: |

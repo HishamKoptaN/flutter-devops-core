@@ -81,7 +81,7 @@ jobs:
             if shorebird release android --flavor=$flavor --dart-define=ENV=$flavor --artifact=apk '--' --no-tree-shake-icons 2>&1 | tee /tmp/release_output; then
               versionChanged=true
             else
-              if grep -q "existing.*release\|already exists" /tmp/release_output; then
+              if grep -qi "Release not found\|No release exists\|UnpatchableChangeException\|asset changes\|native changes" /tmp/patch_output; then
                 versionChanged=false
               else
                 exit 1

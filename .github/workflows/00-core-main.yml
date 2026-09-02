@@ -60,15 +60,6 @@ jobs:
     with:
       flavor: ${{ inputs.flavor || github.ref_name }}
       platforms: ${{ inputs.platforms }}
-  # test_firebase:
-  #   needs: setup
-  #   uses: ./.github/workflows/99-test-firebase.yml
-  #   with:
-  #     flavor: ${{ needs.setup.outputs.flavor }}
-  #     test_type: ${{ inputs.test_type || 'both' }}
-  #   secrets:
-  #     FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-  #     FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
   shorebird_layer:
     needs: setup
     uses: ./.github/workflows/20-shorebird-layer.yml

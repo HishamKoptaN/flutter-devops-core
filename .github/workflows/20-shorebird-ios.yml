@@ -53,7 +53,6 @@ jobs:
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           release_completed="false"
           patch_completed="false"
-          
           if [ "${{ inputs.use_patch }}" = "true" ]; then
             if shorebird patch ios --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee patch.log; then
               patch_completed="true"

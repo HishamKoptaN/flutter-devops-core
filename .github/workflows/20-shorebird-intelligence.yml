@@ -41,13 +41,6 @@ jobs:
           platform="${{ inputs.platform }}"
           has_native="${{ inputs.has_native_changes }}"
           has_release="${{ inputs.has_release }}"
-          
-          echo "🧠 Shorebird Intelligence Engine"
-          echo "Platform: $platform"
-          echo "Native Changes: $has_native"
-          echo "Has Release: $has_release"
-          
-          # Decision Logic
           if [ "$has_release" = "false" ]; then
             decision="release"
             action="shorebird release $platform"
