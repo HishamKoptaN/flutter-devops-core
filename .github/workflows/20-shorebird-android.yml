@@ -6,35 +6,40 @@ on:
       flavor:
         type: string
         required: true
-      full_version:
-        type: string
-        required: true
-      base_version:
-        type: string
-        required: true
       use_patch:
         type: boolean
         required: false
         default: true
-      build_apk:
-        type: boolean
-        default: true
-      build_aab:
-        type: boolean
-        default: true
     outputs:
       changed:
-        value: ${{ jobs.shorebird.outputs.changed }}
+        value: ${{ jobs.shorebird_patch.outputs.changed || jobs.shorebird_release.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
-
 jobs:
-  shorebird:
-    uses: ./.github/workflows/20-shorebird-android-core.yml
+  shorebird_patch:
+    if: ${{ inputs.use_patch }}
+    uses: ./.github/workflows/21-shorebird-android-patch.yml
     with:
       flavor: ${{ inputs.flavor }}
-      base_version: ${{ inputs.base_version }}
-      use_patch: ${{ inputs.use_patch }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+  shorebird_release:
+    needs: [shorebird_patch]
+    if: ${{ always() && (needs.shorebird_patch.result == 'failure' || inputs.use_patch == false) }}
+    uses: ./.github/workflows/22-shorebird-android-release.yml
+    with:
+      flavor: ${{ inputs.flavor }}
+    secrets:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+
+
+
+ #shorebird:
+ #  uses: ./.github/workflows/20-shorebird-android-core.yml
+ #  with:
+ #    flavor: ${{ inputs.flavor }}
+ #    use_patch: ${{ inputs.use_patch }}
+ #  secrets:
+ #    SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}

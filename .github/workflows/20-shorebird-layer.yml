@@ -56,11 +56,9 @@ jobs:
       always() && 
       needs.check.result == 'success' && 
       needs.check.outputs.android_built == 'true'
-    uses: ./.github/workflows/30-deploy-android.yml
+    uses: ./.github/workflows/20-shorebird-android.yml
     with:
       flavor: ${{ inputs.flavor }}
-      full_version: ${{ needs.version.outputs.full_version }}
-      base_version: ${{ needs.version.outputs.base_version }}
       use_patch: ${{ needs.check.outputs.android_patch == 'true' }}
     secrets: inherit
 

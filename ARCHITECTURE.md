@@ -104,7 +104,6 @@ windows:
 
 30-shorebird-layer.yml           # Deploy orchestrator
 30-deploy-check.yml           # Platform detection
-30-deploy-android.yml        # Android deploy
 30-deploy-ios.yml            # iOS deploy
 30-deploy-linux.yml          # Linux deploy
 30-deploy-macos.yml          # macOS deploy
