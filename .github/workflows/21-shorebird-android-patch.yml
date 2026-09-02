@@ -1,10 +1,13 @@
-name: Shorebird Android Patch
+name: 21-shorebird-android-patch
 on:
   workflow_call:
     inputs:
       flavor:
         type: string
         required: true
+      shorebird_app_id:
+        type: string
+        required: true  
     outputs:
       changed:
         value: ${{ jobs.patch.outputs.changed }}
@@ -44,17 +47,10 @@ jobs:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
           flavor="${{ inputs.flavor }}"
-          TARGET_ID="e962126d-ee7a-48f2-b89d-fb0349f4a05f"
-          if [ "$flavor" = "prod" ]; then
-            TARGET_ID="ed427ccb-5edb-4594-a376-2ee9636bef4e"
-          fi
+          TARGET_ID="${{ inputs.shorebird_app_id }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-
-          echo "Attempting shorebird patch targeting latest release..."
-          if shorebird patch android --flavor=$flavor --release-version=latest --dart-define=ENV=$flavor '--' --no-tree-shake-icons; then
-            echo "Patch created successfully!"
+          if shorebird pat  ch android --flavor=$flavor --release-version=latest --dart-define=ENV=$flavor '--' --no-tree-shake-icons; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Patch failed! Switching to release pipeline..."
             exit 1
           fi

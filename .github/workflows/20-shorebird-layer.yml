@@ -6,6 +6,9 @@ on:
       flavor:
         type: string
         required: true
+      shorebird_app_id:
+        type: string
+        required: true
       platforms:
         type: string
         required: false
@@ -59,6 +62,7 @@ jobs:
     uses: ./.github/workflows/20-shorebird-android.yml
     with:
       flavor: ${{ inputs.flavor }}
+      shorebird_app_id: ${{ inputs.shorebird_app_id }}
       use_patch: ${{ needs.check.outputs.android_patch == 'true' }}
     secrets: inherit
 

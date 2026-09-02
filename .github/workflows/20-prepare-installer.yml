@@ -38,12 +38,9 @@ jobs:
           $issPath = "installers\setup.iss"
 
           if (!(Test-Path $issPath)) {
-            Write-Host "❌ ISS file not found at $issPath" -ForegroundColor Red
             exit 1
           }
-
           $content = Get-Content $issPath -Raw
-
           $fullVersion = "${{ inputs.full_version }}"
           $baseVersion = $fullVersion -replace "\+.*", ""
           $content = $content -replace "APP_VERSION_PLACEHOLDER", $baseVersion
@@ -51,11 +48,9 @@ jobs:
           $content = $content -replace "APP_PUBLISHER_PLACEHOLDER", "${{ inputs.app_publisher }}"
           $content = $content -replace "APP_EXE_PLACEHOLDER", "${{ inputs.exe_name }}"
           $content = $content -replace "APP_GUID_PLACEHOLDER", "$(New-Guid)"
-          
           $suffix = ""
           if ("${{ inputs.flavor }}" -eq "dev") { $suffix = " Dev" }
           $content = $content -replace "APP_SUFFIX_PLACEHOLDER", $suffix
-
           Set-Content $issPath $content
           Write-Host "✅ Installer template prepared successfully" -ForegroundColor Green
           echo "prepared=true" >> $env:GITHUB_OUTPUT
