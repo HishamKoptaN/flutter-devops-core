@@ -62,7 +62,7 @@ jobs:
             raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
             BUILD_NUMBER=$((raw_build + 1))
           fi
-          echo "Creating Shorebird Release..."
+          # echo "Creating Shorebird Release..."
           echo "Flavor: $flavor"
           echo "Target App ID: $TARGET_ID"
           echo "Build Name: $BUILD_NAME"
