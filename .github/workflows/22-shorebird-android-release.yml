@@ -49,9 +49,7 @@ jobs:
           flavor="${{ inputs.flavor }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          raw_output=$(shorebird releases list --format=json 2>/dev/null || echo "[]")
-          releases_json=$(echo "$raw_output" | sed -n '/^\[/,$p')
-          latest_version=$(echo "$releases_json" | jq -r '[.[] | select(.platform == "android" or (.platforms? != null and (.platforms | contains(["android"]))))] | .[0].version // empty')
+          latest_version=$(shorebird releases list --app-id "$TARGET_ID" 2>/dev/null | grep 'android' | head -n 1 | awk '{print $2}')
           echo "Latest Android Version Found: '$latest_version'"
           if [ -z "$latest_version" ]; then
             BUILD_NAME="1.0.0"
@@ -62,9 +60,6 @@ jobs:
             raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
             BUILD_NUMBER=$((raw_build + 1))
           fi
-          # echo "Creating Shorebird Release..."
-          echo "Flavor: $flavor"
-          echo "Target App ID: $TARGET_ID"
           echo "Build Name: $BUILD_NAME"
           echo "Build Number: $BUILD_NUMBER"
           if shorebird release android \
