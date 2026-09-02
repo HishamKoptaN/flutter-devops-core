@@ -60,7 +60,6 @@ if (release_exists && native_changes_unpatchable) {
 ```yaml
 20-shorebird.yml              # Main decision engine
 20-shorebird-android.yml       # Android patch/release
-20-shorebird-android-core.yml  # Android core logic
 20-shorebird-ios.yml           # iOS patch/release
 20-shorebird-linux.yml         # Linux release only
 20-shorebird-macos.yml          # macOS patch/release

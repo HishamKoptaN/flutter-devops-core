@@ -1,0 +1,36 @@
+name: Bump Android Version Code
+on:
+  workflow_call:
+    inputs:
+      current_version_code:
+        required: true
+        type: string
+    outputs:
+      new_version_code:
+        description: "The new version code after bump"
+        value: ${{ jobs.bump.outputs.new_version_code }}
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version_code: ${{ steps.bump.outputs.new_version_code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+      - id: bump
+        run: |
+          CURRENT="${{ inputs.current_version_code }}"
+          NEW=$((CURRENT + 1))
+          echo "new_version_code=$NEW" >> $GITHUB_OUTPUT
+      - run: |
+          CURRENT="${{ inputs.current_version_code }}"
+          NEW="${{ steps.bump.outputs.new_version_code }}"
+          FILE="android/app/build.gradle.kts"
+          sed -i "s/versionCode = $CURRENT/versionCode = $NEW/g" $FILE
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/app/build.gradle.kts
+          git commit -m "bump: versionCode ${{ inputs.current_version_code }} → ${{ steps.bump.outputs.new_version_code }} [skip ci]"
+          git push

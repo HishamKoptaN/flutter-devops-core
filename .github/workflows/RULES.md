@@ -44,7 +44,6 @@ flutter build appbundle --release --flavor=${{ inputs.flavor }}
 
 ### Files Affected
 - `10-build-android-artifacts.yml` - APK build step
-- `20-shorebird-android-core.yml` - Shorebird patch/release logic
 
 ---
 
