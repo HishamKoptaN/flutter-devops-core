@@ -34,7 +34,7 @@ jobs:
           EOF   
       - id: extract_flutter
         shell: bash
-        run: bash ${{ github.action_path }}/../../scripts/get-flutter-version.sh
+        run: bash .github/scripts/get-flutter-version.sh
       - id: verify
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
