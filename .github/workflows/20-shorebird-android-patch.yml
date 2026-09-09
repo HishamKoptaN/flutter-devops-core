@@ -32,9 +32,6 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           storeFile=muein_orders.jks
           EOF   
-      - id: extract_flutter
-        shell: bash
-        run: bash .github/scripts/get-flutter-version.sh
       - id: verify
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
@@ -42,10 +39,8 @@ jobs:
         run: |
           flavor="${{ github.ref_name }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
-          FLUTTER_VER="${{ steps.extract_flutter.outputs.version }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          echo "Setting Shorebird Flutter version to $FLUTTER_VER..."
-          shorebird flutter versions use $FLUTTER_VER
+          shorebird flutter versions use "3.44.7"
           if shorebird patch android \
           --flavor=$flavor \
           --release-version=latest \
