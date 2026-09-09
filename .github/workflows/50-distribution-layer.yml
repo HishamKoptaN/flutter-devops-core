@@ -2,9 +2,6 @@ name: Distribution Layer
 on:
   workflow_call:
     inputs:
-      flavor:
-        type: string
-        required: true
       platforms:
         type: string
         required: false
@@ -39,7 +36,7 @@ jobs:
   distribute:
     uses: ./.github/workflows/50-distribute-android.yml
     with:
-      flavor: ${{ inputs.flavor }}
+      flavor: ${{ github.ref_name }}
     secrets: inherit
   # cleanup:
   #   needs: [build_installer, distribute]
