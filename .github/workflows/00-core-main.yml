@@ -10,30 +10,6 @@ on:
       shorebird_app_id:
         type: string
         required: true
-      platforms:
-        type: string
-        required: false
-        default: "android"
-      app_name:
-        type: string
-        required: false
-        default: "devops"
-      app_publisher:
-        type: string
-        required: false
-        default: "devops"
-      environment:
-        type: string
-        required: false
-        description: 'Target environment (dev/prod)'
-      firebase_app_id:
-        type: string
-        required: false
-        description: 'Firebase App ID override'
-      windows_exe_name:
-        type: string
-        required: false
-        description: 'Windows executable name'
     secrets:
       FIREBASE_ADMIN_SDK:
         required: false
@@ -55,28 +31,15 @@ on:
         type: string
         default: 'both'
 jobs: 
-  setup:
-    uses: ./.github/workflows/00-setup.yml
-    with:
-      platforms: ${{ inputs.platforms }}
   shorebird_layer:
-    needs: setup
     uses: ./.github/workflows/20-shorebird-patch-layer.yml
     with:
       shorebird_app_id : ${{ inputs.shorebird_app_id }}
-      platforms: ${{ inputs.platforms }}
     secrets: inherit
-  # build_layer:
-  #   needs: setup
-  #   uses: ./.github/workflows/40-build-layer.yml
-  #   secrets: inherit
   distribution_layer:
-    needs: [setup, shorebird_layer]
+    needs: [shorebird_layer]
     if: always()
     uses: ./.github/workflows/50-distribution-layer.yml 
     with:
       platforms: ${{ inputs.platforms }}
-      full_version: ${{ needs.shorebird_layer.outputs.full_version }}
-      app_name: ${{ inputs.app_name }}
-      app_publisher: ${{ inputs.app_publisher }}
     secrets: inherit

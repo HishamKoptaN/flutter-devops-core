@@ -6,32 +6,11 @@ on:
       shorebird_app_id:
         type: string
         required: true
-      platforms:
-        type: string
-        required: false
-        default: ""
-        description: "Comma-separated platforms (e.g., android,windows,ios,macos,linux)"
-    outputs:
-      android_built:
-        value: ${{ jobs.check.outputs.android_built }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
 jobs:
-  version:
-    uses: ./.github/workflows/00-core-get-version.yml
-  check:
-    needs: version
-    if: always() && (needs.version.result == 'success' || needs.version.result == 'skipped')
-    uses: ./.github/workflows/30-deploy-check.yml
-    with:
-      platforms: ${{ inputs.platforms }}
   android:
-    needs: [version, check]
-    if: |
-      always() && 
-      needs.check.result == 'success' && 
-      needs.check.outputs.android_built == 'true'
     uses: ./.github/workflows/20-shorebird-android.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}

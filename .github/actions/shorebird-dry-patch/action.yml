@@ -1,0 +1,38 @@
+name: dry-patch
+description: "Checks if Shorebird patch is viable using dry-run"
+
+inputs:
+  shorebird_token:
+    description: "Shorebird Secret Token"
+    required: true
+
+outputs:
+  build_type:
+    value: ${{ steps.set_output.outputs.build_type }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: dry_run
+      shell: bash
+      continue-on-error: true
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
+      run: |
+        APP_VERSION=$(grep -i 'version:' pubspec.yaml | head -n 1 | awk -F':' '{print $2}' | tr -d ' "' | tr -d "'" | tr -d '\r')
+        echo "Testing Shorebird Dry Run for Version: $APP_VERSION on Flavor: ${{ github.ref_name }}"
+        shorebird patch android \
+          --flavor="${{ github.ref_name }}" \
+          --release-version="$APP_VERSION" \
+          --dry-run
+        echo "exit_code=$?" >> $GITHUB_OUTPUT
+    - id: set_output
+      shell: bash
+      run: |
+        EXIT_CODE="${{ steps.dry_run.outputs.exit_code }}"
+        echo "Shorebird dry-run exit code: $EXIT_CODE"
+        if [ "$EXIT_CODE" -eq 0 ]; then
+          echo "build_type=patch" >> $GITHUB_OUTPUT
+        else
+          echo "build_type=release" >> $GITHUB_OUTPUT
+        fi
