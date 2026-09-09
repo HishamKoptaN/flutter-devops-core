@@ -15,8 +15,8 @@ runs:
     - uses: actions/cache@v4
       with:
         path: /opt/hostedtoolcache/flutter
-        key: flutter-sdk-${{ inputs.flutter_version }}-${{ runner.os }}
-        restore-keys: flutter-sdk-${{ inputs.flutter_version }}-
+        key: flutter-sdk-${{ env.FLUTTER_VERSION }}-${{ runner.os }}
+        restore-keys: flutter-sdk-${{ env.FLUTTER_VERSION }}-
     - uses: actions/cache@v4
       with:
         path: |
@@ -32,7 +32,6 @@ runs:
           ${{ github.workspace }}/.dart_tool
         key: flutter-deps-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
         restore-keys: flutter-deps-   
-
     - uses: actions/cache@v4
       with:
         path: |
