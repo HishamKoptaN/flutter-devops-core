@@ -28,11 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 
-      - id: extract_flutter
-        run: bash .github/scripts/get-flutter-version.sh 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
-        with:
-          flutter_version: ${{ steps.extract_flutter.outputs.version }}
       #- uses: actions/cache@v4
       #  with:
       #    path: |

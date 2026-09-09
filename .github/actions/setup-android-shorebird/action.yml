@@ -1,21 +1,22 @@
 name: "Setup Android Shorebird Action"
 description: "Initializes Flutter, Shorebird CLI, Gradle, and dependency caches"
-inputs:
-  flutter_version:
-    required: true
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: bash ${{ github.action_path }}/../../scripts/get-flutter-version.sh
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true  
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true    
     - uses: actions/cache@v4
       with:
         path: /opt/hostedtoolcache/flutter
         key: flutter-sdk-${{ inputs.flutter_version }}-${{ runner.os }}
         restore-keys: flutter-sdk-${{ inputs.flutter_version }}-
-
-    - uses: shorebirdtech/setup-shorebird@v1
-      with:
-        cache: true
-
     - uses: actions/cache@v4
       with:
         path: |
@@ -24,7 +25,6 @@ runs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-
     - uses: actions/cache@v4
       with:
         path: |

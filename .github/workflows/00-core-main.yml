@@ -66,10 +66,10 @@ jobs:
       shorebird_app_id : ${{ inputs.shorebird_app_id }}
       platforms: ${{ inputs.platforms }}
     secrets: inherit
-  build_layer:
-    needs: setup
-    uses: ./.github/workflows/40-build-layer.yml
-    secrets: inherit
+  # build_layer:
+  #   needs: setup
+  #   uses: ./.github/workflows/40-build-layer.yml
+  #   secrets: inherit
   distribution_layer:
     needs: [setup, shorebird_layer]
     if: always()
