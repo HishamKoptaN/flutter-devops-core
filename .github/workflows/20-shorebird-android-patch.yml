@@ -49,6 +49,7 @@ jobs:
         shell: bash
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        continue-on-error: true
         run: |
           flavor="${{ inputs.flavor }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
