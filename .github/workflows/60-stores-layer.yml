@@ -37,11 +37,9 @@ jobs:
     name: Shorebird Release Initializer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Shorebird Release Layer Status
-        run: |
+      - run: |
           echo "Shorebird Release Layer Initialized Successfully"
           echo "Selected Platform: ${{ inputs.platform }}"
           echo "Selected Channel: ${{ inputs.channel }}"
