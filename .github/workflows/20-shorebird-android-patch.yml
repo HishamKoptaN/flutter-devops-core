@@ -43,7 +43,6 @@ jobs:
           if shorebird patch android \
           --flavor=$flavor \
           --release-version=latest \
-          --flutter-version=$FLUTTER_VER \
           --dart-define=ENV=$flavor '--' --no-tree-shake-icons; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
