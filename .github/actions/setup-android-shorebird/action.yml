@@ -1,14 +1,16 @@
 name: "Setup Android Shorebird Action"
 description: "Initializes Flutter, Shorebird CLI, Gradle, and dependency caches"
-
+inputs:
+  flutter_version:
+    required: true
 runs:
   using: "composite"
   steps:
     - uses: actions/cache@v4
       with:
         path: /opt/hostedtoolcache/flutter
-        key: flutter-sdk-3.41.2-${{ runner.os }}
-        restore-keys: flutter-sdk-
+        key: flutter-sdk-${{ inputs.flutter_version }}-${{ runner.os }}
+        restore-keys: flutter-sdk-${{ inputs.flutter_version }}-
 
     - uses: shorebirdtech/setup-shorebird@v1
       with:
