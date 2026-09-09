@@ -1,4 +1,4 @@
-name: setup-android-shorebird.yml
+name: setup-android-shorebird
 runs:
   using: "composite"
   steps:

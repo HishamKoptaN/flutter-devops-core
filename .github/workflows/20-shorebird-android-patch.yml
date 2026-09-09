@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - uses: ./.github/actions/setup-android-shorebird
+      - uses: ./.github/actions/setup-android-shorebird.yml
       - run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
       - run: |
