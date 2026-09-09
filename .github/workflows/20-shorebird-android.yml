@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shorebirdtech/setup-shorebird@v1
       - id: dry_run
-        uses: ./.github/actions/shorebird-dry-patch
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-dry-patch@prod
         with:
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
   shorebird_patch:
