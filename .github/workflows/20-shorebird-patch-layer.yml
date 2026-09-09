@@ -3,9 +3,6 @@ name: Shorebird Layer
 on:
   workflow_call:
     inputs:
-      flavor:
-        type: string
-        required: true
       shorebird_app_id:
         type: string
         required: true
@@ -37,7 +34,6 @@ jobs:
       needs.check.outputs.android_built == 'true'
     uses: ./.github/workflows/20-shorebird-android.yml
     with:
-      flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets: inherit
 
@@ -49,7 +45,6 @@ jobs:
   #     needs.check.outputs.ios_built == 'true'
   #   uses: ./.github/workflows/30-deploy-ios.yml
   #   with:
-  #     flavor: ${{ inputs.flavor }}
   #     full_version: ${{ needs.version.outputs.full_version }}
   #     base_version: ${{ needs.version.outputs.base_version }}
   #     use_patch: ${{ needs.check.outputs.ios_patch == 'true' }}
@@ -63,7 +58,6 @@ jobs:
   #     needs.check.outputs.macos_built == 'true'
   #   uses: ./.github/workflows/30-deploy-macos.yml
   #   with:
-  #     flavor: ${{ inputs.flavor }}
   #     full_version: ${{ needs.version.outputs.full_version }}
   #     base_version: ${{ needs.version.outputs.base_version }}
   #     use_patch: ${{ needs.check.outputs.macos_patch == 'true' }}
@@ -76,7 +70,6 @@ jobs:
   #     needs.check.outputs.linux_built == 'true'
   #   uses: ./.github/workflows/30-deploy-linux.yml
   #   with:
-  #     flavor: ${{ inputs.flavor }}
   #     full_version: ${{ needs.version.outputs.full_version }}
   #     base_version: ${{ needs.version.outputs.base_version }}
   #     use_patch: ${{ needs.check.outputs.linux_patch == 'true' }}
@@ -90,7 +83,6 @@ jobs:
   #     needs.check.outputs.windows_built == 'true'
   #   uses: ./.github/workflows/30-deploy-windows.yml
   #   with:
-  #     flavor: ${{ inputs.flavor }}
   #     full_version: ${{ needs.version.outputs.full_version }}
   #     base_version: ${{ needs.version.outputs.base_version }}
   #     use_patch: ${{ needs.check.outputs.windows_patch == 'true' }}

@@ -3,9 +3,6 @@ name: 20-shorebird-android
 on:
   workflow_call:
     inputs:
-      flavor:
-        type: string
-        required: true
       shorebird_app_id:
         type: string
         required: true  
@@ -19,7 +16,6 @@ jobs:
   shorebird_patch:
     uses: ./.github/workflows/20-shorebird-android-patch.yml
     with:
-      flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
@@ -28,7 +24,6 @@ jobs:
     if: ${{ always() && (needs.shorebird_patch.result == 'failure') }}
     uses: ./.github/workflows/30-shorebird-android-release.yml
     with:
-      flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
