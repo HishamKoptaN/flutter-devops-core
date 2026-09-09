@@ -17,28 +17,9 @@ on:
     outputs:
       android_built:
         value: ${{ jobs.check.outputs.android_built }}
-      ios_built:
-        value: ${{ jobs.check.outputs.ios_built }}
-      macos_built:
-        value: ${{ jobs.check.outputs.macos_built }}
-      linux_built:
-        value: ${{ jobs.check.outputs.linux_built }}
-      windows_built:
-        value: ${{ jobs.check.outputs.windows_built }}
-      android_patch:
-        value: ${{ jobs.check.outputs.android_patch }}
-      ios_patch:
-        value: ${{ jobs.check.outputs.ios_patch }}
-      macos_patch:
-        value: ${{ jobs.check.outputs.macos_patch }}
-      linux_patch:
-        value: ${{ jobs.check.outputs.linux_patch }}
-      windows_patch:
-        value: ${{ jobs.check.outputs.windows_patch }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
-
 jobs:
   version:
     uses: ./.github/workflows/00-core-get-version.yml
@@ -58,7 +39,6 @@ jobs:
     with:
       flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
-      use_patch: ${{ needs.check.outputs.android_patch == 'true' }}
     secrets: inherit
 
   # ios:

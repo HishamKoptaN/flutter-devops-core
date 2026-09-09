@@ -2,14 +2,6 @@ name: Build Layer
 
 on:
   workflow_call:
-    inputs:
-      flavor:
-        type: string
-        required: true
-      platforms:
-        type: string
-        required: false
-        default: ""
 jobs:
   build_web:
     runs-on: ubuntu-latest

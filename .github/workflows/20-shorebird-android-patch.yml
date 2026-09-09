@@ -25,17 +25,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
       - uses: actions/cache@v4
         with:
           path: /opt/hostedtoolcache/flutter
           key: flutter-sdk-3.41.2-${{ runner.os }}
-          restore-keys: flutter-sdk-        
-      - uses: subosito/flutter-action@v2
+          restore-keys: flutter-sdk-
+      - uses: shorebirdtech/setup-shorebird@v1
         with:
-          channel: stable
           cache: true
       - uses: actions/cache@v4
         with:
@@ -45,8 +41,40 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - id: run
-        shell: bash
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: flutter-deps-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
+          restore-keys: flutter-deps-   
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.config/shorebird
+            ~/.shorebird
+          key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+          restore-keys: shorebird-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/
+            .dart_tool/build
+          key: patch-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
+          restore-keys: |
+            patch-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
+            patch-${{ runner.os }}-
+            patch-${{ runner.os }}-  
+      - run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
+      - run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=muein_orders.jks
+          EOF   
+      - id: verify
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         continue-on-error: true
@@ -59,3 +87,5 @@ jobs:
           else
             exit 1
           fi
+      - if: always()
+        run: rm -f android/app/muein_orders.jks android/key.properties
