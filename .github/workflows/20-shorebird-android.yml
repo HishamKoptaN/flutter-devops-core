@@ -13,15 +13,36 @@ on:
       SHOREBIRD_TOKEN:
         required: false
 jobs:
+  detect_build_type:
+    runs-on: ubuntu-latest
+    outputs:
+      build_type: ${{ steps.check.outputs.build_type }}
+      flutter_version: ${{ steps.extract_flutter.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: extract_flutter
+        run: bash .github/scripts/get-flutter-version.sh
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+      - id: check
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          FLAVOR="${{ github.ref_name }}"
+          bash .github/scripts/check-build-type.sh ${{ github.ref_name }}
+          sed -i "s/^app_id:.*/app_id: ${{ inputs.shorebird_app_id }}/" shorebird.yaml
   shorebird_patch:
+    needs: detect_build_type
+    if: ${{ needs.detect_build_type.outputs.build_type == 'patch' }}
     uses: ./.github/workflows/20-shorebird-android-patch.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
   shorebird_release:
-    needs: [shorebird_patch]
-    if: ${{ always() && (needs.shorebird_patch.result == 'failure') }}
+    needs: detect_build_type
+    if: needs.detect_build_type.outputs.build_type == 'release'
     uses: ./.github/workflows/30-shorebird-android-release.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
