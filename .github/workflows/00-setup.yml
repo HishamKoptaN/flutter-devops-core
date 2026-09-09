@@ -3,17 +3,12 @@ name: Setup
 on:
   workflow_call:
     inputs:
-      flavor:
-        type: string
-        required: true
       platforms:
         type: string
         required: false
         default: ""
         description: "Comma-separated platforms to build (e.g., android,windows)"
     outputs:
-      flavor:
-        value: ${{ jobs.setup.outputs.flavor }}
       android_enabled:
         value: ${{ jobs.setup.outputs.android_enabled }}
       ios_enabled:
@@ -29,7 +24,6 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      flavor: ${{ steps.set.outputs.flavor }}
       android_enabled: ${{ steps.set.outputs.android_enabled }}
       ios_enabled: ${{ steps.set.outputs.ios_enabled }}
       macos_enabled: ${{ steps.set.outputs.macos_enabled }}
@@ -39,8 +33,6 @@ jobs:
       - uses: actions/checkout@v4
       - id: set
         run: |
-          flavor="${{ inputs.flavor }}"
-          echo "flavor=$flavor" >> $GITHUB_OUTPUT
           platforms="${{ inputs.platforms }}"
           android_enabled="true"
           ios_enabled="false"
