@@ -23,7 +23,7 @@ on:
 jobs:
   shorebird_patch:
     if: ${{ inputs.use_patch }}
-    uses: ./.github/workflows/21-shorebird-android-patch.yml
+    uses: ./.github/workflows/20-shorebird-android-patch.yml
     with:
       flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
@@ -32,7 +32,7 @@ jobs:
   shorebird_release:
     needs: [shorebird_patch]
     if: ${{ always() && (needs.shorebird_patch.result == 'failure' || inputs.use_patch == false) }}
-    uses: ./.github/workflows/22-shorebird-android-release.yml
+    uses: ./.github/workflows/30-shorebird-android-release.yml
     with:
       flavor: ${{ inputs.flavor }}
       shorebird_app_id: ${{ inputs.shorebird_app_id }}

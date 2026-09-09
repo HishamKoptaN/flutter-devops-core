@@ -25,10 +25,6 @@ on:
         value: ${{ jobs.check.outputs.linux_built }}
       windows_built:
         value: ${{ jobs.check.outputs.windows_built }}
-      full_version:
-        value: ${{ jobs.version.outputs.full_version }}
-      base_version:
-        value: ${{ jobs.version.outputs.base_version }}
       android_patch:
         value: ${{ jobs.check.outputs.android_patch }}
       ios_patch:
