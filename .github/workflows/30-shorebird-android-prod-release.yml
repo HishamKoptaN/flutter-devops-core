@@ -19,6 +19,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     env:
      TRACK: ${{ inputs.track }} 
     outputs:
@@ -28,16 +29,6 @@ jobs:
         with:
           fetch-depth: 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
-  
-      - run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
-      - run: |
-          cat > android/key.properties << EOF
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=muein_orders.jks
-          EOF
       - id: run
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}

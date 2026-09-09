@@ -32,7 +32,6 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-
     flavorDimensions += "env"
     productFlavors {
         create("dev") {
