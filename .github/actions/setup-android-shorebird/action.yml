@@ -1,0 +1,50 @@
+name: "Setup Android Shorebird Action"
+description: "Initializes Flutter, Shorebird, Gradle and Caches"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: /opt/hostedtoolcache/flutter
+        key: flutter-sdk-3.41.2-${{ runner.os }}
+        restore-keys: flutter-sdk-
+
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ github.workspace }}/.dart_tool
+        key: flutter-deps-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
+        restore-keys: flutter-deps-   
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.config/shorebird
+          ~/.shorebird
+        key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+        restore-keys: shorebird-${{ runner.os }}-
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          build/
+          .dart_tool/build
+        key: patch-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
+        restore-keys: |
+          patch-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
+          patch-${{ runner.os }}-
