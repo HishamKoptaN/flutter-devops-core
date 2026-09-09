@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: extract_flutter
-        run: bash .github/scripts/get-flutter-version.sh
+        run: bash ${{ github.action_path }}/../../scripts/get-flutter-version.sh
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
