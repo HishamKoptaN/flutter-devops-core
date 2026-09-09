@@ -7,9 +7,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      flavor:
-        type: string
-        required: true
       shorebird_app_id:
         type: string
         required: true
