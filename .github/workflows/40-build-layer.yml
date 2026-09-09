@@ -12,8 +12,6 @@ on:
         default: ""
 jobs:
   build_web:
-    if: contains(inputs.platforms, 'web')
-    uses: ./.github/workflows/40-build-layer.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
