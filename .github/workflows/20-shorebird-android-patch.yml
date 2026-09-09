@@ -23,9 +23,7 @@ jobs:
         with:
           fetch-depth: 1
       - id: extract_flutter
-        run: |
-          FLUTTER_VER=$(grep -A 5 "environment:" pubspec.yaml | grep "flutter:" | sed 's/.*flutter:[ "]*\([^"\']*\)[ "']*$/\1/' | tr -d "\"'^>=")
-          echo "FLUTTER_VERSION=${FLUTTER_VER:-stable}" >> $GITHUB_ENV
+        run: bash .github/scripts/get-flutter-version.sh 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
         with:
           flutter_version: ${{ steps.extract_flutter.outputs.version }}
