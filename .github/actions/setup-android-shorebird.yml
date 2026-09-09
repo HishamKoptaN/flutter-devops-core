@@ -1,6 +1,4 @@
-name: "Setup Android Shorebird Action"
-description: "Initializes Flutter, Shorebird, Gradle and Caches"
-
+name: setup-android-shorebird.yml
 runs:
   using: "composite"
   steps:
