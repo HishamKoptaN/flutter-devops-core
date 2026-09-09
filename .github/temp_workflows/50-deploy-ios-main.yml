@@ -1,0 +1,46 @@
+name: Deploy iOS Main
+on:
+  push:
+    branches: [prods]
+  workflow_dispatch:
+    inputs:
+      force_release:
+        type: boolean
+        default: false
+      force_patch:
+        type: boolean
+        default: false
+env:
+  APP_ID: "6761682256"
+  WEBHOOK: "https://api.codemagic.io/hooks/69e22d0468ccd4f8805e9a4b"
+jobs:
+  detect:
+    uses: ./.github/workflows/10-detect-ios.yml
+    with:
+      force_release: ${{ github.event.inputs.force_release || false }}
+      force_patch: ${{ github.event.inputs.force_patch || false }}
+  release:
+    needs: detect
+    if: needs.detect.outputs.build_type == 'release'
+    uses: ./.github/workflows/60-external-codemagic-deploy.yml
+    with:
+      track: testflight
+      build_mode: release
+    secrets: inherit
+  patch:
+    needs: detect
+    if: needs.detect.outputs.build_type == 'patch'
+    uses: ./.github/workflows/30-shorebird-ios-release.yml
+    with:
+      action: patch
+    secrets: inherit
+  summary:
+    runs-on: ubuntu-latest
+    needs: [detect, release, patch]
+    if: always()
+    steps:
+      - run: |
+          echo "Type: ${{ needs.detect.outputs.build_type }}"
+          echo "Version: ${{ needs.detect.outputs.version_name }}+${{ needs.detect.outputs.version_code }}"
+          echo "Release: ${{ needs.release.result || 'skipped' }}"
+          echo "Patch: ${{ needs.patch.result || 'skipped' }}"

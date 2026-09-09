@@ -1,0 +1,100 @@
+name: Deploy Android to Play Store
+on:
+  push:
+    branches:
+      - prods
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Google Play track"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      force_patch:
+        required: false
+        default: false
+        type: boolean
+      force_release:
+        required: false
+        default: false
+        type: boolean
+jobs:
+  check-version:
+    uses: ./.github/workflows/20-version-check-playstore.yml
+    secrets: inherit
+  check-native:
+    uses: ./.github/workflows/10-detect-android-native-changes.yml
+  decide-action:
+    runs-on: ubuntu-latest
+    needs: [check-version, check-native]
+    outputs:
+      action: ${{ steps.decide.outputs.action }}
+      version_code: ${{ needs.check-version.outputs.version_code }}
+      version_name: ${{ needs.check-version.outputs.version_name }}
+      version_exists: ${{ needs.check-version.outputs.version_exists }}
+    steps:
+      - id: decide
+        run: |
+          VERSION_EXISTS="${{ needs.check-version.outputs.version_exists }}"
+          HAS_NATIVE="${{ needs.check-native.outputs.has_native_changes }}"
+          echo "   منصة: Android (Google Play)"
+          FORCE_PATCH="${{ github.event.inputs.force_patch }}"
+          FORCE_RELEASE="${{ github.event.inputs.force_release }}"
+          if [ "$FORCE_PATCH" == "true" ]; then
+            echo "action=patch" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [ "$FORCE_RELEASE" == "true" ]; then
+            echo "📦 Release (فرض)"
+            echo "action=release" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [ "$HAS_NATIVE" == "true" ]; then
+            if [ "$VERSION_EXISTS" == "true" ]; then
+              echo "action=bump-and-release" >> $GITHUB_OUTPUT
+            else
+              echo "action=release" >> $GITHUB_OUTPUT
+            fi
+            exit 0
+          fi
+          if [ "$VERSION_EXISTS" == "true" ]; then
+            echo "action=patch" >> $GITHUB_OUTPUT
+          else
+            echo "action=release" >> $GITHUB_OUTPUT
+          fi
+  handle-patch:
+    needs: decide-action
+    if: ${{ needs.decide-action.outputs.action == 'patch' }}
+    uses: ./.github/workflows/40-handle-android-patch.yml
+    with:
+      version_code: ${{ needs.decide-action.outputs.version_code }}
+      version_name: ${{ needs.decide-action.outputs.version_name }}
+      track: ${{ github.event.inputs.track || 'internal' }}
+    secrets: inherit
+  handle-release:
+    needs: decide-action
+    if: ${{ needs.decide-action.outputs.action == 'release' || needs.decide-action.outputs.action == 'bump-and-release' }}
+    uses: ./.github/workflows/40-handle-android-release.yml
+    with:
+      action: ${{ needs.decide-action.outputs.action }}
+      version_code: ${{ needs.decide-action.outputs.version_code }}
+      version_name: ${{ needs.decide-action.outputs.version_name }}
+      track: ${{ github.event.inputs.track || 'internal' }}
+    secrets: inherit
+  summary:
+    runs-on: ubuntu-latest
+    needs:
+      [check-version, check-native, decide-action, handle-patch, handle-release]
+    if: always()
+    steps:
+      - run: |
+          echo "📋 ملخص التوزيع:"
+          echo "   الإصدار: ${{ needs.decide-action.outputs.version_code }} (${{ needs.decide-action.outputs.version_name }})"
+          echo "   موجود على Play Store: ${{ needs.decide-action.outputs.version_exists }}"
+          echo "   تغييرات Native: ${{ needs.check-native.outputs.has_native_changes }}"
+          echo "   العملية المُنفذة: ${{ needs.decide-action.outputs.action }}"

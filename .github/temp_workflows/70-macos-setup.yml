@@ -1,0 +1,37 @@
+name: macOS Setup
+
+on:
+  workflow_call:
+    outputs:
+      device_id:
+        description: "Simulator device ID"
+        value: ${{ jobs.setup.outputs.device_id }}
+
+jobs:
+  setup:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    outputs:
+      device_id: ${{ steps.simulator.outputs.device_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.2"
+          channel: "stable"
+          cache: true
+      - run: |
+          flutter pub get
+          cd ios && pod install --repo-update
+      - id: simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 15" | head -1 | grep -oE '[A-F0-9-]{36}')
+          if [ -z "$DEVICE_ID" ]; then
+            DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | head -1 | grep -oE '[A-F0-9-]{36}')
+          fi
+          if [ -z "$DEVICE_ID" ]; then
+            DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[A-F0-9-]{36}')
+          fi
+          xcrun simctl boot "$DEVICE_ID"
+          echo "device_id=$DEVICE_ID" >> $GITHUB_OUTPUT
+          sleep 30

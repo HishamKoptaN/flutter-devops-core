@@ -1,0 +1,79 @@
+name: Detect iOS Build Type
+on:
+  workflow_call:
+    inputs:
+      force_release:
+        type: boolean
+        default: false
+      force_patch:
+        type: boolean
+        default: false
+    outputs:
+      build_type:
+        value: ${{ jobs.detect.outputs.build_type }}
+      version_name:
+        value: ${{ jobs.detect.outputs.version_name }}
+      version_code:
+        value: ${{ jobs.detect.outputs.version_code }}
+      store_version:
+        value: ${{ jobs.detect.outputs.store_version }}
+      has_native_changes:
+        value: ${{ jobs.detect.outputs.has_native_changes }}
+env:
+  APP_STORE_APP_ID: "6761682256"
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      build_type: ${{ steps.decision.outputs.build_type }}
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+      store_version: ${{ steps.store_check.outputs.store_version }}
+      has_native_changes: ${{ steps.native_check.outputs.has_native_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
+          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+      - id: native_check
+        run: |
+          NATIVE_PATHS="ios/ android/ linux/ macos/ windows/ web/"
+          LAST=$(git rev-parse HEAD)
+          PREV=$(git rev-parse HEAD~1)
+          HAS=false
+          for p in $NATIVE_PATHS; do
+            git diff --name-only $PREV $LAST | grep -q "^$p" && HAS=true
+          done
+          echo "has_native_changes=$HAS" >> $GITHUB_OUTPUT
+          [[ "$HAS" == "true" ]] && echo "🔴 Native changes detected" || echo "🟢 No native changes"
+      - id: store_check
+        run: |
+          [[ -z "$APP_STORE_APP_ID" ]] && { echo "store_version=0.0.0" >> $GITHUB_OUTPUT; echo "store_version_code=0" >> $GITHUB_OUTPUT; exit 0; }
+          INFO=$(curl -s "https://itunes.apple.com/lookup?id=$APP_STORE_APP_ID" || echo '{}')
+          VER=$(echo "$INFO" | jq -r '.results[0].version // "0.0.0"')
+          CODE=$(echo "$VER" | awk -F. '{print ($1*1000000)+($2*1000)+$3}')
+          echo "store_version=$VER" >> $GITHUB_OUTPUT
+          echo "store_version_code=$CODE" >> $GITHUB_OUTPUT
+      - id: decision
+        run: |
+          VC="${{ steps.version.outputs.version_code }}"
+          NAT="${{ steps.native_check.outputs.has_native_changes }}"
+          FORCE_R="${{ inputs.force_release }}"
+          FORCE_P="${{ inputs.force_patch }}"
+          if [[ "$FORCE_R" == "true" ]]; then
+            TYPE="release"; REASON="Force Release"
+          elif [[ "$FORCE_P" == "true" ]]; then
+            TYPE="patch"; REASON="Force Patch"
+          elif [[ "$VC" == "1" ]] || [[ -z "$VC" ]]; then
+            TYPE="release"; REASON="First build"
+          elif [[ "$NAT" == "true" ]]; then
+            TYPE="release"; REASON="Native changes"
+          else
+            TYPE="patch"; REASON="Dart only"
+          fi
+          echo "build_type=$TYPE" >> $GITHUB_OUTPUT

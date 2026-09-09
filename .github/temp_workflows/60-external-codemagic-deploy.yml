@@ -1,0 +1,190 @@
+name: Deploy iOS via Codemagic
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "القناة (TestFlight أو App Store)"
+        required: true
+        type: choice
+        options:
+          - testflight
+          - appstore
+        default: "testflight"
+      build_mode:
+        description: "وضع البناء"
+        required: true
+        type: choice
+        options:
+          - debug
+          - profile
+          - release
+        default: "release"
+      trigger_codemagic:
+        description: "تشغيل بناء Codemagic"
+        required: false
+        type: boolean
+        default: true
+      codemagic_workflow:
+        description: "Codemagic Workflow ID"
+        required: false
+        type: string
+        default: "ios-release"
+  workflow_call:
+    inputs:
+      track:
+        required: true
+        type: string
+      build_mode:
+        required: false
+        type: string
+        default: "release"
+
+env:
+  CODEMAGIC_API_TOKEN: ${{ secrets.CODEMAGIC_API_TOKEN }}
+  CODEMAGIC_APP_ID: ${{ secrets.CODEMAGIC_APP_ID }}
+
+jobs:
+  prepare-build:
+    runs-on: ubuntu-latest
+    outputs:
+      version_code: ${{ steps.version.outputs.version_code }}
+      version_name: ${{ steps.version.outputs.version_name }}
+      build_number: ${{ steps.build_number.outputs.build_number }}
+      should_trigger: ${{ steps.decision.outputs.should_trigger }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
+          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+      - id: build_number
+        run: |
+          # Use timestamp for unique build number
+          BUILD_NUMBER=$(date +%s)
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+      - id: decision
+        run: |
+          SHOULD_TRIGGER=${{ github.event.inputs.trigger_codemagic }}
+          if [[ "$SHOULD_TRIGGER" == "true" ]]; then
+            echo "should_trigger=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_trigger=false" >> $GITHUB_OUTPUT
+          fi
+  trigger-codemagic:
+    needs: prepare-build
+    if: needs.prepare-build.outputs.should_trigger == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - id: codemagic_trigger
+        run: |
+          if [[ -z "$CODEMAGIC_API_TOKEN" ]]; then
+            echo "❌ CODEMAGIC_API_TOKEN not configured"
+            exit 1
+          fi
+          if [[ -z "$CODEMAGIC_APP_ID" ]]; then
+            echo "❌ CODEMAGIC_APP_ID not configured"
+            exit 1
+          fi
+          BUILD_CONFIG=$(cat << EOF
+          {
+            "appId": "$CODEMAGIC_APP_ID",
+            "workflowId": "${{ github.event.inputs.codemagic_workflow }}",
+            "branch": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "environment": {
+              "FLUTTER_VERSION": "3.41.2",
+              "BUILD_MODE": "${{ github.event.inputs.build_mode }}",
+              "VERSION_NAME": "${{ needs.prepare-build.outputs.version_name }}",
+              "VERSION_CODE": "${{ needs.prepare-build.outputs.version_code }}",
+              "BUILD_NUMBER": "${{ needs.prepare-build.outputs.build_number }}",
+              "TRACK": "${{ github.event.inputs.track }}",
+              "EXPORT_OPTIONS": "appstore"
+            }
+          }
+          EOF
+          )
+          RESPONSE=$(curl -X POST \
+            -H "Authorization: Bearer $CODEMAGIC_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$BUILD_CONFIG" \
+            "https://api.codemagic.io/builds")
+          echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
+          BUILD_ID=$(echo "$RESPONSE" | jq -r '.buildId // empty')
+          if [[ -n "$BUILD_ID" ]]; then
+            echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
+          else
+            exit 1
+          fi
+      - if: steps.codemagic_trigger.outputs.build_id
+        run: |
+          BUILD_ID="${{ steps.codemagic_trigger.outputs.build_id }}"
+          MAX_WAIT_TIME=3600  # 60 minutes max
+          CHECK_INTERVAL=30    # Check every 30 seconds
+          ELAPSED_TIME=0
+
+          while [[ $ELAPSED_TIME -lt $MAX_WAIT_TIME ]]; do
+            STATUS_RESPONSE=$(curl -s \
+              -H "Authorization: Bearer $CODEMAGIC_API_TOKEN" \
+              "https://api.codemagic.io/builds/$BUILD_ID")
+
+            STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status // "unknown"')
+
+            case "$STATUS" in
+              "success")
+                IPA_URL=$(echo "$STATUS_RESPONSE" | jq -r '.artifacts.ipa // empty')
+                if [[ -n "$IPA_URL" ]]; then
+                  echo "ipa_url=$IPA_URL" >> $GITHUB_ENV
+                fi
+                break
+                ;;
+              "failed"|"error")
+                exit 1
+                ;;
+              "running"|"queued")
+                sleep $CHECK_INTERVAL
+                ELAPSED_TIME=$((ELAPSED_TIME + CHECK_INTERVAL))
+                ;;
+              *)
+                sleep $CHECK_INTERVAL
+                ELAPSED_TIME=$((ELAPSED_TIME + CHECK_INTERVAL))
+                ;;
+            esac
+          done
+          if [[ $ELAPSED_TIME -ge $MAX_WAIT_TIME ]]; then
+            exit 1
+          fi
+  local-fallback:
+    needs: [prepare-build, trigger-codemagic]
+    if: failure() && needs.prepare-build.outputs.should_trigger == 'false'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.2"
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
+      - run: |
+          cd ios
+          pod install
+      - run: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration ${{ github.event.inputs.build_mode == 'debug' && 'Debug' || 'Release' }} \
+            -destination generic/platform=iOS \
+            -archivePath $PWD/build/Runner.xcarchive \
+            archive
+      - if: github.event.inputs.build_mode != 'debug'
+        run: |
+          cd ios
+          xcodebuild -exportArchive \
+            -archivePath $PWD/build/Runner.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $PWD/build

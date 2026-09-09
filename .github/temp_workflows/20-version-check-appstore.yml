@@ -1,0 +1,66 @@
+name: Check Version on App Store Connect
+on:
+  workflow_call:
+    outputs:
+      version_exists:
+        description: "Whether the version already exists on App Store"
+        value: ${{ jobs.check-version.outputs.version_exists }}
+      version_code:
+        description: "Current version code"
+        value: ${{ jobs.check-version.outputs.version_code }}
+      version_name:
+        description: "Current version name"
+        value: ${{ jobs.check-version.outputs.version_name }}
+  workflow_dispatch:
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_exists: ${{ steps.check-version.outputs.exists }}
+      version_code: ${{ steps.get-version.outputs.version_code }}
+      version_name: ${{ steps.get-version.outputs.version_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: get-version
+        run: |
+          VERSION_NAME=$(grep -oP '^version:\s*\K[0-9.]+' pubspec.yaml)
+          VERSION_CODE=$(grep -oP '^version:\s*[0-9.]+\+\K[0-9]+' pubspec.yaml)
+
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+      - id: check-version
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          BUNDLE_ID: com.muein.orders
+        run: |
+          set +e
+          VERSION_CODE="${{ steps.get-version.outputs.version_code }}"
+          VERSION_NAME="${{ steps.get-version.outputs.version_name }}"
+          JWT_HEADER=$(echo -n '{"alg":"ES256","kid":"'$APP_STORE_CONNECT_KEY_ID'","typ":"JWT"}' | base64 -w0 | tr '+/' '-_' | tr -d '=')
+          NOW=$(date +%s)
+          EXP=$((NOW + 1200))
+          JWT_PAYLOAD=$(echo -n '{"iss":"'$APP_STORE_CONNECT_ISSUER_ID'","iat":'$NOW',"exp":'$EXP',"aud":"appstoreconnect-v1"}' | base64 -w0 | tr '+/' '-_' | tr -d '=')
+          JWT_SIGNING_INPUT="$JWT_HEADER.$JWT_PAYLOAD"
+          echo "$APP_STORE_CONNECT_API_KEY" | tr ' ' '\n' | sed 's/-----BEGIN-----/-----BEGIN EC PRIVATE KEY-----/' | sed 's/-----END-----/-----END EC PRIVATE KEY-----/' > /tmp/asc_key.p8
+          JWT_SIGNATURE=$(openssl dgst -sha256 -sign /tmp/asc_key.p8 -binary < <(echo -n "$JWT_SIGNING_INPUT") 2>/dev/null | base64 -w0 | tr '+/' '-_' | tr -d '=')
+          rm -f /tmp/asc_key.p8
+          if [ -z "$JWT_SIGNATURE" ]; then
+            echo "exists=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          JWT_TOKEN="$JWT_HEADER.$JWT_PAYLOAD.$JWT_SIGNATURE"
+          APP_RESPONSE=$(curl -s -H "Authorization: Bearer $JWT_TOKEN" \
+            "https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]=$BUNDLE_ID")
+          APP_ID=$(echo "$APP_RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+          if [ -z "$APP_ID" ]; then
+            echo "exists=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          VERSIONS_RESPONSE=$(curl -s -H "Authorization: Bearer $JWT_TOKEN" \
+            "https://api.appstoreconnect.apple.com/v1/apps/$APP_ID/appStoreVersions")
+          EXISTS=$(echo "$VERSIONS_RESPONSE" | grep -q "versionString.*$VERSION_NAME" && echo "true" || echo "false")
+          echo "exists=$EXISTS" >> $GITHUB_OUTPUT

@@ -1,0 +1,121 @@
+name: Check Version on Google Play Store
+
+on:
+  workflow_call:
+    outputs:
+      version_exists:
+        description: "Whether the version already exists on Google Play"
+        value: ${{ jobs.check-version.outputs.version_exists }}
+      version_code:
+        description: "Current version code"
+        value: ${{ jobs.check-version.outputs.version_code }}
+      version_name:
+        description: "Current version name"
+        value: ${{ jobs.check-version.outputs.version_name }}
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_exists: ${{ steps.check-version.outputs.exists }}
+      version_code: ${{ steps.get-version.outputs.version_code }}
+      version_name: ${{ steps.get-version.outputs.version_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: get-version
+        run: |
+          VERSION_CODE=$(grep -oP 'versionCode\s*=\s*\K\d+' android/app/build.gradle.kts)
+          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' android/app/build.gradle.kts)
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('.github/workflows/20-version-check-playstore.yml') }}
+          restore-keys: pip-${{ runner.os }}-
+
+      - run: |
+          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      - id: check-version
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.muein.orders
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          import sys
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+
+          package_name = os.environ['PACKAGE_NAME']
+          current_version_code = int('${{ steps.get-version.outputs.version_code }}')
+          credentials_json = os.environ['GOOGLE_PLAY_SERVICE_ACCOUNT_JSON']
+
+          try:
+              credentials_info = json.loads(credentials_json)
+              credentials = service_account.Credentials.from_service_account_info(
+                  credentials_info,
+                  scopes=['https://www.googleapis.com/auth/androidpublisher']
+              )
+
+              service = build('androidpublisher', 'v3', credentials=credentials)
+              app_edit = service.edits().insert(packageName=package_name).execute()
+              edit_id = app_edit['id']
+
+              tracks = ['internal', 'alpha', 'beta', 'production']
+              all_versions = set()
+
+              for track in tracks:
+                  try:
+                      track_info = service.edits().tracks().get(
+                          packageName=package_name,
+                          editId=edit_id,
+                          track=track
+                      ).execute()
+                      if 'releases' in track_info:
+                          for release in track_info['releases']:
+                              print(f"   Release: {release.get('name', 'N/A')}, status: {release.get('status', 'N/A')}")
+                              if 'versionCodes' in release:
+                                  for vc in release['versionCodes']:
+                                      all_versions.add(int(vc))
+                                      print(f"   → versionCode: {vc}")
+                      else:
+                  except Exception as e:
+                      import traceback
+                      traceback.print_exc()
+                      continue
+
+              service.edits().delete(
+                  packageName=package_name,
+                  editId=edit_id
+              ).execute()
+
+              if current_version_code in all_versions:
+                  print("exists=true")
+                  with open(os.environ.get('GITHUB_OUTPUT', '/dev/null'), 'a') as f:
+                      f.write("exists=true\n")
+                  sys.exit(0)
+              else:
+                  print("exists=false")
+                  with open(os.environ.get('GITHUB_OUTPUT', '/dev/null'), 'a') as f:
+                      f.write("exists=false\n")
+                  sys.exit(0)
+
+          except Exception as e:
+              print("exists=false")
+              with open(os.environ.get('GITHUB_OUTPUT', '/dev/null'), 'a') as f:
+                  f.write("exists=false\n")
+              sys.exit(0)
+          EOF
+
+      - run: |
+          if [ "${{ steps.check-version.outputs.exists }}" == "true" ]; then
+          else
+          fi

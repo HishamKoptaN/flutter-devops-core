@@ -1,0 +1,40 @@
+name: iOS Shorebird Auto
+on:
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        required: true
+jobs:
+  ios:
+    runs-on: macos-latest
+    env:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+      P12_PASSWORD: "163200"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.2"
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
+      - uses: shorebirdtech/setup-shorebird@v1
+      - run: cd ios && pod install
+      - run: ls -la *.p12 *.mobileprovision
+      - run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp muein_orders_appstore_prod.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          security list-keychains -s build.keychain
+          security find-identity -v -p codesigning
+      - run: |
+          if [ "${{ inputs.action }}" == "patch" ]; then
+            shorebird patch ios --flavor=prod
+          else
+            shorebird release ios --flavor=prod
+          fi

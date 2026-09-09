@@ -1,0 +1,142 @@
+name: Shorebird Release Android
+on:
+  workflow_call:
+    inputs:
+      version_code:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+      track:
+        required: true
+        type: string
+        default: "internal"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ inputs.version_code }}
+      VERSION_NAME: ${{ inputs.version_name }}
+      TRACK: ${{ inputs.track }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+          key: flutter-sdk-3.41.2-${{ runner.os }}
+          restore-keys: flutter-sdk-
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.2"
+          channel: "stable"
+          cache: true
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: flutter-deps-${{ hashFiles('pubspec.lock', '**/pubspec.yaml') }}-${{ runner.os }}
+          restore-keys: |
+            flutter-deps-${{ hashFiles('pubspec.lock') }}-
+            flutter-deps-
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
+          restore-keys: android-sdk-${{ runner.os }}-
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/gradle.properties') }}-${{ runner.os }}
+          restore-keys: |
+            gradle-${{ hashFiles('**/*.gradle*') }}-${{ runner.os }}-
+            gradle-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.config/shorebird
+            ~/.shorebird
+          key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+          restore-keys: |
+            shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}-
+            shorebird-${{ runner.os }}-
+      - uses: shorebirdtech/setup-shorebird@v1
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/
+            android/.gradle
+            android/app/build
+            .dart_tool/build
+          key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
+          restore-keys: |
+            build-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
+            build-${{ runner.os }}-
+
+      - run: flutter pub get
+
+      - run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
+      - run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=muein_orders.jks
+          EOF
+      - id: shorebird-release
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          echo "🚀 محاولة إنشاء Shorebird Release..."
+          echo "   للإصدار: $VERSION_CODE ($VERSION_NAME)"
+          if shorebird release android \
+            --dart-define=ENV=prod \
+            --flavor=prod \
+            --artifact=aab 2>&1 | tee release_output.log; then
+            echo "✅ تم إنشاء الإصدار بنجاح"
+            echo "release_built=true" >> $GITHUB_OUTPUT
+          else
+            if grep -q "existing android release" release_output.log || \
+               grep -q "It looks like you have an existing" release_output.log; then
+              echo "⚠️ الإصدار موجود بالفعل على Shorebird"
+              echo "release_built=false" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "❌ فشل إنشاء الإصدار لسبب آخر"
+              cat release_output.log
+              exit 1
+            fi
+          fi
+      - if: steps.shorebird-release.outputs.release_built == 'false'
+        run: |
+          echo "📦 بناء AAB فقط (بدون إنشاء Shorebird release)..."
+          flutter build appbundle \
+            --dart-define=ENV=prod \
+            --flavor=prod \
+            --release
+      - id: upload-play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.muein.orders
+          releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          track: ${{ env.TRACK }}
+          status: ${{ env.TRACK == 'production' && 'completed' || 'draft' }}
+      - run: |
+          echo "✅ تم إنشاء الإصدار ورفعه بنجاح!"
+          echo "   الإصدار: $VERSION_CODE ($VERSION_NAME)"
+          echo "   القناة: ${{ env.TRACK }}"
+      - if: always()
+        run: rm -f android/app/muein_orders.jks android/key.properties

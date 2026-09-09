@@ -1,0 +1,63 @@
+name: Handle iOS Patch
+
+on:
+  workflow_call:
+    inputs:
+      version_code:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+      has_native_changes:
+        required: true
+        type: string
+      version_exists:
+        required: true
+        type: string
+      track:
+        required: false
+        type: string
+        default: "testflight"
+
+jobs:
+  patch:
+    if: inputs.has_native_changes == 'false' && inputs.version_exists == 'true'
+    uses: ./.github/workflows/ios_build_manual.yml
+    with:
+      version_code: ${{ inputs.version_code }}
+      version_name: ${{ inputs.version_name }}
+      track: ${{ inputs.track }}
+    secrets: inherit
+  bump-for-native:
+    if: inputs.has_native_changes == 'true' && inputs.version_exists == 'true'
+    uses: ./.github/workflows/20-version-ios-bump.yml
+    with:
+      current_version_code: ${{ inputs.version_code }}
+    secrets: inherit
+
+  release-after-bump:
+    needs: bump-for-native
+    if: inputs.has_native_changes == 'true' && inputs.version_exists == 'true'
+    uses: ./.github/workflows/ios_build_manual.yml
+    with:
+      version_code: ${{ needs.bump-for-native.outputs.new_version_code }}
+      version_name: ${{ inputs.version_name }}
+      track: ${{ inputs.track }}
+    secrets: inherit
+  release-new:
+    if: inputs.has_native_changes == 'true' && inputs.version_exists == 'false'
+    uses: ./.github/workflows/ios_build_manual.yml
+    with:
+      version_code: ${{ inputs.version_code }}
+      version_name: ${{ inputs.version_name }}
+      track: ${{ inputs.track }}
+    secrets: inherit
+  release-first:
+    if: inputs.has_native_changes == 'false' && inputs.version_exists == 'false'
+    uses: ./.github/workflows/ios_build_manual.yml
+    with:
+      version_code: ${{ inputs.version_code }}
+      version_name: ${{ inputs.version_name }}
+      track: ${{ inputs.track }}
+    secrets: inherit
