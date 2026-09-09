@@ -13,25 +13,16 @@ on:
       SHOREBIRD_TOKEN:
         required: false
 jobs:
+
   detect_build_type:
     runs-on: ubuntu-latest
     outputs:
       build_type: ${{ steps.check.outputs.build_type }}
-      flutter_version: ${{ steps.extract_flutter.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-      - id: extract_flutter
-        run: bash ${{ github.action_path }}/../../scripts/get-flutter-version.sh
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
-      - id: check
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-        run: |
-          FLAVOR="${{ github.ref_name }}"
-          bash .github/scripts/check-build-type.sh ${{ github.ref_name }}
-          sed -i "s/^app_id:.*/app_id: ${{ inputs.shorebird_app_id }}/" shorebird.yaml
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/check-build-type
+        with: 
+          platform: "android"
+          flavor: ${{ github.ref_name }}
   shorebird_patch:
     needs: detect_build_type
     if: ${{ needs.detect_build_type.outputs.build_type == 'patch' }}

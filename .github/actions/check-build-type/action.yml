@@ -1,0 +1,42 @@
+name: "Detect Shorebird Build Type"
+description: "Determines whether to run patch or release based on Flutter and App versions."
+
+inputs:
+  platform:
+    required: true
+  flavor:
+    required: true
+
+outputs:
+  build_type:
+    value: ${{ steps.check.outputs.build_type }}
+  local_version:
+    value: ${{ steps.check.outputs.local_version }}
+  local_flutter:
+    value: ${{ steps.check.outputs.local_flutter }}
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: |
+        PLATFORM="${{ inputs.platform }}"
+        FLAVOR="${{ inputs.flavor }}"
+        FLUTTER_VER=$(awk '/environment:/,/dependencies:/' pubspec.yaml | awk '/flutter:/ {print $2}' | tr -cd '0-9.')
+        LOCAL_FLUTTER="${FLUTTER_VER:-stable}"
+        LOCAL_APP_VER=$(grep -i 'version:' pubspec.yaml | head -n 1 | awk -F':' '{print $2}' | tr -d ' "' | tr -d "'" | tr -d '\r')
+        FLAVOR_ARG=""
+        if [ -n "$FLAVOR" ]; then
+          FLAVOR_ARG="--flavor=$FLAVOR"
+        fi
+        LATEST_LINE=$(shorebird releases list $FLAVOR_ARG | grep -i "${PLATFORM}:" | head -n 1 || true)
+        REMOTE_APP_VER=$(echo "$LATEST_LINE" | awk '{print $2}')
+        REMOTE_FLUTTER_VER=$(echo "$LATEST_LINE" | awk '{print $NF}')
+        if [ -n "$REMOTE_APP_VER" ] && [ "$LOCAL_APP_VER" == "$REMOTE_APP_VER" ] && [ "$LOCAL_FLUTTER" == "$REMOTE_FLUTTER_VER" ]; then
+          BUILD_TYPE="patch"
+        else
+          BUILD_TYPE="release"
+        fi
+        echo "build_type=$BUILD_TYPE" >> $GITHUB_OUTPUT
+        echo "local_version=$LOCAL_APP_VER" >> $GITHUB_OUTPUT
+        echo "local_flutter=$LOCAL_FLUTTER" >> $GITHUB_OUTPUT

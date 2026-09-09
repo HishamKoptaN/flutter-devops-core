@@ -6,7 +6,6 @@ on:
         type: string
         required: false
         default: ""
-        description: "Comma-separated platforms (e.g., android,windows,ios,macos,linux)"
     outputs:
       android_built:
         value: ${{ jobs.check.outputs.android_built }}
