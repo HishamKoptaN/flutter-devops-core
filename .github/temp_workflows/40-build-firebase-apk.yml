@@ -28,27 +28,21 @@ jobs:
 
       - id: find_apk
         run: |
-          echo " Looking for APK files..."
           APK_PATH=$(find build/app/outputs/flutter-apk -name "*.apk" -type f 2>/dev/null | head -1)
           if [ -z "$APK_PATH" ]; then
-            echo " No APK in expected path, searching all artifacts..."
-            ls -la build/app/outputs/ 2>/dev/null || echo "No outputs directory"
+            ls -la build/app/outputs/ 2>/dev/null"
             APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -1)
           fi
           if [ -z "$APK_PATH" ]; then
-            echo " No APK file found"
             exit 1
           fi
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
-          echo " Found APK: $APK_PATH"
       - id: get_app_id
         run: |
           DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
           if [ -f "$DART_FILE" ]; then
-            echo "🔍 Searching in Dart config: $DART_FILE"
             APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
             if [ -n "$APP_ID" ]; then
-              echo "Found Firebase App ID: $APP_ID"
               echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
               exit 0
             fi
@@ -64,7 +58,5 @@ jobs:
         continue-on-error: true
       - run: |
           if [ -z "${{ secrets.FIREBASE_ADMIN_SDK }}" ]; then
-            echo "📦 APK is available at: ${{ steps.find_apk.outputs.apk_path }}"
           else
-            echo "✅ Firebase distribution attempted"
           fi

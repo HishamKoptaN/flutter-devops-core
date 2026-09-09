@@ -65,7 +65,7 @@ jobs:
       platforms: ${{ inputs.platforms }}
   shorebird_layer:
     needs: setup
-    uses: ./.github/workflows/20-shorebird-layer.yml
+    uses: ./.github/workflows/20-shorebird-patch-layer.yml
     with:
       flavor: ${{ needs.setup.outputs.flavor }}
       shorebird_app_id : ${{ inputs.shorebird_app_id }}

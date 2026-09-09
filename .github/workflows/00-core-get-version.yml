@@ -22,4 +22,3 @@ jobs:
           baseVersion=$(echo "$version")
           echo "full_version=$version" >> $GITHUB_OUTPUT
           echo "base_version=$baseVersion" >> $GITHUB_OUTPUT
-          echo "🔍 Version: $version, Base: $baseVersion"

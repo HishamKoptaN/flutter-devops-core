@@ -29,7 +29,6 @@ jobs:
 
       - shell: pwsh
         run: |
-          # Delete existing releases with the same tag to keep only one release
           $tag = "${{ inputs.flavor == 'prod' && 'latest' || format('latest_{0}', inputs.flavor) }}"
           Write-Host "Checking for existing release with tag: $tag"
           try {

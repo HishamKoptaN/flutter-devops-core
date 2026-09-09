@@ -1,4 +1,4 @@
-name: Shorebird Linux Deploy
+name: Shorebird macOS Deploy
 
 on:
   workflow_call:
@@ -15,7 +15,7 @@ on:
       use_patch:
         type: boolean
         required: false
-        default: false
+        default: true
     outputs:
       release_completed:
         value: ${{ jobs.shorebird.outputs.release_completed }}
@@ -43,22 +43,42 @@ jobs:
         with:
           channel: stable
           cache: true
+      - run: flutter config --enable-macos-desktop
       - run: flutter pub get
       - id: deploy
         shell: bash
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
-          TARGET_ID=$(if [ "${{ inputs.flavor }}" = "prod" ]; then echo "linux-prod-id"; else echo "linux-dev-id"; fi)
+          echo "🚀 Starting Shorebird macOS deployment for flavor: ${{ inputs.flavor }}"
+          TARGET_ID=$(if [ "${{ inputs.flavor }}" = "prod" ]; then echo "macos-prod-id"; else echo "macos-dev-id"; fi)
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           release_completed="false"
           patch_completed="false"
           
-          if shorebird release linux --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
-            release_completed="true"
+          if [ "${{ inputs.use_patch }}" = "true" ]; then
+            if shorebird patch macos --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee patch.log; then
+              patch_completed="true"
+            else
+              if shorebird release macos --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
+                release_completed="true"
+              else
+                exit 1
+              fi
+            fi
           else
-            exit 1
+            if shorebird release macos --dart-define=ENV=${{ inputs.flavor }} --no-tree-shake-icons 2>&1 | tee release.log; then
+              release_completed="true"
+            else
+              exit 1
+            fi
           fi
           
           echo "release_completed=$release_completed" >> $GITHUB_OUTPUT
           echo "patch_completed=$patch_completed" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-app-${{ inputs.flavor }}
+          path: build/macos/**/*.app
+          retention-days: 1

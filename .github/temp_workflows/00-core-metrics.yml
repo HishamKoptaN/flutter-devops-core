@@ -39,7 +39,6 @@ jobs:
           echo "Platforms: ${{ inputs.platforms }}"
           echo "Build Type: ${{ inputs.build_type }}"
           sleep 5
-          echo "✅ Build completed"
       
       - id: end-time
         run: |

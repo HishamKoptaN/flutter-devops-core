@@ -1,0 +1,101 @@
+name: Shorebird Patch Android
+on:
+  workflow_call:
+    inputs:
+      version_code:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+      flavor:
+        required: true
+        type: string
+    outputs:
+      requires_new_release:
+        description: "Whether a new release is needed due to native changes"
+        value: ${{ jobs.patch.outputs.requires_new_release }}
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    outputs:
+      requires_new_release: ${{ steps.verify.outputs.requires_new_release }}
+    env:
+      VERSION_CODE: ${{ inputs.version_code }}
+      VERSION_NAME: ${{ inputs.version_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: flutter-sdk-3.41.2-${{ runner.os }}
+          restore-keys: flutter-sdk-
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.2"
+          channel: "stable"
+          cache: true
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: flutter-deps-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
+          restore-keys: flutter-deps-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.config/shorebird
+            ~/.shorebird
+          key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+          restore-keys: shorebird-${{ runner.os }}-
+      - uses: shorebirdtech/setup-shorebird@v1
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/
+            .dart_tool/build
+          key: patch-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ inputs.version_code }}-${{ runner.os }}
+          restore-keys: |
+            patch-${{ hashFiles('pubspec.lock') }}-${{ inputs.version_code }}-${{ runner.os }}-
+            patch-${{ inputs.version_code }}-${{ runner.os }}-
+            patch-${{ runner.os }}-
+      - run: flutter pub get
+      - run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
+      - run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=muein_orders.jks
+          EOF
+      - id: verify
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          if ! shorebird patch android \
+            --dart-define=ENV=$FLAVOR \
+            --flavor=$FLAVOR \
+            --release-version=$VERSION_NAME+$VERSION_CODE \
+            --dry-run 2>&1 | tee patch_output.log; then
+            if grep -q "Your app contains native changes, which cannot be applied with a patch" patch_output.log; then
+              echo "requires_new_release=true" >> $GITHUB_OUTPUT
+              exit 0  
+            else
+              cat patch_output.log
+              exit 1
+            fi
+          fi
+          echo "requires_new_release=false" >> $GITHUB_OUTPUT
+      - if: steps.verify.outputs.requires_new_release != 'true'
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          shorebird patch android \
+            --dart-define=ENV=$FLAVOR \
+            --flavor=$FLAVOR \
+            --release-version=$VERSION_NAME+$VERSION_CODE \
+            --confirm
+      - if: always()
+        run: rm -f android/app/muein_orders.jks android/key.properties

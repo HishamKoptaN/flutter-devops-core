@@ -25,7 +25,7 @@ on:
         value: ${{ jobs.build_installer.outputs.installer_name }}
 jobs:
   prepare:
-    uses: ./.github/workflows/20-prepare-installer.yml
+    uses: ./.github/workflows/30-prepare-installer.yml
     with:
       flavor: ${{ inputs.flavor }}
       full_version: ${{ inputs.full_version }}

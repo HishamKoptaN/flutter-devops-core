@@ -46,7 +46,6 @@ Distribution Layer
 - Variable passing (flavor/env)
 - Pipeline orchestration
 
-**Files**: `00-core-*.yml`, `00-setup.yml`
 
 **Outputs**: `platforms_available`, `version`, `flavor`
 
@@ -167,18 +166,6 @@ The project includes optimized **file nesting patterns** for clean workflow orga
 ```json
 "explorer.fileNesting.enabled": true,
 "explorer.fileNesting.patterns": {
-  // 🔵 CORE LAYER
-  "00-core-main.yml": "00-core-*.yml,00-setup.yml",
-  // 🟣 DEPLOY LAYER (SHOREBIRD)
-  "20-shorebird.yml": "20-shorebird-*.yml,10-deploy-shorebird-android.yml",
-  // 🟢 BUILD LAYER
-  "31-build-layer.yml": "10-build-*.yml,20-build-*.yml",
-  // 🟡 PACKAGING LAYER
-  "30-build-installer.yml": "20-prepare-installer.yml,30-package-*.yml",
-  // 🔴 DISTRIBUTION LAYER
-  "32-distribution-layer.yml": "30-deploy-*.yml,30-upload-*.yml,40-distribute-*.yml",
-  // ⚪ ENVIRONMENT LAYER
-  "50-env-dev.yml": "50-env-*.yml"
 }
 ```
 

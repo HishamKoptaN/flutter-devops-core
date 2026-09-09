@@ -24,28 +24,28 @@ on:
         required: false
         default: "MyCompany"
 jobs:
-  build_installer:
-    if: |
-      contains(inputs.platforms, 'windows') && 
-      inputs.windows_exe_name != ''
-    uses: ./.github/workflows/30-deploy-installer.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-      full_version: ${{ inputs.full_version }}
-      exe_name: ${{ inputs.windows_exe_name }}
-      app_name: ${{ inputs.app_name }}
-      app_publisher: ${{ inputs.app_publisher }}
-    secrets: inherit
+  # build_installer:
+    # if: |
+      # contains(inputs.platforms, 'windows') && 
+      # inputs.windows_exe_name != ''
+    # uses: ./.github/workflows/30-deploy-installer.yml
+    # with:
+    #   flavor: ${{ inputs.flavor }}
+    #   full_version: ${{ inputs.full_version }}
+    #   exe_name: ${{ inputs.windows_exe_name }}
+    #   app_name: ${{ inputs.app_name }}
+    #   app_publisher: ${{ inputs.app_publisher }}
+    # secrets: inherit
   distribute:
     uses: ./.github/workflows/50-distribute-android.yml
     with:
       flavor: ${{ inputs.flavor }}
     secrets: inherit
-  cleanup:
-    needs: [build_installer, distribute]
-    if: always()
-    uses: ./.github/workflows/00-core-cleanup-releases.yml
-    with:
-      flavor: ${{ inputs.flavor }}
-    secrets:
-      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+  # cleanup:
+  #   needs: [build_installer, distribute]
+  #   if: always()
+  #   uses: ./.github/workflows/00-core-cleanup-releases.yml
+  #   with:
+  #     flavor: ${{ inputs.flavor }}
+  #   secrets:
+  #     FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -36,7 +36,6 @@ jobs:
               fi
             done
           else
-            echo "✅ Only $COUNT releases exist, no cleanup needed"
           fi
       - env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -58,8 +57,5 @@ jobs:
             APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
           fi
           if [ -z "$APP_ID" ]; then
-            echo "⚠️ No Firebase App ID found, skipping Firebase cleanup"
             exit 0
           fi
-          echo "🔍 Firebase releases cleanup for App: $APP_ID (flavor: $FLAVOR)"
-          echo "✅ Firebase retention is automatic (90 days for releases)"

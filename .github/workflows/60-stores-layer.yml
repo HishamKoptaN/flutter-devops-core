@@ -1,0 +1,47 @@
+name: Shorebird Release Layer
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Target platform for Shorebird release'
+        required: true
+        default: 'android'
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+      channel:
+        description: 'Release channel'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - staging
+
+  workflow_call:
+    inputs:
+      platform:
+        required: false
+        type: string
+        default: 'android'
+      channel:
+        required: false
+        type: string
+        default: 'stable'
+
+jobs:
+  shorebird-release-placeholder:
+    name: Shorebird Release Initializer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Shorebird Release Layer Status
+        run: |
+          echo "Shorebird Release Layer Initialized Successfully"
+          echo "Selected Platform: ${{ inputs.platform }}"
+          echo "Selected Channel: ${{ inputs.channel }}"
