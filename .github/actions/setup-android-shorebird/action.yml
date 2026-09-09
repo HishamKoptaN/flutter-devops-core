@@ -3,11 +3,9 @@ description: "Initializes Flutter, Shorebird CLI, Gradle, and dependency caches"
 runs:
   using: "composite"
   steps:
-    - shell: bash
-      run: bash ${{ github.action_path }}/../../scripts/get-flutter-version.sh
     - uses: subosito/flutter-action@v2
       with:
-        flutter-version: ${{ env.FLUTTER_VERSION }}
+        flutter-version: 3.44.7
         cache: true  
     - uses: shorebirdtech/setup-shorebird@v1
       with:
@@ -15,8 +13,8 @@ runs:
     - uses: actions/cache@v4
       with:
         path: /opt/hostedtoolcache/flutter
-        key: flutter-sdk-${{ env.FLUTTER_VERSION }}-${{ runner.os }}
-        restore-keys: flutter-sdk-${{ env.FLUTTER_VERSION }}-
+        key: flutter-sdk
+        restore-keys: flutter-sdk
     - uses: actions/cache@v4
       with:
         path: |

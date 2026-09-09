@@ -29,60 +29,7 @@ jobs:
         with:
           fetch-depth: 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      ~/.pub-cache
-      #      ${{ github.workspace }}/.dart_tool
-      #    key: flutter-deps-${{ hashFiles('pubspec.lock', '**/pubspec.yaml') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      flutter-deps-${{ hashFiles('pubspec.lock') }}-
-      #      flutter-deps-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      /usr/local/lib/android/sdk
-      #    key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
-      #    restore-keys: android-sdk-${{ runner.os }}-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      ~/.gradle/caches
-      #      ~/.gradle/wrapper
-      #      android/.gradle
-      #    key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/gradle.properties') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      gradle-${{ hashFiles('**/*.gradle*') }}-${{ runner.os }}-
-      #      gradle-${{ runner.os }}-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      ~/.config/shorebird
-      #      ~/.shorebird
-      #    key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
-      #    restore-keys: |
-      #      shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}-
-      #      shorebird-${{ runner.os }}-
-#
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      ~/.gradle/caches
-      #      ~/.gradle/wrapper
-      #    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-      #    restore-keys: |
-      #      ${{ runner.os }}-gradle-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      build/
-      #      android/.gradle
-      #      android/app/build
-      #      .dart_tool/build
-      #    key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      build-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
-      #      build-${{ runner.os }}-
+  
       - if: ${{ github.ref_name == 'prod' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
@@ -142,3 +89,80 @@ jobs:
           name: android-apk-${{ github.ref_name }}
           path: build/app/outputs/**/*.apk
           retention-days: 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      ~/.pub-cache
+      #      ${{ github.workspace }}/.dart_tool
+      #    key: flutter-deps-${{ hashFiles('pubspec.lock', '**/pubspec.yaml') }}-${{ runner.os }}
+      #    restore-keys: |
+      #      flutter-deps-${{ hashFiles('pubspec.lock') }}-
+      #      flutter-deps-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      /usr/local/lib/android/sdk
+      #    key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
+      #    restore-keys: android-sdk-${{ runner.os }}-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      ~/.gradle/caches
+      #      ~/.gradle/wrapper
+      #      android/.gradle
+      #    key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/gradle.properties') }}-${{ runner.os }}
+      #    restore-keys: |
+      #      gradle-${{ hashFiles('**/*.gradle*') }}-${{ runner.os }}-
+      #      gradle-${{ runner.os }}-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      ~/.config/shorebird
+      #      ~/.shorebird
+      #    key: shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+      #    restore-keys: |
+      #      shorebird-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}-
+      #      shorebird-${{ runner.os }}-
+#
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      ~/.gradle/caches
+      #      ~/.gradle/wrapper
+      #    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      #    restore-keys: |
+      #      ${{ runner.os }}-gradle-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      build/
+      #      android/.gradle
+      #      android/app/build
+      #      .dart_tool/build
+      #    key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
+      #    restore-keys: |
+      #      build-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
+      #      build-${{ runner.os }}-
