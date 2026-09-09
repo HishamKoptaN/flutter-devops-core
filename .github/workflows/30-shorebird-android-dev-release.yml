@@ -1,43 +1,60 @@
-name: 30-shorebird-android-release
+name: 30-shorebird-android-dev-release
 on:
   workflow_call:
     inputs:
       shorebird_app_id:
         type: string
         required: true  
-      track:
-        required: false
-        type: string
-        default: "internal"
     secrets:
       SHOREBIRD_TOKEN:
         required: false
+
 jobs:
-  release-dev:
-    if: ${{ github.ref_name == 'dev' }}
-    uses: ./.github/workflows/30-shorebird-android-dev-release.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets: inherit
-  release-prod:
-    if: ${{ github.ref_name == 'prod' }}
-    uses: ./.github/workflows/30-shorebird-android-prod-release.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
-      track: ${{ inputs.track }}
-    secrets: inherit
-
-
-
-
-
-
-
-
-
-
-
-
+  release:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
+      - id: run
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          flavor="${{ github.ref_name }}"
+          TARGET_ID="${{ inputs.shorebird_app_id }}"
+          sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          latest_version=$(shorebird releases list --platform=android 2>/dev/null | grep 'android' | head -n 1 | awk '{print $2}')
+          if [ -z "$latest_version" ]; then
+            BUILD_NAME="1.0.0"
+            BUILD_NUMBER="1"
+          else
+            raw_base=$(echo "$latest_version" | cut -d'+' -f1)
+            BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
+            raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
+            BUILD_NUMBER=$((raw_build + 1))
+          fi
+          if steps.run.outputs.env == 'dev' \
+          --flavor=$flavor \
+          --build-name=$BUILD_NAME \
+          --build-number=$BUILD_NUMBER \
+          --dart-define=ENV=$flavor \
+          --artifact=apk \
+          '--' --no-tree-shake-icons; then
+          else
+            shorebird release android \
+            --flavor=prod \
+            --dart-define=ENV=prod \
+            --confirm
+            echo "release_built=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.ref_name }}
+          path: build/app/outputs/**/*.apk
+          retention-days: 1
 
 
 

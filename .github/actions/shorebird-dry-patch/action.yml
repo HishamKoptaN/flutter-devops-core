@@ -20,7 +20,6 @@ runs:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
         APP_VERSION=$(grep -i 'version:' pubspec.yaml | head -n 1 | awk -F':' '{print $2}' | tr -d ' "' | tr -d "'" | tr -d '\r')
-        echo "Testing Shorebird Dry Run for Version: $APP_VERSION on Flavor: ${{ github.ref_name }}"
         shorebird patch android \
           --flavor="${{ github.ref_name }}" \
           --release-version="$APP_VERSION" \
