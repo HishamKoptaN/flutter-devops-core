@@ -5,9 +5,6 @@ on:
       shorebird_app_id:
         type: string
         required: true  
-    outputs:
-      changed:
-        value: ${{ jobs.patch.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: true
@@ -15,8 +12,6 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
-    outputs:
-      changed: ${{ steps.verify.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +37,6 @@ jobs:
           --flavor=$flavor \
           --release-version=latest \
           --dart-define=ENV=$flavor '--' --no-tree-shake-icons; then
-            echo "changed=false" >> $GITHUB_OUTPUT
           else
             exit 1
           fi

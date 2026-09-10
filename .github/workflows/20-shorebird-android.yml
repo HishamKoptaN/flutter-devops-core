@@ -15,6 +15,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:

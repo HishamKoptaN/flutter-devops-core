@@ -1,21 +1,18 @@
-name: Shorebird Patch iOS
+name: 20-shorebird-ios-patch.yml
 
 on:
   workflow_call:
     inputs:
-      version_code:
-        required: true
+      shorebird_app_id:
         type: string
-      version_name:
+        required: true  
+    secrets:
+      SHOREBIRD_TOKEN:
         required: true
-        type: string
-
 jobs:
   patch:
     runs-on: macos-latest
-    env:
-      VERSION_CODE: ${{ inputs.version_code }}
-      VERSION_NAME: ${{ inputs.version_name }}
+    environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -25,10 +22,9 @@ jobs:
           restore-keys: flutter-sdk-
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.2"
+          flutter-version: "3.44.7"
           channel: "stable"
           cache: true
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -36,7 +32,6 @@ jobs:
             ${{ github.workspace }}/.dart_tool
           key: flutter-deps-${{ hashFiles('pubspec.lock') }}-macos
           restore-keys: flutter-deps-
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -44,7 +39,6 @@ jobs:
             ~/.shorebird
           key: shorebird-macos-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
           restore-keys: shorebird-macos-
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -53,20 +47,13 @@ jobs:
             ios/.symlinks
           key: ios-patch-${{ github.sha }}-${{ inputs.version_code }}-macos
           restore-keys: ios-patch-macos-
-
       - run: flutter pub get
-
       - run: |
           cd ios
           pod install --repo-update
-
       - env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
           shorebird patch ios \
             --dart-define=ENV=prod \
             --flavor=prod 
-      - run: |
-          echo "✅ تم إرسال الباتش بنجاح!"
-          echo "   الإصدار: $VERSION_CODE ($VERSION_NAME)"
-          echo "   رابط متابعة الباتش: https://console.shorebird.dev/"

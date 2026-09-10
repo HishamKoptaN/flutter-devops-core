@@ -1,8 +1,8 @@
-name: iOS Shorebird Auto
+name: 20-shorebird-ios-release_dev.yml
 on:
   workflow_call:
     inputs:
-      action:
+      shorebird_app_id:
         type: string
         required: true
 jobs:
@@ -13,9 +13,14 @@ jobs:
       P12_PASSWORD: "163200"
     steps:
       - uses: actions/checkout@v4
+      - id: get-build-version
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
+        with:
+          platform: "ios"
+          shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.2"
+          flutter-version: "3.44.7"
           channel: "stable"
           cache: true
       - run: flutter pub get
@@ -32,8 +37,4 @@ jobs:
           security list-keychains -s build.keychain
           security find-identity -v -p codesigning
       - run: |
-          if [ "${{ inputs.action }}" == "patch" ]; then
-            shorebird patch ios --flavor=prod
-          else
-            shorebird release ios --flavor=prod
-          fi
+          shorebird release ios --flavor=prod
