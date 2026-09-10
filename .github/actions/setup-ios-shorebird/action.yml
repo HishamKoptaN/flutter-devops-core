@@ -27,6 +27,8 @@ runs:
           ~/.shorebird
         key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
         restore-keys: shorebird-ios-${{ runner.os }}-
+    - run: flutter pub get
+      shell: bash
     - run: |
         cd ios
         pod install
