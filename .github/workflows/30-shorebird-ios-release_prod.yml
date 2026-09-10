@@ -15,16 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/cache@v4
-        id: flutter-sdk-cache
-        with:
-          path: /Users/runner/hostedtoolcache/flutter
-          key: flutter-sdk-${{ runner.os }}-3.47.2
-      - uses: actions/cache@v4
         with:
           path: ios/Pods
           key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
           restore-keys: |
             ios-pods-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/
+            .dart_tool/
+          key: ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-
+            ${{ runner.os }}-flutter-build-
       - uses: actions/cache@v4
         with:
           path: |
