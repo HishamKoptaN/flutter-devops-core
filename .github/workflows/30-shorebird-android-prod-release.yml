@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
       - id: get-build-version
-        uses: ./.github/actions/get-build-version
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - run: |
