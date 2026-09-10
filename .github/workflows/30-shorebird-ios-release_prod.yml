@@ -60,6 +60,7 @@ jobs:
             shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - run: |
               shorebird release ios \
+              --flutter-version=3.44.7 \
               --flavor=${{ github.ref_name }} \
               --dart-define=ENV=${{ github.ref_name }} \
               --build-name=${{ steps.get-build-version.outputs.build_name }} \
