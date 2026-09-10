@@ -40,7 +40,7 @@ runs:
          security create-keychain -p "" build.keychain
          security default-keychain -s build.keychain
          security unlock-keychain -p "" build.keychain
-         security import ios/certificate.p12 -k build.keychain -P "$p12_password" -A -t cert -f pkcs12
+         security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A -t cert -f pkcs12
          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
          security find-identity -v -p codesigning   
     - run: flutter pub get
