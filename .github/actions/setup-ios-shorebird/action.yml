@@ -25,13 +25,6 @@ runs:
           ${{ github.workspace }}/.dart_tool
         key: flutter-deps-ios-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
         restore-keys: flutter-deps-ios-   
-    - uses: actions/cache@v4
-      with:
-        path: |
-          ~/.config/shorebird
-          ~/.shorebird
-        key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
-        restore-keys: shorebird-ios-${{ runner.os }}-
     - shell: bash 
       env:
         P12_PASSWORD: ${{ inputs.p12_password }}
