@@ -10,7 +10,7 @@ on:
       SHOREBIRD_TOKEN:
         required: true
       GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
-        required: true
+        required: false
 jobs:
   android:
     uses: ./.github/workflows/20-shorebird-android.yml
