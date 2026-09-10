@@ -14,7 +14,11 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
+      - uses: actions/cache@v4
+        id: flutter-sdk-cache
+        with:
+          path: /Users/runner/hostedtoolcache/flutter
+          key: flutter-sdk-${{ runner.os }}-3.47.2
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.2
@@ -22,6 +26,12 @@ jobs:
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
+      - uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
+          restore-keys: |
+            ios-pods-
       - uses: actions/cache@v4
         with:
           path: |
