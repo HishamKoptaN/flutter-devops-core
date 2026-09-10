@@ -31,19 +31,20 @@ runs:
         # 2. جلب بيانات الإصدارات والبيئة الحالية
         # ==========================================
 
-        raw_list=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
-        build_numbers=$(echo "$raw_list" | grep -oE '\+[0-9]+' | tr -d '+' || true)
+        raw_list_platform=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
+        raw_list_all=$(shorebird releases list 2>/dev/null || true)
+        build_numbers=$(echo "$raw_list_all" | grep -oE '\+[0-9]+' | tr -d '+' || true)
         current_flutter_version=$(flutter --version | head -n 1 | awk '{print $2}')
 
         # ==========================================
         # 3. تحديد اسم الإصدار الأساسي (Build Name)
         # ==========================================
 
-        if [ -z "$raw_list" ]; then
+        if [ -z "$raw_list_platform" ]; then
           BUILD_NAME="1.0.0"
           BUILD_NUMBER="1"
         else
-          latest_full_version=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 || echo "1.0.0+1")
+          latest_full_version=$(echo "$raw_list_platform" | grep "$PLATFORM" | head -n 1 || echo "1.0.0+1")
           version_field=$(echo "$latest_full_version" | awk '{print $2}')
           raw_base=$(echo "$version_field" | cut -d'+' -f1)
           BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
