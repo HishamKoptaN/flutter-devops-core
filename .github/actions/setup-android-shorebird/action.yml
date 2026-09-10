@@ -7,7 +7,9 @@ runs:
       with:
         flutter-version: 3.44.7
         cache: true  
-
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
     - uses: actions/cache@v4
       with:
         path: /opt/hostedtoolcache/flutter
