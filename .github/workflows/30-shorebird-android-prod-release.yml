@@ -46,4 +46,4 @@ jobs:
           track: ${{ env.TRACK }}
           status: ${{ env.TRACK == 'production' && 'completed' || 'draft' }}
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          
+          changesNotSentForReview: true

@@ -1,4 +1,4 @@
-name: dry-patch
+name: shorebird-dry-patch
 description: "Checks if Shorebird patch is viable using dry-run"
 
 inputs:
@@ -19,18 +19,17 @@ runs:
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
-        APP_VERSION=$(grep -i 'version:' pubspec.yaml | head -n 1 | awk -F':' '{print $2}' | tr -d ' "' | tr -d "'" | tr -d '\r')
-        shorebird patch android \
-          --flavor="${{ github.ref_name }}" \
-          --release-version="$APP_VERSION" \
-          --dry-run
-        echo "exit_code=$?" >> $GITHUB_OUTPUT
+       if shorebird patch android --flavor="${{ github.ref_name }}" --dry-run; then
+          echo "dry_run_status=success" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Dry-run failed or patch is not possible. Forcing fallback to release."
+          echo "dry_run_status=failed" >> $GITHUB_OUTPUT
+        fi
     - id: set_output
       shell: bash
       run: |
-        EXIT_CODE="${{ steps.dry_run.outputs.exit_code }}"
-        echo "Shorebird dry-run exit code: $EXIT_CODE"
-        if [ "$EXIT_CODE" -eq 0 ]; then
+        STATUS="${{ steps.dry_run.outputs.dry_run_status }}"
+        if [ "$STATUS" == "success" ]; then
           echo "build_type=patch" >> $GITHUB_OUTPUT
         else
           echo "build_type=release" >> $GITHUB_OUTPUT
