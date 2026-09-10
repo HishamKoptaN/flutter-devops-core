@@ -2,6 +2,9 @@ name: shorebird-dry-patch
 description: "Checks if Shorebird patch is viable using dry-run"
 
 inputs:
+  platform:
+    type: string
+    required: true
   shorebird_token:
     description: "Shorebird Secret Token"
     required: true
@@ -19,7 +22,7 @@ runs:
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
-       if shorebird patch android --flavor="${{ github.ref_name }}" --dry-run; then
+       if shorebird patch ${{ inputs.platform }} --flavor="${{ github.ref_name }}" --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
         else
           echo "❌ Dry-run failed or patch is not possible. Forcing fallback to release."

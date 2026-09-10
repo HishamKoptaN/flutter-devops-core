@@ -25,7 +25,7 @@ jobs:
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-dry-patch@prod
         with:
-          platform: 'android'
+          platform: 'ios'
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
   shorebird_patch:
     needs: check

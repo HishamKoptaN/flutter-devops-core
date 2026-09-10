@@ -23,18 +23,13 @@ jobs:
       cache_hit: ${{ steps.cache-check.outputs.cache_hit }}
     steps:
       - uses: actions/checkout@v4
-      
-      # Flutter SDK Cache (Level 3)
-      - name: 🚀 Cache Flutter SDK
-        if: inputs.cache_level == 'full'
+      - id: flutter-cache
         uses: actions/cache@v4
         with:
           path: |
             /opt/hostedtoolcache/flutter
           key: flutter-${{ runner.os }}-3.41.9
-        id: flutter-cache
-      - name: 📦 Cache Pub Dependencies
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.pub-cache
@@ -42,10 +37,7 @@ jobs:
           restore-keys: |
             pub-${{ runner.os }}-
         id: pub-cache
-      
-      # Platform-specific caches
-      - name: 🤖 Cache Android Dependencies
-        if: contains(inputs.platforms, 'android')
+      - if: contains(inputs.platforms, 'android')
         uses: actions/cache@v4
         with:
           path: |
@@ -55,9 +47,7 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
         id: gradle-cache
-      
-      - name: 🍎 Cache iOS Dependencies
-        if: contains(inputs.platforms, 'ios')
+      - if: contains(inputs.platforms, 'ios')
         uses: actions/cache@v4
         with:
           path: |
@@ -67,10 +57,7 @@ jobs:
           restore-keys: |
             pods-${{ runner.os }}-
         id: pods-cache
-      
-      - name: 🖥️ Cache Windows Build
-        if: contains(inputs.platforms, 'windows')
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             build/windows/
@@ -78,19 +65,13 @@ jobs:
           restore-keys: |
             windows-${{ runner.os }}-
         id: windows-cache
-      
-      - name: 🌐 Cache Web Build
-        if: contains(inputs.platforms, 'web')
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             build/web/
           key: web-${{ runner.os }}-${{ github.sha }}
         id: web-cache
-      
-      # Build Directory Cache (Level 2)
-      - name: 🗂️ Cache Build Directory
-        if: inputs.cache_level == 'standard' || inputs.cache_level == 'full'
+      - if: inputs.cache_level == 'standard' || inputs.cache_level == 'full'
         uses: actions/cache@v4
         with:
           path: |
@@ -100,7 +81,6 @@ jobs:
             build-${{ runner.os }}-${{ github.ref_name }}-
             build-${{ runner.os }}-
         id: build-cache
-      
       - id: cache-check
         run: |
           cache_hit="false"
@@ -112,14 +92,4 @@ jobs:
              [ "${{ steps.build-cache.outputs.cache-hit }}" == "true" ]; then
             cache_hit="true"
           fi
-          
-          echo "🎯 Cache Status:"
-          echo "Flutter SDK: ${{ steps.flutter-cache.outputs.cache-hit || 'N/A' }}"
-          echo "Pub Dependencies: ${{ steps.pub-cache.outputs.cache-hit }}"
-          echo "Gradle: ${{ steps.gradle-cache.outputs.cache-hit || 'N/A' }}"
-          echo "CocoaPods: ${{ steps.pods-cache.outputs.cache-hit || 'N/A' }}"
-          echo "Windows Build: ${{ steps.windows-cache.outputs.cache-hit || 'N/A' }}"
-          echo "Build Directory: ${{ steps.build-cache.outputs.cache-hit }}"
-          echo "Overall Cache Hit: $cache_hit"
-          
           echo "cache_hit=$cache_hit" >> $GITHUB_OUTPUT

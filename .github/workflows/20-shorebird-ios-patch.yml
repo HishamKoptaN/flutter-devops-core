@@ -18,13 +18,11 @@ jobs:
       VERSION_NAME: ${{ inputs.version_name }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/cache@v4
         with:
           path: /Users/runner/hostedtoolcache/flutter
-          key: flutter-sdk-3.41.2-macos
+          key: flutter-sdk
           restore-keys: flutter-sdk-
-
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.2"

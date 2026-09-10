@@ -17,54 +17,8 @@ jobs:
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets: inherit
-
-  # ios:
-  #   needs: [version, check]
-  #   if: |
-  #     always() && 
-  #     needs.check.result == 'success' && 
-  #     needs.check.outputs.ios_built == 'true'
-  #   uses: ./.github/workflows/30-deploy-ios.yml
-  #   with:
-  #     full_version: ${{ needs.version.outputs.full_version }}
-  #     base_version: ${{ needs.version.outputs.base_version }}
-  #     use_patch: ${{ needs.check.outputs.ios_patch == 'true' }}
-  #   secrets: inherit
-
-  # macos:
-  #   needs: [version, check]
-  #   if: |
-  #     always() && 
-  #     needs.check.result == 'success' && 
-  #     needs.check.outputs.macos_built == 'true'
-  #   uses: ./.github/workflows/30-deploy-macos.yml
-  #   with:
-  #     full_version: ${{ needs.version.outputs.full_version }}
-  #     base_version: ${{ needs.version.outputs.base_version }}
-  #     use_patch: ${{ needs.check.outputs.macos_patch == 'true' }}
-  #   secrets: inherit
-  # linux:
-  #   needs: [version, check]
-  #   if: |
-  #     always() && 
-  #     needs.check.result == 'success' && 
-  #     needs.check.outputs.linux_built == 'true'
-  #   uses: ./.github/workflows/30-deploy-linux.yml
-  #   with:
-  #     full_version: ${{ needs.version.outputs.full_version }}
-  #     base_version: ${{ needs.version.outputs.base_version }}
-  #     use_patch: ${{ needs.check.outputs.linux_patch == 'true' }}
-  #   secrets: inherit
-
-  # windows:
-  #   needs: [version, check]
-  #   if: |
-  #     always() && 
-  #     needs.check.result == 'success' && 
-  #     needs.check.outputs.windows_built == 'true'
-  #   uses: ./.github/workflows/30-deploy-windows.yml
-  #   with:
-  #     full_version: ${{ needs.version.outputs.full_version }}
-  #     base_version: ${{ needs.version.outputs.base_version }}
-  #     use_patch: ${{ needs.check.outputs.windows_patch == 'true' }}
-  #   secrets: inherit
+  ios:
+    uses: ./.github/workflows/20-shorebird-ios.yml
+    with:
+      shorebird_app_id: ${{ inputs.shorebird_app_id }}
+    secrets: inherit
