@@ -31,10 +31,10 @@ jobs:
       - run: ls -la *.p12 *.mobileprovision
       - run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp muein_orders_appstore_prod.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
           security create-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security import ios/certificate.p12 -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign
           security unlock-keychain -p "" build.keychain
           security set-keychain-settings -t 3600 -u build.keychain
           security list-keychains -s build.keychain

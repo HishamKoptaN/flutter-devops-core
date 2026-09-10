@@ -45,7 +45,7 @@ jobs:
             build/
             ios/Pods
             ios/.symlinks
-          key: ios-patch-${{ github.sha }}-${{ inputs.version_code }}-macos
+          key: ios-patch-${{ github.sha }}-macos
           restore-keys: ios-patch-macos-
       - run: flutter pub get
       - run: |
