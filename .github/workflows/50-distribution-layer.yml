@@ -2,10 +2,6 @@ name: Distribution Layer
 on:
   workflow_call:
     inputs:
-      platforms:
-        type: string
-        required: false
-        default: ""
       windows_exe_name:
         type: string
         required: false
