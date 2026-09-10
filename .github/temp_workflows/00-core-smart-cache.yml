@@ -19,6 +19,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       cache_hit: ${{ steps.cache-check.outputs.cache_hit }}
     steps:

@@ -46,6 +46,7 @@ env:
 jobs:
   prepare-build:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       version_code: ${{ steps.version.outputs.version_code }}
       version_name: ${{ steps.version.outputs.version_name }}
@@ -78,6 +79,7 @@ jobs:
     needs: prepare-build
     if: needs.prepare-build.outputs.should_trigger == 'true'
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     steps:
       - id: codemagic_trigger
         run: |

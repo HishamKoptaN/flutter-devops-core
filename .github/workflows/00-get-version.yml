@@ -9,6 +9,7 @@ on:
 jobs:
   version:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       full_version: ${{ steps.v.outputs.full_version }}
       base_version: ${{ steps.v.outputs.base_version }}

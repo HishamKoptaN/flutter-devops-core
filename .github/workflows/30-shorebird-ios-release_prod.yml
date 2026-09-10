@@ -5,6 +5,10 @@ on:
       shorebird_app_id:
         type: string
         required: true
+    secrets:
+      P12_PASSWORD:
+        required: true
+      
 jobs:
   ios:
     runs-on: macos-latest

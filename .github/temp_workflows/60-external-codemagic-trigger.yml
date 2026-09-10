@@ -6,6 +6,7 @@ on:
 jobs:
   trigger:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     steps:
       - run: |
           curl -X POST "https://api.codemagic.io/builds" \

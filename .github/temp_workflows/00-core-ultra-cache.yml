@@ -23,6 +23,7 @@ on:
 jobs:
   analyze:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       decision: ${{ steps.decide.outputs.decision }}
       cache_keys: ${{ steps.keys.outputs.cache_keys }}

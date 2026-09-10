@@ -27,6 +27,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       pub_cache_key: ${{ steps.keys.outputs.pub_cache_key }}
       gradle_cache_key: ${{ steps.keys.outputs.gradle_cache_key }}

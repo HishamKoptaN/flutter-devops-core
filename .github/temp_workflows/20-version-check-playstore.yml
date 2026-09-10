@@ -17,6 +17,7 @@ on:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       version_exists: ${{ steps.check-version.outputs.exists }}
       version_code: ${{ steps.get-version.outputs.version_code }}

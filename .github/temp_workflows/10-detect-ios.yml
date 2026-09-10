@@ -24,6 +24,7 @@ env:
 jobs:
   detect:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
     outputs:
       build_type: ${{ steps.decision.outputs.build_type }}
       version_name: ${{ steps.version.outputs.version_name }}

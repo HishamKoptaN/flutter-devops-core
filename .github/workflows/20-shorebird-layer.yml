@@ -16,4 +16,5 @@ jobs:
     uses: ./.github/workflows/20-shorebird-ios.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets: inherit
+    secrets:
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
