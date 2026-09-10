@@ -14,10 +14,9 @@ runs:
   using: "composite"
   steps:
     - id: dry_run
-      shell: bash
-      continue-on-error: true
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
+      shell: bash
       run: |
        if shorebird patch ${{ inputs.platform }} --flavor="${{ github.ref_name }}" --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
@@ -25,6 +24,7 @@ runs:
           echo "❌ Dry-run failed or patch is not possible. Forcing fallback to release."
           echo "dry_run_status=failed" >> $GITHUB_OUTPUT
         fi
+      continue-on-error: true
     - id: set_output
       shell: bash
       run: |

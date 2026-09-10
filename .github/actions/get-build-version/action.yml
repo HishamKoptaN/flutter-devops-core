@@ -19,20 +19,24 @@ runs:
       shell: bash
       run: |
         TARGET_ID="${{ inputs.shorebird_app_id }}"
+        PLATFORM="${{ inputs.platform }}"
         if [ "$RUNNER_OS" == "macOS" ]; then
           sed -i '' "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
         else
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
         fi
-        latest_version=$(shorebird releases list --platform=${{ inputs.platform }} 2>/dev/null | grep '${{ inputs.platform }}' | head -n 1 | awk '{print $2}' || true)
-        if [ -z "$latest_version" ]; then
+        raw_list=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
+        build_numbers=$(echo "$raw_list" | grep -oE '\+[0-9]+' | tr -d '+' || true)
+        if [ -z "$build_numbers" ]; then
           BUILD_NAME="1.0.0"
           BUILD_NUMBER="1"
         else
-          raw_base=$(echo "$latest_version" | cut -d'+' -f1)
+          max_build=$(echo "$build_numbers" | sort -n | tail -n 1)
+          latest_full_version=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 | awk '{print $2}' || echo "1.0.0+1")
+          raw_base=$(echo "$latest_full_version" | cut -d'+' -f1)
           BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
-          raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
-          BUILD_NUMBER=$((raw_build + 1))
+          [ -z "$BUILD_NAME" ] && BUILD_NAME="1.0.0"
+          BUILD_NUMBER=$((max_build + 1))
         fi
         echo "Calculated Build Name: $BUILD_NAME"
         echo "Calculated Build Number: $BUILD_NUMBER"
