@@ -6,15 +6,10 @@ on:
       shorebird_app_id:
         type: string
         required: true
-    secrets:
-      P12_PASSWORD:
-        required: true
 jobs:
   check:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
-    env:
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
@@ -47,5 +42,4 @@ jobs:
     uses: ./.github/workflows/30-shorebird-ios-release_prod.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets:
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+    secrets: inherit
