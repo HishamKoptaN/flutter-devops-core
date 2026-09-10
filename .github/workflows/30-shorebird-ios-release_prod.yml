@@ -1,4 +1,4 @@
-name: 20-shorebird-ios-release_dev.yml
+name: 30-shorebird-ios-release_dev.yml
 on:
   workflow_call:
     inputs:
@@ -8,6 +8,8 @@ on:
     secrets:
       SHOREBIRD_TOKEN:
         required: true
+      P12_PASSWORD:
+        required: true  
 jobs:
   ios:
     runs-on: macos-latest

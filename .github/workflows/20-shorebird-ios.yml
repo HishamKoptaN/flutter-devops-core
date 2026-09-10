@@ -40,3 +40,4 @@ jobs:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
