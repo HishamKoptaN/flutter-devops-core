@@ -46,6 +46,8 @@ jobs:
             shorebird release android \
             --flavor=$flavor \
             --dart-define=ENV=$flavor \
+            --build-name=$BUILD_NAME \
+            --build-number=$BUILD_NUMBER \
             --confirm
       - id: upload-play
         uses: r0adkll/upload-google-play@v1
