@@ -34,9 +34,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
+
 
       - uses: subosito/flutter-action@v2
         with:

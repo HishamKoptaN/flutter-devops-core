@@ -47,8 +47,6 @@ jobs:
           key: shorebird-macos-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
           restore-keys: shorebird-macos-
 
-      - uses: shorebirdtech/setup-shorebird@v1
-
       - uses: actions/cache@v4
         with:
           path: |
