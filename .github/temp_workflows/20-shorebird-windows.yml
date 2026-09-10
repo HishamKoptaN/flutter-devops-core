@@ -19,10 +19,6 @@ on:
     outputs:
       changed:
         value: ${{ jobs.shorebird.outputs.changed }}
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: false
-
 jobs:
   shorebird:
     runs-on: windows-latest

@@ -9,11 +9,6 @@ on:
         required: false
         type: string
         default: "internal"
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: true
-      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
-        required: true
 jobs:
   release-dev:
     if: ${{ github.ref_name == 'dev' }}

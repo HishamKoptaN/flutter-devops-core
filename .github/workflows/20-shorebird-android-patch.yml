@@ -5,9 +5,6 @@ on:
       shorebird_app_id:
         type: string
         required: true  
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: true
 jobs:
   patch:
     runs-on: ubuntu-latest

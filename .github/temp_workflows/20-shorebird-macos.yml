@@ -2,28 +2,12 @@ name: Shorebird macOS Deploy
 
 on:
   workflow_call:
-    inputs:
-      flavor:
-        type: string
-        required: true
-      full_version:
-        type: string
-        required: true
-      base_version:
-        type: string
-        required: false
-      use_patch:
-        type: boolean
-        required: false
-        default: true
     outputs:
       release_completed:
         value: ${{ jobs.shorebird.outputs.release_completed }}
       patch_completed:
         value: ${{ jobs.shorebird.outputs.patch_completed }}
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: false
+    secrets: inherit
 
 jobs:
   shorebird:

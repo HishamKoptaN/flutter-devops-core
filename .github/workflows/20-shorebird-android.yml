@@ -6,12 +6,6 @@ on:
       shorebird_app_id:
         type: string
         required: true
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: true
-      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
-        required: false    
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -34,14 +28,11 @@ jobs:
     uses: ./.github/workflows/20-shorebird-android-patch.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets:
-      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+    secrets: inherit
   shorebird_release:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'release' }}
     uses: ./.github/workflows/30-shorebird-android-release.yml
     with:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets:
-      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+    secrets: inherit

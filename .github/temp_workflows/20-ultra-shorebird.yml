@@ -15,9 +15,6 @@ on:
         required: false
         default: "auto"
         description: "auto, full_release, patch_first, reuse_artifacts"
-    secrets:
-      SHOREBIRD_TOKEN:
-        required: false
 
 jobs:
   shorebird:
