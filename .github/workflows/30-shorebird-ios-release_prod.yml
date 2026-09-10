@@ -17,11 +17,9 @@ jobs:
         with:
           platform: "ios"
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
-      - uses: subosito/flutter-action@v2
+      - uses: shorebirdtech/setup-shorebird@v1
         with:
-          flutter-version: "3.44.7"
-          channel: "stable"
-          cache: true
+          cache: true   
       - run: flutter pub get
       - run: cd ios && pod install
       - run: ls -la ios/*.p12 ios/*.mobileprovision
