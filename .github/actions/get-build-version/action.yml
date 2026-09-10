@@ -18,6 +18,7 @@ runs:
     - id: version_calculator
       shell: bash
       run: |
+
         TARGET_ID="${{ inputs.shorebird_app_id }}"
         PLATFORM="${{ inputs.platform }}"
         if [ "$RUNNER_OS" == "macOS" ]; then
@@ -25,26 +26,55 @@ runs:
         else
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
         fi
+
+        # ==========================================
+        # 2. جلب بيانات الإصدارات والبيئة الحالية
+        # ==========================================
+
         raw_list=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
         build_numbers=$(echo "$raw_list" | grep -oE '\+[0-9]+' | tr -d '+' || true)
-        if [ -z "$build_numbers" ]; then
+        current_flutter_version=$(flutter --version | head -n 1 | awk '{print $2}')
+
+        # ==========================================
+        # 3. تحديد اسم الإصدار الأساسي (Build Name)
+        # ==========================================
+
+        if [ -z "$raw_list" ]; then
           BUILD_NAME="1.0.0"
           BUILD_NUMBER="1"
         else
-          max_build=$(echo "$build_numbers" | sort -n | tail -n 1)
-          current_flutter_version=$(flutter --version | head -n 1 | awk '{print $2}')
-
-          latest_line=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 || true)
           latest_flutter_version=$(echo "$latest_line" | awk '{print $NF}')
-          
-          version_field=$(echo "$latest_full_version" | awk '{print $2}')
-          raw_base=$(echo "$version_field" | cut -d'+' -f1)
+          raw_base=$(echo "$latest_full_version" | cut -d'+' -f1)
           BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
-          if [ "$current_flutter_version" != "$latest_flutter_version" ]; then
-            BUILD_NUMBER=$((max_build + 1))
-          else
-            BUILD_NUMBER=$((max_build + 1))
-          fi
+        fi
+         [ -z "$BUILD_NAME" ] && BUILD_NAME="1.0.0"
+
+        # ==========================================
+        # 4. خوارزمية البحث عن رقم بناء صالح (Smart Loop)
+        # ==========================================  
+
+        if [ -z "$build_numbers" ]; then
+          BUILD_NUMBER="1"
+         else
+          max_build=$(echo "$build_numbers" | sort -n | tail -n 1)
+          candidate_number=$((max_build + 1))
+
+          while true; do
+            existing_release=$(echo "$raw_list" | grep "+$candidate_number" || true)
+
+            if [ -z "$existing_release" ]; then
+              BUILD_NUMBER=$candidate_number
+              break
+            else
+              existing_flutter_version=$(echo "$existing_release" | awk '{print $NF}')
+              if [ "$current_flutter_version" == "$existing_flutter_version" ]; then
+                BUILD_NUMBER=$candidate_number
+                break
+              else
+                candidate_number=$((candidate_number + 1))
+              fi  
+            fi
+          done
         fi
         echo "Calculated Build Name: $BUILD_NAME"
         echo "Calculated Build Number: $BUILD_NUMBER"
