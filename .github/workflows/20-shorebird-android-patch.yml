@@ -10,8 +10,7 @@ on:
         value: ${{ jobs.patch.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
-        required: false
-
+        required: true
 jobs:
   patch:
     runs-on: ubuntu-latest
@@ -21,8 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
-  
+          fetch-depth: 0
       - run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
       - run: |

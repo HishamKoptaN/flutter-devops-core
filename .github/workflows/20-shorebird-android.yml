@@ -8,9 +8,9 @@ on:
         required: true
     secrets:
       SHOREBIRD_TOKEN:
-        required: false
+        required: true
       GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
-        required: false    
+        required: true    
 
 jobs:
   check:
@@ -42,3 +42,4 @@ jobs:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}

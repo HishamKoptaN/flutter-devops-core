@@ -12,7 +12,8 @@ on:
     secrets:
       SHOREBIRD_TOKEN:
         required: false
-
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
+        required: true
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -23,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 
+          fetch-depth: 0
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod

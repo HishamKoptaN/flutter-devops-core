@@ -11,7 +11,9 @@ on:
         default: "internal"
     secrets:
       SHOREBIRD_TOKEN:
-        required: false
+        required: true
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
+        required: true
 jobs:
   release-dev:
     if: ${{ github.ref_name == 'dev' }}
@@ -26,6 +28,7 @@ jobs:
       shorebird_app_id: ${{ inputs.shorebird_app_id }}
       track: ${{ inputs.track }}
     secrets: inherit
+
 
 
 
