@@ -17,6 +17,7 @@ jobs:
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-shorebird@prod
         with:
           p12_password: ${{ secrets.P12_PASSWORD }}
+          shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:

@@ -3,6 +3,8 @@ description: setup-ios-shorebird
 inputs:
   p12_password:
     required: true
+  shorebird_token:
+    required: true 
 runs:
   using: "composite"
   steps:
@@ -13,6 +15,8 @@ runs:
     - uses: shorebirdtech/setup-shorebird@v1
       with:
         cache: true
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}    
     - uses: actions/cache@v4
       with:
         path: |
