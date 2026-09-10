@@ -30,5 +30,6 @@ jobs:
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
+            --target=lib/main.dart \
             --confirm \ 
             --verbose
