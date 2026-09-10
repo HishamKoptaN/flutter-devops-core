@@ -33,13 +33,18 @@ runs:
         else
           max_build=$(echo "$build_numbers" | sort -n | tail -n 1)
           current_flutter_version=$(flutter --version | head -n 1 | awk '{print $2}')
-          latest_full_version=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 || true)
+
+          latest_line=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 || true)
+          latest_flutter_version=$(echo "$latest_line" | awk '{print $NF}')
+          
           version_field=$(echo "$latest_full_version" | awk '{print $2}')
           raw_base=$(echo "$version_field" | cut -d'+' -f1)
           BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
-          [ -z "$BUILD_NAME" ] && BUILD_NAME="1.0.0"
-          
-          BUILD_NUMBER=$((max_build + 1))
+          if [ "$current_flutter_version" != "$latest_flutter_version" ]; then
+            BUILD_NUMBER=$((max_build + 1))
+          else
+            BUILD_NUMBER=$((max_build + 1))
+          fi
         fi
         echo "Calculated Build Name: $BUILD_NAME"
         echo "Calculated Build Number: $BUILD_NUMBER"
