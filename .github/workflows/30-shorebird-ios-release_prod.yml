@@ -11,9 +11,10 @@ on:
 jobs:
   ios:
     runs-on: macos-latest
+    environment: ${{ github.ref_name }}
     env:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-      P12_PASSWORD: "163200"
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - id: get-build-version
@@ -40,4 +41,9 @@ jobs:
           security list-keychains -s build.keychain
           security find-identity -v -p codesigning
       - run: |
-          shorebird release ios --flavor=prod
+            shorebird release ios \
+            --flavor=${{ github.ref_name }} \
+            --dart-define=ENV=${{ github.ref_name }} \
+            --build-name=${{ steps.get-build-version.outputs.build_name }} \
+            --build-number=${{ steps.get-build-version.outputs.build_number }} \
+            --confirm
