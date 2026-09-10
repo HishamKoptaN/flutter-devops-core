@@ -13,10 +13,19 @@ jobs:
   check:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
+    env:
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          if [ -z "$P12_PASSWORD" ]; then
+            echo "TRACING ERROR: P12_PASSWORD is empty in File 2 (20-shorebird-ios.yml)!"
+            exit 1
+          else
+            echo "TRACING SUCCESS: P12_PASSWORD is alive in File 2 (length: ${#P12_PASSWORD})"
+          fi
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true 
