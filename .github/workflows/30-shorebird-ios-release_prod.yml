@@ -32,8 +32,7 @@ jobs:
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
             --target=lib/main.dart \
             --export-options-plist=ios/ExportOptions.plist \
-            --confirm \
-            --verbose
+            --confirm
       - id: find_ipa
         run: |
           IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -n 1)
