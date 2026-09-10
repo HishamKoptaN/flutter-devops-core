@@ -47,7 +47,7 @@ jobs:
             --verbose
       - uses: apple-actions/upload-testflight-build@v3
         with:
-           app-path: 'build/ios/ipa/YourAppName.ipa'
-           issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-           api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-           api-private-key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+           app-path: 'build/ios/ipa/muein_orders.ipa'
+           issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+           api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+           api-private-key: ${{ vars.APP_STORE_CONNECT_API_PRIVATE_KEY }}
