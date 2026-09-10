@@ -37,15 +37,3 @@ runs:
         cd ios
         pod install
       shell: bash
-    - env:
-        P12_PASSWORD: ${{ inputs.p12_password }}
-      run: |
-        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-        security create-keychain -p "" build.keychain
-        security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
-        security unlock-keychain -p "" build.keychain
-        security set-keychain-settings -t 3600 -u build.keychain
-        security list-keychains -s build.keychain
-        security find-identity -v -p codesigning
-      shell: bash

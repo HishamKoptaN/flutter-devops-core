@@ -37,7 +37,7 @@ jobs:
   # cleanup:
   #   needs: [build_installer, distribute]
   #   if: always()
-  #   uses: ./.github/workflows/50-core-cleanup-releases.yml
+  #   uses: ./.github/workflows/50-cleanup-releases.yml
   #   with:
   #     flavor: ${{ inputs.flavor }}
   #   secrets:

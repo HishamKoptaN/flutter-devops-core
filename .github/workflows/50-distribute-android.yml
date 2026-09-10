@@ -23,7 +23,6 @@ jobs:
           path: build/app/outputs/
         continue-on-error: true
       - run: |
-          echo "📁 Listing build outputs..."
           find build/app/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
       - id: find_apk
         run: |
