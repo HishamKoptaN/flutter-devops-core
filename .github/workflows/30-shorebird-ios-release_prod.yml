@@ -5,7 +5,6 @@ on:
       shorebird_app_id:
         type: string
         required: true
-      
 jobs:
   ios:
     runs-on: macos-latest
@@ -15,28 +14,65 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-shorebird@prod
+     # - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-shorebird@prod
+     #   with:
+     #     p12_password: ${{ secrets.P12_PASSWORD }}
+     #     shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+      - uses: subosito/flutter-action@v2
         with:
-          p12_password: ${{ secrets.P12_PASSWORD }}
-          shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+          flutter-version: 3.47.2
+          cache: true  
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: flutter-deps-ios-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
+          restore-keys: flutter-deps-ios-   
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.config/shorebird
+            ~/.shorebird
+          key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+          restore-keys: shorebird-ios-${{ runner.os }}-
+      - shell: bash 
+        run: |
+           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+           cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+           security create-keychain -p "" build.keychain
+           security default-keychain -s build.keychain
+           security unlock-keychain -p "" build.keychain
+           security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A -t cert -f pkcs12
+           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+           security find-identity -v -p codesigning   
+      - run: flutter pub get
+        shell: bash
+      - run: |
+          cd ios
+          pod install
+          shell: bash
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
-          platform: "ios"
-          shorebird_app_id: ${{ inputs.shorebird_app_id }}
+            platform: "ios"
+            shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - run: |
-            shorebird release ios \
-            --flavor=${{ github.ref_name }} \
-            --dart-define=ENV=${{ github.ref_name }} \
-            --build-name=${{ steps.get-build-version.outputs.build_name }} \
-            --build-number=${{ steps.get-build-version.outputs.build_number }} \
-            --target=lib/main.dart \
-            --export-options-plist=ios/ExportOptions.plist \
-            --confirm
+              shorebird release ios \
+              --flavor=${{ github.ref_name }} \
+              --dart-define=ENV=${{ github.ref_name }} \
+              --build-name=${{ steps.get-build-version.outputs.build_name }} \
+              --build-number=${{ steps.get-build-version.outputs.build_number }} \
+              --target=lib/main.dart \
+              --export-options-plist=ios/ExportOptions.plist \
+              --confirm
       - id: find_ipa
         run: |
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -n 1)
-          echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
+            IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -n 1)
+            echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
       - uses: apple-actions/upload-testflight-build@v3
         with:
            app-path: ${{ steps.find_ipa.outputs.ipa_path }}
