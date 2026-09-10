@@ -19,6 +19,7 @@ jobs:
     environment: ${{ github.ref_name }}
     env:
      TRACK: ${{ inputs.track }} 
+     SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -3,6 +3,7 @@ description: get-build-version
 
 inputs:
   platform:
+    type: string
     required: true
   shorebird_app_id:
     required: true
@@ -11,7 +12,6 @@ outputs:
     value: ${{ steps.version_calculator.outputs.BUILD_NAME }}
   build_number:
     value: ${{ steps.version_calculator.outputs.BUILD_NUMBER }}
-
 runs:
   using: "composite"
   steps:
