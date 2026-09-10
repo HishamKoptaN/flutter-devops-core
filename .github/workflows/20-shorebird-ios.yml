@@ -16,13 +16,6 @@ jobs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          if [ -z "${{ secrets.P12_PASSWORD }}" ]; then
-            echo "TRACING ERROR: ${{ secrets.P12_PASSWORD }} is empty in File 2 (20-shorebird-ios.yml)!"
-            exit 1
-          else
-            echo "TRACING SUCCESS: ${{ secrets.P12_PASSWORD }} is alive in File 2 (length: ${{ secrets.P12_PASSWORD }}"
-          fi
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true 

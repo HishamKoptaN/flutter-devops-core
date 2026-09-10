@@ -10,6 +10,8 @@ jobs:
   ios:
     runs-on: macos-latest
     environment: ${{ github.ref_name }}
+    env:
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - id: get-build-version
