@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.flavor }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/workflows/00-ultra-cache-setup.yml
         with:
           platforms: ${{ inputs.platforms }}

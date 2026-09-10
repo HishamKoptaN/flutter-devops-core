@@ -23,7 +23,7 @@ jobs:
     outputs:
       cache_hit: ${{ steps.cache-check.outputs.cache_hit }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: flutter-cache
         uses: actions/cache@v4
         with:

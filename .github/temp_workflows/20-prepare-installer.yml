@@ -28,7 +28,7 @@ jobs:
     outputs:
       prepared: ${{ steps.prepare.outputs.prepared }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
 

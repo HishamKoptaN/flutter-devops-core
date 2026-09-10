@@ -32,7 +32,7 @@ jobs:
       store_version: ${{ steps.store_check.outputs.store_version }}
       has_native_changes: ${{ steps.native_check.outputs.has_native_changes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with: { fetch-depth: 0 }
       - id: version
         run: |

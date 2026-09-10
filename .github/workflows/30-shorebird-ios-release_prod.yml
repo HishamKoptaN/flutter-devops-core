@@ -13,19 +13,12 @@ jobs:
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/cache@v4
         id: flutter-sdk-cache
         with:
           path: /Users/runner/hostedtoolcache/flutter
           key: flutter-sdk-${{ runner.os }}-3.47.2
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.47.2
-          cache: true  
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
       - uses: actions/cache@v4
         with:
           path: ios/Pods
@@ -46,10 +39,34 @@ jobs:
             ~/.shorebird
           key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
           restore-keys: shorebird-ios-${{ runner.os }}-
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+          channel: "stable"
+          cache: true
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
       - shell: bash 
         run: |
-           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-           cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== 1. التحقق من وجود البروفايل في مجلد المشروع ==="
+          if [ -f "ios/prod_app_store_profile.mobileprovision" ]; then
+            echo "✔ الملف موجود في المشروع بنجاح."
+          else
+            echo "❌ خطأ: الملف غير موجود في مجلد ios/ تأكد من رفعه أو مساره!"
+            exit 1
+          fi
+          echo "=== 2. إنشاء المجلد النظامي ونسخ الملف إليه ==="
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp ios/prod_app_store_profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== 3. التأكد من نجاح النسخ في مجلد النظام ==="
+          if [ -f ~/Library/MobileDevice/Provisioning\ Profiles/prod_app_store_profile.mobileprovision ]; then
+            echo "✔ تم نسخ البروفايل بنجاح إلى المجلد النظامي للماك:"
+            ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          else
+            echo "❌ فشل نسخ الملف للمجلد النظامي!"
+            exit 1
+          fi
            security create-keychain -p "" build.keychain
            security default-keychain -s build.keychain
            security unlock-keychain -p "" build.keychain
@@ -86,18 +103,6 @@ jobs:
            issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
            api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
            api-private-key: ${{ vars.APP_STORE_CONNECT_API_PRIVATE_KEY }}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

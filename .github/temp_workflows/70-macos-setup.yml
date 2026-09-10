@@ -14,10 +14,10 @@ jobs:
     outputs:
       device_id: ${{ steps.simulator.outputs.device_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.2"
+          flutter-version-file: pubspec.yaml
           channel: "stable"
           cache: true
       - run: |

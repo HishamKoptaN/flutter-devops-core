@@ -35,7 +35,7 @@ jobs:
       build_cache_key: ${{ steps.keys.outputs.build_cache_key }}
       shorebird_decision: ${{ steps.decide.outputs.shorebird_decision }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2
       

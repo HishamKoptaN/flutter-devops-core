@@ -17,13 +17,13 @@ jobs:
       release_completed: ${{ steps.deploy.outputs.release_completed }}
       patch_completed: ${{ steps.deploy.outputs.patch_completed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
-
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version-file: pubspec.yaml
+          channel: "stable"
           cache: true
       - run: flutter config --enable-macos-desktop
       - run: flutter pub get

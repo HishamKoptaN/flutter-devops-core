@@ -53,7 +53,7 @@ jobs:
       build_number: ${{ steps.build_number.outputs.build_number }}
       should_trigger: ${{ steps.decision.outputs.should_trigger }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - id: version
         run: |
@@ -164,11 +164,10 @@ jobs:
     if: failure() && needs.prepare-build.outputs.should_trigger == 'false'
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.2"
+          flutter-version-file: pubspec.yaml
           channel: "stable"
           cache: true
       - run: flutter pub get
