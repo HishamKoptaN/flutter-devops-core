@@ -1,6 +1,5 @@
 name: shorebird-dry-patch
 description: "Checks if Shorebird patch is viable using dry-run"
-
 inputs:
   platform:
     type: string
@@ -8,11 +7,9 @@ inputs:
   shorebird_token:
     description: "Shorebird Secret Token"
     required: true
-
 outputs:
   build_type:
     value: ${{ steps.set_output.outputs.build_type }}
-
 runs:
   using: "composite"
   steps:

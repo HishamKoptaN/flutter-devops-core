@@ -12,6 +12,7 @@ jobs:
     environment: ${{ github.ref_name }}
     env:
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-shorebird@prod
@@ -29,4 +30,5 @@ jobs:
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
-            --confirm
+            --confirm \ 
+            --verbose
