@@ -28,6 +28,14 @@ jobs:
       - run: cd ios && pod install
       - run: ls -la ios/*.p12 ios/*.mobileprovision
       - run: |
+          echo "Checking P12_PASSWORD value..."
+          if [ -z "$P12_PASSWORD" ]; then
+            echo "Error: P12_PASSWORD is empty!"
+            exit 1
+          else
+            echo "P12_PASSWORD is set successfully (length: ${#P12_PASSWORD})"
+          fi
+      - run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
