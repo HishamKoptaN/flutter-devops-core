@@ -5,10 +5,6 @@ inputs:
     required: true
   shorebird_token:
     required: true 
-  build_certificate_base64:
-    required: true
-  provisioning_profile_base64:
-    required: true
 runs:
   using: "composite"
   steps:
@@ -38,8 +34,6 @@ runs:
     - shell: bash 
       env:
         P12_PASSWORD: ${{ inputs.p12_password }}
-        BUILD_CERTIFICATE_BASE64: ${{ inputs.build_certificate_base64 }}
-        PROVISIONING_PROFILE_BASE64: ${{ inputs.provisioning_profile_base64 }}
       run: |
          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
          cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/

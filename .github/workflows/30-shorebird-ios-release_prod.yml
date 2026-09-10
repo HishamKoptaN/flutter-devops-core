@@ -1,4 +1,4 @@
-name: 30-shorebird-ios-release_dev.yml
+name: 30-shorebird-ios-release_prod.yml
 on:
   workflow_call:
     inputs:
@@ -19,8 +19,6 @@ jobs:
         with:
           p12_password: ${{ secrets.P12_PASSWORD }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
-          build_certificate_base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          provisioning_profile_base64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
@@ -33,7 +31,7 @@ jobs:
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
             --target=lib/main.dart \
-            --confirm \ 
+            --confirm \
             --verbose
       - id: find_ipa
         run: |
