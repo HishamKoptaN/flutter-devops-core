@@ -18,6 +18,10 @@ jobs:
         with:
           fetch-depth: 
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
+      - id: get-build-version
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
+        with:
+          shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - id: run
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
@@ -25,20 +29,10 @@ jobs:
           flavor="${{ github.ref_name }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          latest_version=$(shorebird releases list --platform=android 2>/dev/null | grep 'android' | head -n 1 | awk '{print $2}')
-          if [ -z "$latest_version" ]; then
-            BUILD_NAME="1.0.0"
-            BUILD_NUMBER="1"
-          else
-            raw_base=$(echo "$latest_version" | cut -d'+' -f1)
-            BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
-            raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
-            BUILD_NUMBER=$((raw_build + 1))
-          fi
           shorebird release android \
           --flavor=$flavor \
-          --build-name=$BUILD_NAME \
-          --build-number=$BUILD_NUMBER \
+          --build-name=${{ steps.get-build-version.outputs.build_name }} \
+          --build-number=${{ steps.get-build-version.outputs.build_number }} \
           --dart-define=ENV=$flavor \
           --artifact=apk \
           '--' --no-tree-shake-icons;
