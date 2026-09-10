@@ -5,6 +5,10 @@ inputs:
     required: true
   shorebird_token:
     required: true 
+  build_certificate_base64:
+    required: true
+  provisioning_profile_base64:
+    required: true
 runs:
   using: "composite"
   steps:
@@ -31,6 +35,20 @@ runs:
           ~/.shorebird
         key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
         restore-keys: shorebird-ios-${{ runner.os }}-
+    - shell: bash 
+      env:
+        P12_PASSWORD: ${{ inputs.p12_password }}
+        BUILD_CERTIFICATE_BASE64: ${{ inputs.build_certificate_base64 }}
+        PROVISIONING_PROFILE_BASE64: ${{ inputs.provisioning_profile_base64 }}
+      run: |
+         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+         cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+         security create-keychain -p "" build.keychain
+         security default-keychain -s build.keychain
+         security unlock-keychain -p "" build.keychain
+         security import ios/certificate.p12 -k build.keychain -P "$p12_password" -A -t cert -f pkcs12
+         security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+         security find-identity -v -p codesigning   
     - run: flutter pub get
       shell: bash
     - run: |
