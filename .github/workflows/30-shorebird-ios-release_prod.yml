@@ -31,6 +31,8 @@ jobs:
           security unlock-keychain -p "" build.keychain
           security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          security find-identity -v -p codesigning
+
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
