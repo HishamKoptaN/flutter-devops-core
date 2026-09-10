@@ -27,6 +27,7 @@ jobs:
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
+          platform: "android"
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - run: |
             shorebird release android \
