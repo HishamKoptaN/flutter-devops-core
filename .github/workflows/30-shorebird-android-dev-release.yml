@@ -35,21 +35,13 @@ jobs:
             raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
             BUILD_NUMBER=$((raw_build + 1))
           fi
-          if steps.run.outputs.env == 'dev' \
+          shorebird release android \
           --flavor=$flavor \
           --build-name=$BUILD_NAME \
           --build-number=$BUILD_NUMBER \
           --dart-define=ENV=$flavor \
           --artifact=apk \
-          '--' --no-tree-shake-icons; then
-          else
-            shorebird release android \
-            --flavor=prod \
-            --dart-define=ENV=prod \
-            --confirm
-            echo "release_built=true" >> $GITHUB_OUTPUT
-            exit 1
-          fi
+          '--' --no-tree-shake-icons;
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ github.ref_name }}
@@ -60,7 +52,7 @@ jobs:
 
 
 
-              #- uses: actions/cache@v4
+       #- uses: actions/cache@v4
       #  with:
       #    path: |
       #      ~/.pub-cache

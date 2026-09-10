@@ -9,9 +9,6 @@ on:
         required: false
         type: string
         default: "internal"
-    outputs:
-      changed:
-        value: ${{ jobs.release.outputs.changed }}
     secrets:
       SHOREBIRD_TOKEN:
         required: false
@@ -46,22 +43,10 @@ jobs:
             raw_build=$(echo "$latest_version" | grep -q '+' && echo "$latest_version" | cut -d'+' -f2 || echo "0")
             BUILD_NUMBER=$((raw_build + 1))
           fi
-          if steps.run.outputs.env == 'dev' \
-          --flavor=$flavor \
-          --build-name=$BUILD_NAME \
-          --build-number=$BUILD_NUMBER \
-          --dart-define=ENV=$flavor \
-          --artifact=apk \
-          '--' --no-tree-shake-icons; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
             shorebird release android \
-            --flavor=prod \
-            --dart-define=ENV=prod \
+            --flavor=$flavor \
+            --dart-define=ENV=$flavor \
             --confirm
-            echo "release_built=true" >> $GITHUB_OUTPUT
-            exit 1
-          fi
       - id: upload-play
         uses: r0adkll/upload-google-play@v1
         with:
