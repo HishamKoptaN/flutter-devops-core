@@ -14,27 +14,14 @@ jobs:
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-shorebird@prod
+        with:
+          p12_password: ${{ secrets.P12_PASSWORD }}
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
           platform: "ios"
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true   
-      - run: flutter pub get
-      - run: cd ios && pod install
-      - run: ls -la ios/*.p12 ios/*.mobileprovision
-      - run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-          security create-keychain -p "" build.keychain
-          security import ios/certificate.p12 -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings -t 3600 -u build.keychain
-          security list-keychains -s build.keychain
-          security find-identity -v -p codesigning
       - run: |
             shorebird release ios \
             --flavor=${{ github.ref_name }} \

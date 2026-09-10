@@ -1,0 +1,45 @@
+name: setup-ios-shorebird
+description: setup-ios-shorebird
+inputs:
+  p12_password:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 3.44.7
+        cache: true  
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ${{ github.workspace }}/.dart_tool
+        key: flutter-deps-ios-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
+        restore-keys: flutter-deps-ios-   
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.config/shorebird
+          ~/.shorebird
+        key: shorebird-ios-${{ runner.os }}-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
+        restore-keys: shorebird-ios-${{ runner.os }}-
+    - run: |
+        cd ios
+        pod install
+      shell: bash
+    - env:
+        P12_PASSWORD: ${{ inputs.p12_password }}
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp ios/*.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        security create-keychain -p "" build.keychain
+        security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+        security unlock-keychain -p "" build.keychain
+        security set-keychain-settings -t 3600 -u build.keychain
+        security list-keychains -s build.keychain
+        security find-identity -v -p codesigning
+      shell: bash
