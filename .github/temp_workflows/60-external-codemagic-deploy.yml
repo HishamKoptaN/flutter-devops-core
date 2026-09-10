@@ -98,7 +98,6 @@ jobs:
             "branch": "${{ github.ref_name }}",
             "commit": "${{ github.sha }}",
             "environment": {
-              "FLUTTER_VERSION": "3.41.2",
               "BUILD_MODE": "${{ github.event.inputs.build_mode }}",
               "VERSION_NAME": "${{ needs.prepare-build.outputs.version_name }}",
               "VERSION_CODE": "${{ needs.prepare-build.outputs.version_code }}",
