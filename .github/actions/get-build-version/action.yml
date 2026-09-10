@@ -43,8 +43,9 @@ runs:
           BUILD_NAME="1.0.0"
           BUILD_NUMBER="1"
         else
-          latest_flutter_version=$(echo "$latest_line" | awk '{print $NF}')
-          raw_base=$(echo "$latest_full_version" | cut -d'+' -f1)
+          latest_full_version=$(echo "$raw_list" | grep "$PLATFORM" | head -n 1 || echo "1.0.0+1")
+          version_field=$(echo "$latest_full_version" | awk '{print $2}')
+          raw_base=$(echo "$version_field" | cut -d'+' -f1)
           BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
         fi
          [ -z "$BUILD_NAME" ] && BUILD_NAME="1.0.0"
