@@ -52,7 +52,6 @@ jobs:
       - run: |
           cd ios
           pod install
-          working-directory: ios
         shell: bash
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
