@@ -12,30 +12,11 @@ jobs:
     environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/cache@v4
-        with:
-          path: /Users/runner/hostedtoolcache/flutter
-          key: flutter-sdk
-          restore-keys: flutter-sdk-
       - uses: subosito/flutter-action@v2
         with:
           flutter-version-file: pubspec.yaml
           channel: "stable"
           cache: true
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ github.workspace }}/.dart_tool
-          key: flutter-deps-${{ hashFiles('pubspec.lock') }}-macos
-          restore-keys: flutter-deps-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.config/shorebird
-            ~/.shorebird
-          key: shorebird-macos-${{ hashFiles('pubspec.lock', 'shorebird.yaml') }}
-          restore-keys: shorebird-macos-
       - uses: actions/cache@v4
         with:
           path: |

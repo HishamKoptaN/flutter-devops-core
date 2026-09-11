@@ -18,13 +18,6 @@ runs:
         cache: true
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}    
-    - uses: actions/cache@v4
-      with:
-        path: |
-          ~/.pub-cache
-          ${{ github.workspace }}/.dart_tool
-        key: flutter-deps-ios-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}
-        restore-keys: flutter-deps-ios-   
     - shell: bash 
       env:
         P12_PASSWORD: ${{ inputs.p12_password }}
