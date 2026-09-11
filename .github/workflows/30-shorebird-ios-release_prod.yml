@@ -76,9 +76,9 @@ jobs:
             ${{ runner.os }}-cocoapods-       
       - run: flutter pub get
         shell: bash
-      - run: |
-          cd ios
-          pod install
+      #- run: |
+      #    cd ios
+      #    pod install
         shell: bash
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
