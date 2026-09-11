@@ -14,12 +14,12 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/cache@v4
-        with:
-          path: ios/Pods
-          key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
-          restore-keys: |
-            ios-pods-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: ios/Pods
+      #    key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
+      #    restore-keys: |
+      #      ios-pods-
       - uses: actions/cache@v4
         with:
           path: |
@@ -52,6 +52,7 @@ jobs:
       - run: |
           cd ios
           pod install
+          working-directory: ios
         shell: bash
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
