@@ -37,10 +37,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-
             ${{ runner.os }}-flutter-build-
-      - run: |
-          rm -rf ~/Library/Caches/org.swift.swiftpm
-          rm -rf ~/Library/Developer/Xcode/DerivedData/*
-          rm -rf ios/SourcePackages
       - uses: subosito/flutter-action@v2
         with:
           flutter-version-file: pubspec.yaml
@@ -76,10 +72,10 @@ jobs:
             ${{ runner.os }}-cocoapods-       
       - run: flutter pub get
         shell: bash
-      #- run: |
-      #    cd ios
-      #    pod install
-      # shell: bash
+      - run: |
+          cd ios
+          pod install
+        shell: bash
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
