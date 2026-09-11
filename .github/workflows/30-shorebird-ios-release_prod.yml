@@ -51,10 +51,8 @@ jobs:
         shell: bash
       - run: |
           cd ios
-          pod install --verbose
+          pod install
         shell: bash
-        env:
-          CI: "true"
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
         with:
