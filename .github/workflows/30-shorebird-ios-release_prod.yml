@@ -37,21 +37,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-
             ${{ runner.os }}-flutter-build-
-      - uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub- 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cocoapods
-            ~/Library/Caches/CocoaPods
-            ~/Library/Caches/Homebrew
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cocoapods-       
       - uses: subosito/flutter-action@v2
         with:
           flutter-version-file: pubspec.yaml
@@ -70,6 +55,21 @@ jobs:
            security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A -t cert -f pkcs12
            security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
            security find-identity -v -p codesigning
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub- 
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cocoapods
+            ~/Library/Caches/CocoaPods
+            ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cocoapods-       
       - run: flutter pub get
         shell: bash
       - run: |
