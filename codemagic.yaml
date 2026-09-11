@@ -1,3 +1,21 @@
 workflows:
   prod:
-    name: prod
+    name: iOS B2B Deployment
+    environment:
+      vars:
+        BUILD_TYPE: "release" 
+    scripts:
+      - name: Check Build Type and Execute
+        script: |
+          echo "Current Build Type is: $BUILD_TYPE"
+          
+          if [ "$BUILD_TYPE" = "patch" ]; then
+            echo "Executing Shorebird Patch steps..."
+            # ضع هنا أوامر شوربيرد للباتش الفوري
+            # ./shorebird/bin/shorebird patch ios ...
+            
+          else
+            echo "Executing Full Release steps..."
+            # ضع هنا أوامر البناء الكامل
+            flutter build ipa --release
+          fi
