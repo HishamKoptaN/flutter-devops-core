@@ -76,7 +76,13 @@ jobs:
             ~/Library/Caches/Homebrew
           key: ${{ runner.os }}-cocoapods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cocoapods-       
+            ${{ runner.os }}-cocoapods-   
+      - run: |
+          echo "Cleaning old Xcode derived data and SwiftPM caches..."
+          rm -rf ~/Library/Caches/org.swift.swiftpm
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          rm -rf ios/SourcePackages
+          rm -rf ~/Library/Caches/com.apple.dt.Xcode           
       - run: flutter pub get
         shell: bash
       - run: |
