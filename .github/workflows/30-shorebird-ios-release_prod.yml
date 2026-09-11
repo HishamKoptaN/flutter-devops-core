@@ -54,7 +54,13 @@ jobs:
            security unlock-keychain -p "" build.keychain
            security import ios/certificate.p12 -k build.keychain -P "$P12_PASSWORD" -A -t cert -f pkcs12
            security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
-           security find-identity -v -p codesigning   
+           security find-identity -v -p codesigning
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-        
       - run: flutter pub get
         shell: bash
       - run: |
