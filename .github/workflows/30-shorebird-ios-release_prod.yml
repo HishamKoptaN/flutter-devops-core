@@ -40,7 +40,7 @@ jobs:
       - shell: bash 
         run: |
            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-           cp ios/prod_app_store_profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+           cp ios/muein_prod.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
            security create-keychain -p "" build.keychain
            security default-keychain -s build.keychain
            security unlock-keychain -p "" build.keychain
