@@ -14,12 +14,12 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v6
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: ios/Pods
-      #    key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      ios-pods-
+      - uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
+          restore-keys: |
+            ios-pods-
       - uses: actions/cache@v4
         with:
           path: |
@@ -51,7 +51,7 @@ jobs:
         shell: bash
       - run: |
           cd ios
-          pod install --repo-update
+          pod install --verbose
         shell: bash
         env:
           CI: "true"
