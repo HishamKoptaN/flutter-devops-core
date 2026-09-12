@@ -14,10 +14,10 @@ runs:
   using: "composite"
   steps:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-      with:
-        shorebird_token: ${{ inputs.shorebird_token }}    
     - id: dry_run
       shell: bash
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
        if shorebird patch ${{ inputs.platform }} --flavor="${{ github.ref_name }}" --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
