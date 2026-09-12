@@ -1,8 +1,6 @@
 name: shorebird-android-patch
 description: shorebird-android-patch
 inputs:
-  shorebird_token:
-    required: true
   KEYSTORE_BASE64:
     required: true
   KEYSTORE_PASSWORD:
@@ -17,10 +15,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-
       - shell: bash 
-        env:
-          SHOREBIRD_TOKEN: ${{ inputs.SHOREBIRD_TOKEN }}
         run: |
           flavor="${{ github.ref_name }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"

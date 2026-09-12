@@ -14,12 +14,12 @@ runs:
   steps:
       - shell: bash 
         run: |
-          echo "${{ inputs.KEYSTORE_BASE64 }}" | base64 --decode > android/app/*.jks
+          echo "${{ inputs.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keyStoreProd.jks
       - shell: bash 
         run: |
           cat > android/key.properties << EOF
           storePassword=${{ inputs.KEYSTORE_PASSWORD }}
           keyPassword=${{ inputs.KEY_PASSWORD }}
           keyAlias=${{ inputs.KEY_ALIAS }}
-          storeFile=*.jks
+          storeFile=keyStoreProd.jks
           EOF   

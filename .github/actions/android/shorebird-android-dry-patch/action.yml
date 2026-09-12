@@ -17,7 +17,6 @@ runs:
         else
           echo "dry_run_status=failed" >> $GITHUB_OUTPUT
         fi
-      continue-on-error: true
     - id: set_output
       shell: bash
       run: |

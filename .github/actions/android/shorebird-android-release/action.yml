@@ -1,33 +1,21 @@
-name: 30-shorebird-android-prod-release
-on:
-  workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true  
-      track:
-        required: false
-        type: string
-        default: "internal"
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
-    env:
-     TRACK: ${{ inputs.track }} 
-     SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
+name: shorebird-android-release
+description: shorebird-android-release
+inputs:
+  GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
+    required: true
+  track:
+    type: string
+    required: true
+runs:
+  using: "composite"
+  steps:
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
-      - run: |
+      - shell: bash 
+        run: |
             shorebird release android \
             --flutter-version=3.44.7 \
             --flavor=${{ github.ref_name }} \
@@ -42,6 +30,12 @@ jobs:
           releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
           track: ${{ env.TRACK }}
           status: ${{ env.TRACK == 'production' && 'completed' || 'draft' }}
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJsonPlainText: ${{ inputs.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           changesNotSentForReview: false
           inAppUpdatePriority: 0
+      
+  
+
+
+
+
