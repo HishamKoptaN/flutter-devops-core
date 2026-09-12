@@ -1,25 +1,15 @@
 name: shorebird-android-dry-patch
 description: "Checks if Shorebird patch is viable using dry-run"
-inputs:
-  platform:
-    type: string
-    required: true
-  shorebird_token:
-    description: "Shorebird Secret Token"
-    required: true
 outputs:
   build_type:
     value: ${{ steps.set_output.outputs.build_type }}
 runs:
   using: "composite"
   steps:
-    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
     - id: dry_run
       shell: bash
-      env:
-        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
-       if shorebird patch ${{ inputs.platform }} \
+       if shorebird patch android \
        --release-version=latest \
        --flavor="${{ github.ref_name }}" \
        --dry-run; then

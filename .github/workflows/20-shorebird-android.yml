@@ -10,26 +10,40 @@ jobs:
   check:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
+    env:
+      shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
       - uses: actions/checkout@v6
+        with:
+         fetch-depth: 1
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/android-signing@prod
+        with:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}  
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
-        with:
-          platform: 'android'
-          shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
-  shorebird_patch:
-    needs: check
-    if: ${{ needs.check.outputs.build_type == 'patch' }}
-    uses: ./.github/workflows/20-shorebird-android-patch.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets: inherit
-  shorebird_release:
-    needs: check
-    if: ${{ needs.check.outputs.build_type == 'release' }}
-    uses: ./.github/workflows/30-shorebird-android-release.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
-    secrets: inherit
+#shorebird_patch:
+#  needs: check
+#  if: ${{ needs.check.outputs.build_type == 'patch' }}
+#  uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-patch@prod
+#  with:
+#    shorebird_app_id: ${{ inputs.shorebird_app_id }}
+#    shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+#    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+#    KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+#    KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+#    KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+#  secrets: inherit
+#shorebird_release:
+#  needs: check
+#  if: ${{ needs.check.outputs.build_type == 'release' }}
+#  uses: ./.github/workflows/30-shorebird-android-release.yml
+#  with:
+#    shorebird_app_id: ${{ inputs.shorebird_app_id }}
+#  secrets: inherit
