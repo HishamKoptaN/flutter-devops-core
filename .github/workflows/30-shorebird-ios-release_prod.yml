@@ -14,7 +14,7 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v6
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/iso/setup-ios-signing@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
           p12-password: ${{ secrets.P12_PASSWORD }}
       - uses: actions/cache@v4
@@ -69,7 +69,7 @@ jobs:
           pod install
         shell: bash
       - id: get-build-version
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
             platform: "ios"
             shorebird_app_id: ${{ inputs.shorebird_app_id }}

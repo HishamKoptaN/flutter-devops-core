@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/iso/shorebird-ios-dry-patch@prod
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/shorebird-ios-dry-patch@prod
         with:
           flavor : ${{ github.ref_name }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
