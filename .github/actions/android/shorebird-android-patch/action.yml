@@ -24,4 +24,5 @@ runs:
           --release-version=latest \
           --flavor=$flavor \
           --dart-define=ENV=$flavor \
+          -- \
           --no-tree-shake-icons

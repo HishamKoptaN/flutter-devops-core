@@ -32,7 +32,8 @@ jobs:
           --build-number=${{ steps.get-build-version.outputs.build_number }} \
           --dart-define=ENV=$flavor \
           --artifact=apk \
-          '--' --no-tree-shake-icons;
+          -- \
+          --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ github.ref_name }}

@@ -6,6 +6,6 @@ jobs:
   android:
    uses: ./.github/workflows/20-shorebird-android.yml
    secrets: inherit
-  # ios:
-  #   uses: ./.github/workflows/20-shorebird-ios.yml
-  #   secrets: inherit
+  ios:
+    uses: ./.github/workflows/20-shorebird-ios.yml
+    secrets: inherit

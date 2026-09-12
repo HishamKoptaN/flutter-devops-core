@@ -1,10 +1,6 @@
 name: 20-shorebird-ios.yml
 on:
   workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true
 jobs:
   check:
     runs-on: macos-latest
