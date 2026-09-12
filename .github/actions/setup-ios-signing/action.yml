@@ -1,0 +1,28 @@
+name: setup-ios-signing
+description: setup-ios-signing
+
+inputs:
+  p12-password:
+    description: "Password for the p12 certificate"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: apple-actions/import-codesign-certs@v7
+      with:
+        p12-filepath: ios/certificate.p12
+        p12-password: ${{ inputs.p12-password }}
+        keychain: signing_temp
+        create-keychain: true
+    - shell: bash
+      run: |
+          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PP_PATH"
+          if [ -f "ios/muein_prod.mobileprovision" ]; then
+            cp ios/muein_prod.mobileprovision "$PP_PATH/"
+            echo "Provisioning profile copied successfully."
+          else
+            echo "Error: Provisioning profile not found in ios/"
+            exit 1
+          fi

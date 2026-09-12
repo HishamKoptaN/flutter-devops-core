@@ -5,12 +5,25 @@ inputs:
     required: true
   shorebird_token:
     required: true
+  p12_password:
+    required: true
 outputs:
   build_type:
     value: ${{ steps.set_output.outputs.build_type }}
 runs:
   using: "composite"
   steps:
+    - uses: subosito/flutter-action@v2
+      with:
+       flutter-version-file: pubspec.yaml
+       channel: "stable"
+       cache: true
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true 
+    - uses: ./.github/actions/setup-ios-signing
+      with:
+        p12-password: ${{ inputs.p12_password }}
     - id: dry_run
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}

@@ -16,35 +16,12 @@ jobs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
       - uses: actions/checkout@v6
-      - uses: apple-actions/import-codesign-certs@v7
-        with:
-          p12-filepath: ios/certificate.p12  
-          p12-password: ${{ secrets.P12_PASSWORD }}
-          keychain: signing_temp
-          create-keychain: true  
-      - run: |
-          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
-          mkdir -p "$PP_PATH"
-          if [ -f "ios/muein_prod.mobileprovision" ]; then
-            cp ios/muein_prod.mobileprovision "$PP_PATH/"
-            echo "Provisioning profile copied successfully."
-          else
-            echo "Error: Provisioning profile not found in ios/"
-            exit 1
-          fi
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version-file: pubspec.yaml
-          channel: "stable"
-          cache: true
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true 
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-ios-dry-patch@prod
         with:
           flavor : ${{ github.ref_name }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+          p12_password: ${{ secrets.P12_PASSWORD }}
   shorebird_ios_patch:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'patch' }}
