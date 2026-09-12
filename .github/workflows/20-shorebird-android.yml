@@ -2,10 +2,6 @@ name: 20-shorebird-android
 
 on:
   workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -38,6 +34,6 @@ jobs:
       - if: ${{ steps.dry_run.outputs.build_type == 'release' }}
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-release@prod
         with:
-          shorebird_app_id: ${{ inputs.shorebird_app_id }}
+          shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           track: internal

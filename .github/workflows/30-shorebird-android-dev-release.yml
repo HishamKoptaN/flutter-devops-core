@@ -20,11 +20,11 @@ jobs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
-          shorebird_app_id: ${{ inputs.shorebird_app_id }}
+          shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
       - id: run
         run: |
           flavor="${{ github.ref_name }}"
-          TARGET_ID="${{ inputs.shorebird_app_id }}"
+          TARGET_ID="${{ vars.SHOREBIRD_APP_ID }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           shorebird release android \
           --flavor=$flavor \

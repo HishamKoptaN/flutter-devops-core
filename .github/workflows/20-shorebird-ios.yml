@@ -31,13 +31,9 @@ jobs:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'patch' }}
     uses: ./.github/workflows/20-shorebird-ios-patch.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets: inherit
   shorebird_ios_release:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'release' }}
     uses: ./.github/workflows/30-shorebird-ios-release_prod.yml
-    with:
-      shorebird_app_id: ${{ inputs.shorebird_app_id }}
     secrets: inherit
