@@ -28,14 +28,14 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}  
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
-      - if: ${{ dry_run.outputs.build_type == 'patch' }}
+      - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-patch@prod
         with:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      - if: ${{ dry_run.outputs.build_type == 'release' }}
+      - if: ${{ steps.dry_run.outputs.build_type == 'release' }}
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-release@prod
         with:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
