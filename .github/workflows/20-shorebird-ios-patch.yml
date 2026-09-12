@@ -15,6 +15,9 @@ jobs:
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
           p12-password: ${{ secrets.P12_PASSWORD }}
+          appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: actions/cache@v4
         with:
@@ -32,5 +35,7 @@ jobs:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
           shorebird patch ios \
-            --dart-define=ENV=prod \
-            --flavor=prod 
+          --export-options-plist=ios/ExportOptions.plist \
+          --flavor="${{ github.ref_name }}" \
+          --release-version=latest \
+          --dart-define=ENV=${{ github.ref_name }} \

@@ -3,6 +3,12 @@ description: setup-ios-signing
 inputs:
   p12-password:
     required: true
+  appstore_issuer_id:
+    required: true  
+  appstore_api_key_id:
+    required: true
+  appstore_api_private_key:
+    required: true
 runs:
   using: "composite"
   steps:
@@ -12,14 +18,21 @@ runs:
         p12-password: ${{ inputs.p12-password }}
         keychain: signing_temp
         create-keychain: true
-    - shell: bash
-      run: |
-          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
-          mkdir -p "$PP_PATH"
-          if [ -f "ios/muein_prod.mobileprovision" ]; then
-            cp ios/muein_prod.mobileprovision "$PP_PATH/"
-            echo "Provisioning profile copied successfully."
-          else
-            echo "Error: Provisioning profile not found in ios/"
-            exit 1
-          fi
+    - uses: apple-actions/download-provisioning-profiles@v6
+      with:
+        bundle-id: 'com.muein.orders'
+        profile-type: 'IOS_APP_STORE'
+        issuer-id: ${{ inputs.appstore_issuer_id }}
+        api-key-id: ${{ inputs.appstore_api_key_id }}
+        api-private-key: ${{ inputs.appstore_api_private_key }}
+    # - shell: bash
+    #   run: |
+    #       PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
+    #       mkdir -p "$PP_PATH"
+    #       if [ -f "ios/muein_prod.mobileprovision" ]; then
+    #         cp ios/muein_prod.mobileprovision "$PP_PATH/"
+    #         echo "Provisioning profile copied successfully."
+    #       else
+    #         echo "Error: Provisioning profile not found in ios/"
+    #         exit 1
+    #       fi
