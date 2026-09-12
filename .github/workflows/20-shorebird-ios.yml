@@ -9,8 +9,11 @@ jobs:
   check:
     runs-on: macos-latest
     environment: ${{ github.ref_name }}
-    # env:
-    #   P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+    env:
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
