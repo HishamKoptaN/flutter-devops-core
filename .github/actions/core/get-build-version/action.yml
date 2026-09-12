@@ -2,10 +2,9 @@ name: get-build-version
 description: get-build-version
 
 inputs:
-  platform:
-    type: string
-    required: true
   shorebird_app_id:
+    required: true
+  platform:
     required: true
 outputs:
   build_name:

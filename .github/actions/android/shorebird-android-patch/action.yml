@@ -25,9 +25,3 @@ runs:
           --flavor=$flavor \
           --dart-define=ENV=$flavor \
           --no-tree-shake-icons
-      
-  
-
-
-
-

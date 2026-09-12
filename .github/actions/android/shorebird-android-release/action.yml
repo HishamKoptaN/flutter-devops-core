@@ -1,6 +1,8 @@
 name: shorebird-android-release
 description: shorebird-android-release
 inputs:
+  shorebird_app_id:
+    required: true  
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
     required: true
   track:
