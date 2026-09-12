@@ -38,8 +38,6 @@ jobs:
             build/
             .dart_tool/
           key: ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-${{ github.sha }}
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: actions/cache@v4
         with:
           path: |
