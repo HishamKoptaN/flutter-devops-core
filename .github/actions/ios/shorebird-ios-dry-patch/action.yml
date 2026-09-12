@@ -7,6 +7,12 @@ inputs:
     required: true
   p12_password:
     required: true
+  appstore_issuer_id:
+    required: true
+  appstore_api_key_id:
+    required: true
+  appstore_api_private_key:
+    required: true
 outputs:
   build_type:
     value: ${{ steps.set_output.outputs.build_type }}
@@ -18,6 +24,9 @@ runs:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
       with:
         p12-password: ${{ inputs.p12_password }}
+        appstore_issuer_id: ${{ inputs.appstore_issuer_id }}
+        appstore_api_key_id: ${{ inputs.appstore_api_key_id }}
+        appstore_api_private_key: ${{ inputs.appstore_api_private_key }}
     - id: dry_run
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}

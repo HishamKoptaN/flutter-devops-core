@@ -21,6 +21,9 @@ jobs:
           flavor : ${{ github.ref_name }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
           p12_password: ${{ secrets.P12_PASSWORD }}
+          appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
   shorebird_ios_patch:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'patch' }}
