@@ -19,7 +19,10 @@ runs:
       env:
         SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       run: |
-       if shorebird patch ${{ inputs.platform }} --flavor="${{ github.ref_name }}" --dry-run; then
+       if shorebird patch ${{ inputs.platform }} \
+       --release-version=latest \
+       --flavor="${{ github.ref_name }}" \
+       --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
         else
           echo "dry_run_status=failed" >> $GITHUB_OUTPUT
