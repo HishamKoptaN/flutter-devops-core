@@ -14,22 +14,9 @@ jobs:
       SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     steps:
       - uses: actions/checkout@v6
-      - uses: apple-actions/import-codesign-certs@v3
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/iso/setup-ios-signing@prod
         with:
-          p12-filepath: ios/certificate.p12  
           p12-password: ${{ secrets.P12_PASSWORD }}
-          keychain: signing_temp
-          create-keychain: true  
-      - run: |
-          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
-          mkdir -p "$PP_PATH"
-          if [ -f "ios/muein_prod.mobileprovision" ]; then
-            cp ios/muein_prod.mobileprovision "$PP_PATH/"
-            echo "Provisioning profile copied successfully."
-          else
-            echo "Error: Provisioning profile not found in ios/"
-            exit 1
-          fi      
       - uses: actions/cache@v4
         with:
           path: ios/Pods
@@ -58,16 +45,9 @@ jobs:
           flutter-version-file: pubspec.yaml
           channel: "stable"
           cache: true
-
       - uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
-      - uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub- 
       - uses: actions/cache@v4
         with:
           path: |

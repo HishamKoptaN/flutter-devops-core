@@ -1,0 +1,26 @@
+name: setup-ios-shorebird
+description: setup-ios-shorebird
+inputs:
+  p12_password:
+    required: true
+  shorebird_token:
+    required: true 
+runs:
+  using: "composite"
+  steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version-file: pubspec.yaml
+        channel: "stable"
+        cache: true
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}    
+    - run: flutter pub get
+      shell: bash
+    - run: |
+        cd ios
+        pod install
+      shell: bash

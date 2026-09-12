@@ -146,15 +146,6 @@ jobs:
           echo "decision=$decision" >> $GITHUB_OUTPUT
           echo "reason=$reason" >> $GITHUB_OUTPUT
           echo "build_needed=$build_needed" >> $GITHUB_OUTPUT
-      
-      # 🔥 Conditional Cache Restoration
-      - name: 📦 Restore Pub Cache
-        if: steps.decide.outputs.build_needed == 'true'
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ steps.keys.outputs.pub_key }}
-      
       - name: 🤖 Restore Gradle Cache
         if: steps.decide.outputs.build_needed == 'true' && contains(inputs.platforms, 'android')
         uses: actions/cache@v4

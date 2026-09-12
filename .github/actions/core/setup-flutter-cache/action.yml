@@ -1,0 +1,13 @@
+name: "Setup Flutter & Pub Cache"
+description: "Cache Flutter pub dependencies to speed up builds"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          .dart_tool
+          ios/Pods
+        key: ${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}-${{ hashFiles('ios/Podfile.lock') }}

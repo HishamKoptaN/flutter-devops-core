@@ -111,17 +111,6 @@ jobs:
           echo "shorebird_decision=$SHOREBIRD_DECISION" >> $GITHUB_OUTPUT
       
       # Setup Multi-Layer Cache
-      - name: Setup Pub Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            .dart_tool
-          key: ${{ steps.keys.outputs.pub_cache_key }}
-          restore-keys: |
-            pub-${{ runner.os }}-${{ github.ref_name }}-
-            pub-${{ runner.os }}-
-      
       - name: Setup Flutter SDK Cache
         uses: actions/cache@v4
         with:

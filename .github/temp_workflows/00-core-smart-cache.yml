@@ -30,13 +30,7 @@ jobs:
           path: |
             /opt/hostedtoolcache/flutter
           key: flutter-${{ runner.os }}-3.41.9
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            pub-${{ runner.os }}-
+
         id: pub-cache
       - if: contains(inputs.platforms, 'android')
         uses: actions/cache@v4
