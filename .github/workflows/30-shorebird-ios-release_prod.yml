@@ -107,7 +107,7 @@ jobs:
         run: |
             IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -n 1)
             echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
-      - uses: apple-actions/upload-testflight-build@v3
+      - uses: apple-actions/upload-testflight-build@v5
         with:
            app-path: ${{ steps.find_ipa.outputs.ipa_path }}
            issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
