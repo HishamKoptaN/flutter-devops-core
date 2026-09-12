@@ -18,10 +18,7 @@ jobs:
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/android-signing@prod
         with:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          FLAVOR: ${{ github.ref_name }}
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
