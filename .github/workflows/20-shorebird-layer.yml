@@ -2,10 +2,6 @@ name: Shorebird Layer
 
 on:
   workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true
 jobs:
   android:
    uses: ./.github/workflows/20-shorebird-android.yml
