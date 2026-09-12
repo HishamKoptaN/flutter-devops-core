@@ -40,7 +40,6 @@ runs:
        --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
         else
-          echo "❌ Dry-run failed or patch is not possible. Forcing fallback to release."
           echo "dry_run_status=failed" >> $GITHUB_OUTPUT
         fi
       continue-on-error: true
