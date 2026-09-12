@@ -21,6 +21,8 @@ runs:
   steps:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
+      with:
+        shorebird_token: ${{ inputs.shorebird_token }}   
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
       with:
         p12-password: ${{ inputs.p12_password }}

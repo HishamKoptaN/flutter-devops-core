@@ -1,5 +1,9 @@
 name: setup-shorebird
 description: setup-shorebird
+inputs:
+  shorebird_token:
+    description: "Shorebird Secret Token"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -12,7 +16,7 @@ runs:
     - uses: shorebirdtech/setup-shorebird@v1
       with:
         cache: true
-      # env:
-      #   SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}  
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}  
 
         

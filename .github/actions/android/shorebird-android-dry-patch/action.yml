@@ -14,6 +14,8 @@ runs:
   using: "composite"
   steps:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
+      with:
+        shorebird_token: ${{ inputs.shorebird_token }}    
     - id: dry_run
       shell: bash
       run: |
