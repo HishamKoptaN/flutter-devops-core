@@ -15,11 +15,7 @@ jobs:
       device_id: ${{ steps.simulator.outputs.device_id }}
     steps:
       - uses: actions/checkout@v6
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version-file: pubspec.yaml
-          channel: "stable"
-          cache: true
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - run: |
           flutter pub get
           cd ios && pod install --repo-update

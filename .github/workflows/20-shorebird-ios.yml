@@ -9,8 +9,8 @@ jobs:
   check:
     runs-on: macos-latest
     environment: ${{ github.ref_name }}
-    env:
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+    # env:
+    #   P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:

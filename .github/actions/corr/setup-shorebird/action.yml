@@ -1,0 +1,18 @@
+name: setup-shorebird
+description: setup-shorebird
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          .dart_tool
+        key: ${{ runner.os }}-${{ hashFiles('**/pubspec.lock')}} 
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
+      # env:
+      #   SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}  
+
+        

@@ -12,11 +12,10 @@ jobs:
     environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
-      - uses: subosito/flutter-action@v2
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
-          flutter-version-file: pubspec.yaml
-          channel: "stable"
-          cache: true
+          p12-password: ${{ secrets.P12_PASSWORD }}
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: actions/cache@v4
         with:
           path: |

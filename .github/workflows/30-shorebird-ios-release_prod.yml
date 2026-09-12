@@ -21,33 +21,20 @@ jobs:
         with:
           path: ios/Pods
           key: ios-pods-${{ hashFiles('ios/Podfile.lock') }}-${{ runner.os }}
-          restore-keys: |
-            ios-pods-
       - uses: actions/cache@v4
         with:
           path: |
             ~/Library/Caches/swift-package-manager
             ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-pods-swift-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${- runner.os }}-pods-swift-   
       - uses: actions/cache@v4
         with:
           path: |
             build/
             .dart_tool/
           key: ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-build-${{ hashFiles('pubspec.lock') }}-
-            ${{ runner.os }}-flutter-build-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version-file: pubspec.yaml
-          channel: "stable"
-          cache: true
-      - uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: actions/cache@v4
         with:
           path: |
@@ -55,8 +42,6 @@ jobs:
             ~/Library/Caches/CocoaPods
             ~/Library/Caches/Homebrew
           key: ${{ runner.os }}-cocoapods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cocoapods-   
       - run: |
           rm -rf ~/Library/Caches/org.swift.swiftpm
           rm -rf ~/Library/Developer/Xcode/DerivedData/*

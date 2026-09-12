@@ -15,10 +15,9 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-android-shorebird@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/setup-android-shorebird@prod
       - id: get-build-version
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/get-build-version@prod
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
           shorebird_app_id: ${{ inputs.shorebird_app_id }}
@@ -54,17 +53,12 @@ jobs:
       #      ~/.gradle/wrapper
       #      android/.gradle
       #    key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/gradle.properties') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      gradle-${{ hashFiles('**/*.gradle*') }}-${{ runner.os }}-
-      #      gradle-${{ runner.os }}-
       #- uses: actions/cache@v4
       #  with:
       #    path: |
       #      ~/.gradle/caches
       #      ~/.gradle/wrapper
       #    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-      #    restore-keys: |
-      #      ${{ runner.os }}-gradle-
       #- uses: actions/cache@v4
       #  with:
       #    path: |
@@ -73,6 +67,3 @@ jobs:
       #      android/app/build
       #      .dart_tool/build
       #    key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
-      #    restore-keys: |
-      #      build-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
-      #      build-${{ runner.os }}-

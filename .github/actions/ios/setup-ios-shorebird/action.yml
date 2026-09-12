@@ -8,16 +8,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: subosito/flutter-action@v2
-      with:
-        flutter-version-file: pubspec.yaml
-        channel: "stable"
-        cache: true
-    - uses: shorebirdtech/setup-shorebird@v1
-      with:
-        cache: true
-      env:
-        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}    
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod  
     - run: flutter pub get
       shell: bash
     - run: |
