@@ -13,9 +13,9 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
     - id: dry_run
-      env:
-        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
       shell: bash
       run: |
        if shorebird patch ${{ inputs.platform }} --flavor="${{ github.ref_name }}" --dry-run; then
