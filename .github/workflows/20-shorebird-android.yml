@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-android-dry-patch@prod
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
         with:
           platform: 'android'
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}

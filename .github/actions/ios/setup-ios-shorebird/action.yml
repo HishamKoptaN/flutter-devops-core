@@ -8,7 +8,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod  
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
     - run: flutter pub get
       shell: bash
     - run: |
