@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name }}
     env:
-      shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
