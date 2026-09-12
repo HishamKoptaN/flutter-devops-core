@@ -2,10 +2,6 @@ name: 20-shorebird-ios-patch.yml
 
 on:
   workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true  
 jobs:
   patch:
     runs-on: macos-latest
