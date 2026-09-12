@@ -1,4 +1,4 @@
-name: shorebird-dry-patch
+name: shorebird-android-dry-patch
 description: "Checks if Shorebird patch is viable using dry-run"
 inputs:
   platform:

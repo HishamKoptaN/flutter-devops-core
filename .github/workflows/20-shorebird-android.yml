@@ -18,7 +18,7 @@ jobs:
         with:
           cache: true 
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-dry-patch@prod
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/shorebird-android-dry-patch@prod
         with:
           platform: 'android'
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}

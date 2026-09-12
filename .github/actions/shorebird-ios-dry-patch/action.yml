@@ -1,0 +1,38 @@
+name: shorebird-ios-dry-patch
+description: shorebird-ios-dry-patch
+inputs:
+  flavor:
+    required: true
+  shorebird_token:
+    required: true
+outputs:
+  build_type:
+    value: ${{ steps.set_output.outputs.build_type }}
+runs:
+  using: "composite"
+  steps:
+    - id: dry_run
+      env:
+        SHOREBIRD_TOKEN: ${{ inputs.shorebird_token }}
+      shell: bash
+      run: |
+       if shorebird patch ios \
+       --export-options-plist=ios/ExportOptions.plist \
+       --flavor="${{ inputs.flavor }}" \
+       --release-version=latest \
+       --dry-run; then
+          echo "dry_run_status=success" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Dry-run failed or patch is not possible. Forcing fallback to release."
+          echo "dry_run_status=failed" >> $GITHUB_OUTPUT
+        fi
+      continue-on-error: true
+    - id: set_output
+      shell: bash
+      run: |
+        STATUS="${{ steps.dry_run.outputs.dry_run_status }}"
+        if [ "$STATUS" == "success" ]; then
+          echo "build_type=patch" >> $GITHUB_OUTPUT
+        else
+          echo "build_type=release" >> $GITHUB_OUTPUT
+        fi
