@@ -33,6 +33,7 @@ jobs:
           shorebird patch android \
           --flavor=$flavor \
           --release-version=latest \
-          --dart-define=ENV=$flavor '--' --no-tree-shake-icons
+          --dart-define=ENV=$flavor \
+          --no-tree-shake-icons
       - if: always()
         run: rm -f android/app/muein_orders.jks android/key.properties
