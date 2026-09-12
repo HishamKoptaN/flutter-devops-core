@@ -15,8 +15,6 @@ jobs:
          fetch-depth: 0
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-        with:
-          shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
       - run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/muein_orders.jks
       - run: |
