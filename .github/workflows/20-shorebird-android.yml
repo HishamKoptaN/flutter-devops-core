@@ -14,9 +14,8 @@ jobs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/core/setup-shorebird
       - id: dry_run
-        uses: ./.github/actions/android/shorebird-android-dry-patch
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
         with:
           platform: 'android'
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
