@@ -30,12 +30,9 @@ jobs:
           flavor="${{ github.ref_name }}"
           TARGET_ID="${{ inputs.shorebird_app_id }}"
           sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          if shorebird patch android \
+          shorebird patch android \
           --flavor=$flavor \
           --release-version=latest \
-          --dart-define=ENV=$flavor '--' --no-tree-shake-icons; then
-          else
-            exit 1
-          fi
+          --dart-define=ENV=$flavor '--' --no-tree-shake-icons
       - if: always()
         run: rm -f android/app/muein_orders.jks android/key.properties

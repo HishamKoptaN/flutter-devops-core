@@ -35,9 +35,9 @@ runs:
       shell: bash
       run: |
        if shorebird patch ios \
+       --release-version=latest \
        --export-options-plist=ios/ExportOptions.plist \
        --flavor="${{ inputs.flavor }}" \
-       --release-version=latest \
        --dart-define=ENV=prod \
        --dry-run; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
