@@ -21,7 +21,7 @@ runs:
     - uses: shorebirdtech/setup-shorebird@v1
       with:
         cache: true 
-    - uses: ./.github/actions/setup-ios-signing
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/setup-ios-signingh@prod
       with:
         p12-password: ${{ inputs.p12_password }}
     - id: dry_run

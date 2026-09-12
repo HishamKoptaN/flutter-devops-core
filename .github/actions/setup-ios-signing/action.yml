@@ -1,11 +1,8 @@
 name: setup-ios-signing
 description: setup-ios-signing
-
 inputs:
   p12-password:
-    description: "Password for the p12 certificate"
     required: true
-
 runs:
   using: "composite"
   steps:

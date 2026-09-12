@@ -1,5 +1,4 @@
 name: 20-shorebird-ios.yml
-
 on:
   workflow_call:
     inputs:
