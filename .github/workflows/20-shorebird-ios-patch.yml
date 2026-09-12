@@ -12,6 +12,8 @@ jobs:
     environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
           p12-password: ${{ secrets.P12_PASSWORD }}
