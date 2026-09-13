@@ -12,9 +12,9 @@ runs:
        if shorebird patch android \
        --release-version=latest \
        --flavor="${{ github.ref_name }}" \
-       --dry-run; then
+       --dry-run \
        -- \
-       --no-tree-shake-icons \
+       --no-tree-shake-icons ; then
           echo "dry_run_status=success" >> $GITHUB_OUTPUT
         else
           echo "dry_run_status=failed" >> $GITHUB_OUTPUT
