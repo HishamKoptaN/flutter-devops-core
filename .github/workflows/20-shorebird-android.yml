@@ -14,7 +14,6 @@ jobs:
         with:
          fetch-depth: 1
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
-     
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/android-signing@prod
         with:
