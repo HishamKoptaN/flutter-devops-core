@@ -1,11 +1,11 @@
 name: android-signing
 description: android-signing
 inputs:
-  FLAVOR:
+  flavor:
    required: true
 runs:
   using: "composite"
   steps:
     - shell: bash
       run: |
-        sed -i 's|^storeFile=.*|storeFile=${{ inputs.FLAVOR }}/keyStore.jks|' android/key.properties
+        sed -i 's|^storeFile=.*|storeFile=${{ inputs.flavor }}/keyStore.jks|' android/key.properties
