@@ -17,28 +17,7 @@ class AppConfig {
 
 late final AppConfig appConfig;
 void main() async {
-  const flavor = String.fromEnvironment('ENV', defaultValue: 'dev');
-  final config = switch (flavor) {
-    'prod' => AppConfig(
-        flavor: 'prod',
-        appName: 'DevOps',
-        primaryColor: Colors.deepPurple,
-      ),
-    _ => AppConfig(
-        flavor: 'dev',
-        appName: 'DevOps Dev',
-        primaryColor: Colors.blue,
-      ),
-  };
-
-  appConfig = config;
-
   await Firebase.initializeApp(options: EnvConfig.config.firebaseOptions);
-
-  if (kDebugMode) {
-    print('🚀 Running in ${config.flavor} flavor');
-  }
-
   runApp(MyApp());
 }
 
