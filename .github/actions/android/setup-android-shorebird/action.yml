@@ -5,15 +5,7 @@ runs:
   steps:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-    - uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-          ~/.pub-cache
-          android/.gradle
-          /home/runner/.config/shorebird
-        key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/pubspec.lock') }}
+
     - uses: actions/cache@v4
       with:
         path: |
