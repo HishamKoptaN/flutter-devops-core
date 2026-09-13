@@ -10,6 +10,7 @@ runs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
+          android/.gradle
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-

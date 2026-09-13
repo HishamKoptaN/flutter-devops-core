@@ -24,6 +24,8 @@ runs:
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
+            -- \
+            --no-tree-shake-icons \
             --confirm
       - id: upload-play
         uses: r0adkll/upload-google-play@v1

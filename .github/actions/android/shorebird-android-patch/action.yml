@@ -1,5 +1,8 @@
 name: shorebird-android-patch
 description: shorebird-android-patch
+inputs:
+  flavor:
+    required: true
 runs:
   using: "composite"
   steps:
