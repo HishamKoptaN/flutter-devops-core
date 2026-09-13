@@ -36,7 +36,7 @@ runs:
           tracks: ${{ inputs.track }}
           status: completed
           changesNotSentForReview: false
-          userFraction: 1
+          # userFraction: 1
           inAppUpdatePriority: 5
       
   
