@@ -19,6 +19,10 @@ jobs:
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/android-signing@prod
         with:
           FLAVOR: ${{ github.ref_name }}
+      - shell: bash 
+        run: |
+         flavor="${{ github.ref_name }}"
+         sed -i "s/^app_id:.*/app_id: "${{ vars.SHOREBIRD_APP_ID }}"/" shorebird.yaml   
       - id: dry_run
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-dry-patch@prod
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
