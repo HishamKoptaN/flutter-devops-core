@@ -30,15 +30,10 @@ jobs:
         with:
           fetch-depth: 1
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
-
       - run: git config --global core.longpaths true
-
       - run: flutter config --enable-windows-desktop
-
       - run: flutter create .
-
       - run: flutter pub get
-
       - run: |
           # Clean CMake cache to avoid generator mismatch
           if (Test-Path "build\windows\CMakeCache.txt") {
@@ -59,7 +54,6 @@ jobs:
           $usePatch = "${{ inputs.use_patch }}"
           $TARGET_ID = if ($flavor -eq "prod") { "ed427ccb-5edb-4594-a376-2ee9636bef4e" } else { "e962126d-ee7a-48f2-b89d-fb0349f4a05f" }
           (Get-Content shorebird.yaml) -replace '^app_id:.*', "app_id: $TARGET_ID" | Set-Content shorebird.yaml
-
           $versionChanged = $false
           
           if ($usePatch -eq "true") {
