@@ -10,8 +10,10 @@ runs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
+          ~/.pub-cache
           android/.gradle
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          /home/runner/.config/shorebird
+        key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/pubspec.lock') }}
     - uses: actions/cache@v4
       with:
         path: |
