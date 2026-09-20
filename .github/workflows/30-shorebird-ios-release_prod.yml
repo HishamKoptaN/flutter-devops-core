@@ -66,11 +66,16 @@ jobs:
            echo "APP_KEY<<EOF" >> $GITHUB_ENV
            echo "$KEY_CONTENT" >> $GITHUB_ENV
            echo "EOF" >> $GITHUB_ENV
+      - run: |
+          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -n 1)
+          echo "FOUND_IPA=$IPA_PATH" >> $GITHUB_ENV
+          echo "IPA File: $IPA_PATH"
       - uses: apple-actions/upload-testflight-build@v4
         with:
-           app-path: 'build/ios/ipa/*.ipa'
+           app-path: ${{ env.FOUND_IPA }}
            issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
            api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
            api-private-key: ${{ env.APP_KEY }}
            backend: altool
+           app-type: ios
            
