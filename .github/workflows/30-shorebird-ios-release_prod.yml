@@ -48,18 +48,11 @@ jobs:
           cd ios
           pod install
         shell: bash
-      - id: get-build-version
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
-        with:
-            platform: "ios"
-            shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
       - run: |
               shorebird release ios \
               --flutter-version=3.47.4 \
               --flavor=${{ github.ref_name }} \
               --dart-define=ENV=${{ github.ref_name }} \
-              --build-name=${{ steps.get-build-version.outputs.build_name }} \
-              --build-number=${{ steps.get-build-version.outputs.build_number }} \
               --target=lib/main.dart \
               --export-options-plist=ios/ExportOptions.plist \
               --confirm
