@@ -12,17 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-         fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          repository: HishamKoptaN/flutter-devops-core
-          ref: prod
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: temp-core-actions
-      - uses: temp-core-actions/.github/actions/core/setup-flutter
-      - uses: temp-core-actions/.github/actions/core/setup-shorebird
+         fetch-depth: 1
+      - uses: ./.github/actions/core/setup-flutter@prod
+      - uses: ./.github/actions/core/setup-shorebird@prod
         if: hashFiles('android/app/keyStore.jks') != ''
-      - uses: temp-core-actions/.github/actions/android/android-signing
+      - uses: ./.github/actions/android/android-signing@prod
         with:
           flavor: ${{ github.ref_name }}
       - uses: actions/cache@v4
@@ -33,18 +27,18 @@ jobs:
         run: |
          sed -i "s/^app_id:.*/app_id: "${{ vars.SHOREBIRD_APP_ID }}"/" shorebird.yaml   
       - id: dry_run
-        uses: temp-core-actions/.github/actions/android/shorebird-android-dry-patch
+        uses: ./.github/actions/android/shorebird-android-dry-patch@prod
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
-        uses: temp-core-actions/.github/actions/android/shorebird-android-patch
+        uses: ./.github/actions/android/shorebird-android-patch@prod
         with:
           flavor: ${{ github.ref_name }}
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: temp-core-actions/.github/actions/android/shorebird-android-release
+        uses: ./.github/actions/android/shorebird-android-release@prod
         with:
           google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           track: internal
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: temp-core-actions/.github/actions/android/shorebird-android-apk-release
+        uses: ./.github/actions/android/shorebird-android-apk-release@prod
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref_name }}

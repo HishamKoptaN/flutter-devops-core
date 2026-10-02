@@ -1,22 +1,16 @@
+#12323123
 name: main
-
+env:
+  force_javascript_actions_to_node24: true
+  actions_allow_use_unsecure_node_version: true
+permissions:
+  contents: write
 on:
   workflow_call:
   push:
-    branches: [dev, prod]
+    branches: [devs, prods]
   workflow_dispatch:
-
-jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: HishamKoptaN/flutter-devops-core
-          ref: prod
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: temp-core-actions
-      - uses: ./temp-core-actions/.github/actions/core/setup-flutter
-      - uses: ./temp-core-actions/.github/actions/core/setup-shorebird
-      - uses: ./temp-core-actions/.github/actions/android/shorebird-android-release
+jobs: 
+  shorebird_layer:
+    uses: ./.github/workflows/20-shorebird-layer.yml
+    secrets: inherit
