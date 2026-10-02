@@ -4,8 +4,7 @@ description: "Test connecting to core action"
 runs:
   using: "composite"
   steps:
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+    - uses: subosito/flutter-action@v2
       with:
         channel: "stable"
         cache: true
