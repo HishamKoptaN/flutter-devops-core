@@ -3,10 +3,9 @@ name: Shorebird Layer
 on:
   workflow_call:
 jobs:
-  android_apk:
+  android:
    uses: ./.github/workflows/20-shorebird-android.yml
    secrets: inherit
-  # android_aab:
   #  uses: ./.github/workflows/20-shorebird-android-aab-release.yml
   #  secrets: inherit
   # ios:
