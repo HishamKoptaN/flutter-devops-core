@@ -1,5 +1,5 @@
 name: setup-flutter
-description: "Cache Flutter pub dependencies to speed up builds"
+description: setup-flutter
 runs:
   using: "composite"
   steps:
