@@ -12,7 +12,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: ./actions/core/set-shorebird-app-id@prod
+    - uses: ./actions/core/set-shorebird-app-id
     - id: version_calculator
       shell: bash
       run: |
