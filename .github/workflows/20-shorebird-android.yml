@@ -41,3 +41,5 @@ jobs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-apk-release@prod
         with:
           shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref_name }}
