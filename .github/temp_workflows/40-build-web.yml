@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setflutter@prod
       - run: flutter pub get
       - run: flutter build web --release --dart-define=ENV=${{ inputs.flavor }}
       - uses: actions/upload-artifact@v4

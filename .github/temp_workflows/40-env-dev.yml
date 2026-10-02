@@ -10,7 +10,7 @@ jobs:
     environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setflutter@prod
       - run: flutter upgrade
       - run: flutter pub get
       - run: flutter build web --dart-define=FLUTTER_ENV=dev

@@ -3,7 +3,7 @@ description: "Initializes Flutter, Shorebird CLI, Gradle, and dependency caches"
 runs:
   using: "composite"
   steps:
-    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setflutter@prod
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
 
     - uses: actions/cache@v4

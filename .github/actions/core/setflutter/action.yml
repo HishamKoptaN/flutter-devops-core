@@ -1,5 +1,5 @@
-name: setup-flutter
-description: setup-flutter
+name: setflutter
+description: setflutter
 runs:
   using: "composite"
   steps:
