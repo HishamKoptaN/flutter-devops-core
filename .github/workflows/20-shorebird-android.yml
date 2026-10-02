@@ -12,13 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-         fetch-depth: 1
-      - uses: actions/checkout@v4
-        with:
-          repository: HishamKoptaN/flutter-devops-core
-          ref: prod
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: .github/devops-core
+         fetch-depth: 0
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
         if: hashFiles('android/app/keyStore.jks') != ''
