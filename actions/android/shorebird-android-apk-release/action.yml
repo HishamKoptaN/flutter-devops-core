@@ -3,13 +3,11 @@ description: shorebird-android-apk-release
 inputs:
   github_token:
     required: true
-  tag_name:
-    required: true
 runs:
   using: "composite"
   steps:
       - id: get-build-version
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
+        uses: ./actions/core/get-build-version
         with:
           platform: "android"
       - shell: bash 

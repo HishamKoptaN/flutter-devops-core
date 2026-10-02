@@ -1,4 +1,4 @@
-name: 20-shorebird-android
+name: 20-shorebird-android-aab_release
 on:
   workflow_call:
 jobs:
@@ -23,9 +23,6 @@ jobs:
         with:
           path: build/
           key: ${{ runner.os}}-${{ github.ref_name }}    
-      - shell: bash
-        run: |
-         sed -i "s/^app_id:.*/app_id: "${{ vars.SHOREBIRD_APP_ID }}"/" shorebird.yaml   
       - id: dry_run
         uses: ./actions/android/shorebird-android-dry-patch
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
