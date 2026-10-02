@@ -1,4 +1,4 @@
-name: 20-shorebird-android-aab_release
+name: 20-shorebird-android
 on:
   workflow_call:
 jobs:
@@ -15,27 +15,31 @@ jobs:
          fetch-depth: 1
       - uses: ./actions/core/setup-flutter
       - uses: ./actions/core/setup-shorebird
-        if: hashFiles('android/app/keyStore.jks') != ''
+
       - uses: ./actions/android/android-signing
         with:
           flavor: ${{ github.ref_name }}
+
       - uses: actions/cache@v4
         with:
           path: build/
           key: ${{ runner.os}}-${{ github.ref_name }}    
+
       - id: dry_run
         uses: ./actions/android/shorebird-android-dry-patch
+
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
         uses: ./actions/android/shorebird-android-patch
         with:
           flavor: ${{ github.ref_name }}
-      - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: ./actions/android/shorebird-android-release
-        with:
-          google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          track: internal
+
+      #- if: ${{ steps.dry_run.outputs.build_type == 'release'}}
+      #  uses: ./actions/android/shorebird-android-release
+      #  with:
+      #    google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      #    track: internal
+
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
         uses: ./actions/android/shorebird-android-apk-release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ github.ref_name }}
