@@ -16,13 +16,7 @@ runs:
     - id: version_calculator
       shell: bash
       run: |
-        //TARGET_ID= $(grep -E '^app_id:' shorebird.yaml | awk '{print $2}' | tr -d '"' | tr -d "'")
-        PLATFORM="${{ inputs.platform }}"
-          //if [ "$RUNNER_OS" == "macOS" ]; then
-          //  sed -i '' "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          //else
-          //  sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          //fi
+          PLATFORM="${{ inputs.platform }}"
           #==== جلب بيانات الإصدارات والبيئة الحالية ====
           raw_list_platform=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
           echo "raw_list_platform: $raw_list_platform"
