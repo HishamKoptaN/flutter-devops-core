@@ -28,7 +28,7 @@ runs:
         with:
           files: build/app/outputs/flutter-apk/app-${{ github.ref_name }}-release.apk
           tag_name: v${{ steps.get-build-version.outputs.build_name }}+${{ steps.get-build-version.outputs.build_number }}
-          name: Release v${{ steps.get-build-version.outputs.build_name }}+${{ steps.get-build-version.outputs.build_number }}
+          name: ${{ steps.get-build-version.outputs.build_name }}+${{ steps.get-build-version.outputs.build_number }}
           draft: false
           prerelease: false
         env:
