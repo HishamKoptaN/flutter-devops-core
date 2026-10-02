@@ -1,8 +1,6 @@
 name: shorebird-android-release
 description: shorebird-android-release
 inputs:
-  shorebird_app_id:
-    required: true  
   google_play_service_account_json:
     required: true
   track:
@@ -15,7 +13,6 @@ runs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
-          shorebird_app_id: ${{ inputs.shorebird_app_id }}
       - shell: bash 
         run: |
             shorebird release android \
