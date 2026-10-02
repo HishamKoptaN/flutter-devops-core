@@ -17,12 +17,10 @@ runs:
       shell: bash
       run: |
           PLATFORM="${{ inputs.platform }}"
-          #==== جلب بيانات الإصدارات والبيئة الحالية ====
           raw_list_platform=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
           echo "raw_list_platform: $raw_list_platform"
           raw_list_all=$(shorebird releases list 2>/dev/null || true)
           build_numbers=$(echo "$raw_list_all" | grep -oE '\+[0-9]+' | tr -d '+' || true)
-          
           # ==========================================
           # 3. تحديد اسم الإصدار الأساسي (Build Name)
           # ==========================================

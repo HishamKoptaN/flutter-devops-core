@@ -9,7 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-shorebird-app-id@prod
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/set-shorebird-app-id@prod
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:

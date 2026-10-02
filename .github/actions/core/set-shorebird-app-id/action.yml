@@ -1,5 +1,5 @@
-name: get-shorebird-app-id
-description: get-shorebird-app-id
+name: set-shorebird-app-id
+description: set-shorebird-app-id
 runs:
   using: "composite"
   steps:
