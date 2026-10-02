@@ -31,9 +31,13 @@ jobs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-patch@prod
         with:
           flavor: ${{ github.ref_name }}
-      - if: ${{ steps.dry_run.outputs.build_type == 'release' }}
+      - if: ${{ steps.dry_run.outputs.build_type == 'release' &&  secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-release@prod
         with:
           shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
           google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           track: internal
+      - if: ${{ steps.dry_run.outputs.build_type == 'release' &&  secrets.GITHUB_TOKEN != '' }}
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-apk-release@prod
+        with:
+          shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}

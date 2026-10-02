@@ -2,12 +2,15 @@ name: flutter_devops_core
 description: "A new Flutter project."
 version: 1.0.0+1
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.13.3
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
   firebase_core: ^4.6.0
+  http: ^1.6.0
+  package_info_plus: ^10.2.2
+  url_launcher: ^6.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
