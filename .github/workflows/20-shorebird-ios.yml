@@ -21,7 +21,7 @@ jobs:
             ios/Pods
           key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/shorebird-ios-dry-patch@prod
+        uses: ./.github/actions/ios/shorebird-ios-dry-patch
         with:
           flavor : ${{ github.ref_name }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
