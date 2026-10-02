@@ -1,5 +1,5 @@
-name: shorebird-android-apk-release 
-description: shorebird-android-apk-release 
+name: shorebird-android-apk-release
+description: shorebird-android-apk-release
 inputs:
   shorebird_app_id:
     required: true  
