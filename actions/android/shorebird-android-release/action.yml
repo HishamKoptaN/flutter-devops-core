@@ -9,9 +9,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/set-shorebird-app-id@prod
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
@@ -28,7 +25,6 @@ runs:
             -- \
             --no-tree-shake-icons
       - id: upload-play
-        if: ${{ inputs.google_play_service_account_json != '' }}
         uses: r0adkll/upload-google-play@v1
         with:
           packageName: com.muein.orders
