@@ -2,8 +2,6 @@ name: get-build-version
 description: get-build-version
 
 inputs:
-  shorebird_app_id:
-    required: true
   platform:
     required: true
 outputs:
@@ -14,16 +12,17 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-shorebird-app-id@prod
     - id: version_calculator
       shell: bash
       run: |
-        TARGET_ID="${{ inputs.shorebird_app_id }}"
+        //TARGET_ID= $(grep -E '^app_id:' shorebird.yaml | awk '{print $2}' | tr -d '"' | tr -d "'")
         PLATFORM="${{ inputs.platform }}"
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          else
-            sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
-          fi
+          //if [ "$RUNNER_OS" == "macOS" ]; then
+          //  sed -i '' "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          //else
+          //  sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          //fi
           #==== جلب بيانات الإصدارات والبيئة الحالية ====
           raw_list_platform=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
           echo "raw_list_platform: $raw_list_platform"

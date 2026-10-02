@@ -23,7 +23,7 @@ jobs:
         with:
           path: build/
           key: ${{ runner.os}}-${{ github.ref_name }}    
-      - shell: bash 
+      - shell: bash
         run: |
          sed -i "s/^app_id:.*/app_id: "${{ vars.SHOREBIRD_APP_ID }}"/" shorebird.yaml   
       - id: dry_run
@@ -40,6 +40,5 @@ jobs:
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
         uses: HishamKoptaN/flutter-devops-core/.github/actions/android/shorebird-android-apk-release@prod
         with:
-          shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref_name }}

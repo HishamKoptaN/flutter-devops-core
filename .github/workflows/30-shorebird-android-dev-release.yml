@@ -1,10 +1,6 @@
 name: 30-shorebird-android-dev-release
 on:
   workflow_call:
-    inputs:
-      shorebird_app_id:
-        type: string
-        required: true  
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -20,7 +16,6 @@ jobs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
-          shorebird_app_id: ${{ vars.SHOREBIRD_APP_ID }}
       - id: run
         run: |
           flavor="${{ github.ref_name }}"

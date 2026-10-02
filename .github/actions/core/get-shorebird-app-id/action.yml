@@ -1,0 +1,31 @@
+name: 'Get Shorebird App ID'
+description: 'Injects the Shorebird App ID automatically based on the current branch (dev or prod)'
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        BRANCH_NAME="${{ github.ref_name }}"
+        TARGET_ID=""
+        echo "Current Branch: $BRANCH_NAME"
+        if [ "$BRANCH_NAME" == "prod" ]; then
+          TARGET_ID="اكتب_معرف_الإنتاج_هنا"
+        elif [ "$BRANCH_NAME" == "dev" ]; then
+          TARGET_ID="اكتب_معرف_التطوير_هنا"
+        else
+          echo "::error::Unsupported branch: $BRANCH_NAME. Allowed: dev, prod"
+          exit 1
+        fi
+        echo "Using App ID for $BRANCH_NAME"
+        if [ -f "shorebird.yaml" ]; then
+          if [ "$(uname)" == "Darwin" ]; then
+            sed -i '' "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          else
+            sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
+          fi
+          echo "Successfully injected App ID into shorebird.yaml"
+        else
+          echo "::error::shorebird.yaml not found!"
+          exit 1
+        fi
