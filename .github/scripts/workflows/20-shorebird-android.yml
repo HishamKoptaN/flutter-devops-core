@@ -13,8 +13,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
          fetch-depth: 1
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@prod
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@prod
         if: hashFiles('android/app/keyStore.jks') != ''
       - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@prod
         with:
