@@ -13,10 +13,16 @@ jobs:
       - uses: actions/checkout@v6
         with:
          fetch-depth: 0
-      - uses: ./.github/actions/core/setup-flutter
-      - uses: ./.github/actions/core/setup-shorebird
+      - uses: actions/checkout@v4
+        with:
+          repository: HishamKoptaN/flutter-devops-core
+          ref: prod
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: temp-core-actions
+      - uses: temp-core-actions/.github/actions/core/setup-flutter
+      - uses: temp-core-actions/.github/actions/core/setup-shorebird
         if: hashFiles('android/app/keyStore.jks') != ''
-      - uses: ./.github/actions/android/android-signing
+      - uses: temp-core-actions/.github/actions/android/android-signing
         with:
           flavor: ${{ github.ref_name }}
       - uses: actions/cache@v4
@@ -27,18 +33,18 @@ jobs:
         run: |
          sed -i "s/^app_id:.*/app_id: "${{ vars.SHOREBIRD_APP_ID }}"/" shorebird.yaml   
       - id: dry_run
-        uses: ./.github/actions/android/shorebird-android-dry-patch
+        uses: temp-core-actions/.github/actions/android/shorebird-android-dry-patch
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
-        uses: ./.github/actions/android/shorebird-android-patch
+        uses: temp-core-actions/.github/actions/android/shorebird-android-patch
         with:
           flavor: ${{ github.ref_name }}
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: ./.github/actions/android/shorebird-android-release
+        uses: temp-core-actions/.github/actions/android/shorebird-android-release
         with:
           google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           track: internal
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: ./.github/actions/android/shorebird-android-apk-release
+        uses: temp-core-actions/.github/actions/android/shorebird-android-apk-release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref_name }}
