@@ -1,0 +1,17 @@
+name: "Setup Android Shorebird Action"
+description: "Initializes Flutter, Shorebird CLI, Gradle, and dependency caches"
+runs:
+  using: "composite"
+  steps:
+    - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@prod
+    - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@prod
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          build/
+          .dart_tool/build
+        key: patch-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
+        restore-keys: |
+          patch-${{ hashFiles('pubspec.lock') }}-${{ runner.os }}-
+          patch-${{ runner.os }}-

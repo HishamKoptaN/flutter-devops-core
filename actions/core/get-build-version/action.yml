@@ -1,0 +1,65 @@
+name: get-build-version
+description: get-build-version
+
+inputs:
+  platform:
+    required: true
+outputs:
+  build_name:
+    value: ${{ steps.version_calculator.outputs.BUILD_NAME }}
+  build_number:
+    value: ${{ steps.version_calculator.outputs.BUILD_NUMBER }}
+runs:
+  using: "composite"
+  steps:
+    - uses: HishamKoptaN/flutter-devops-core/actions/core/set-shorebird-app-id@prod
+    - id: version_calculator
+      shell: bash
+      run: |
+          PLATFORM="${{ inputs.platform }}"
+          raw_list_platform=$(shorebird releases list --platform=$PLATFORM 2>/dev/null || true)
+          echo "raw_list_platform: $raw_list_platform"
+          raw_list_all=$(shorebird releases list 2>/dev/null || true)
+          if [ -z "$raw_list_all" ] || [ -z "$raw_list_platform" ]; then
+            echo "No existing releases found. Setting default build number to 1."
+            BUILD_NAME="1.0.0"
+            BUILD_NUMBER="1"
+            echo "BUILD_NAME=$BUILD_NAME" >> $GITHUB_OUTPUT
+            echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          build_numbers=$(echo "$raw_list_all" | grep -oE '\+[0-9]+' | tr -d '+' || true)
+          # ==========================================
+          # 3. تحديد اسم الإصدار الأساسي (Build Name)
+          # ==========================================
+          latest_full_version=$(echo "$raw_list_platform" | grep "$PLATFORM" | head -n 1 || true)
+          version_field=$(echo "$latest_full_version" | awk '{print $2}')
+          raw_base=$(echo "$version_field" | cut -d'+' -f1)
+          BUILD_NAME=$(echo "$raw_base" | cut -d'-' -f1)
+          latest_platform_build=$(echo "$version_field" | grep -oE '\+[0-9]+' | tr -d '+')
+          current_flutter_version=$(flutter --version | head -n 1 | awk '{print $2}')
+
+          # ==========================================
+          # 4. خوارزمية البحث عن رقم بناء صالح (Smart Loop)
+          # ==========================================  
+
+          candidate_number=$((latest_platform_build + 1))
+          while true; do
+            existing_release=$(echo "$raw_list_all" | grep "+$candidate_number" || true)
+            if [ -z "$existing_release" ]; then
+              BUILD_NUMBER=$candidate_number
+              break
+            else
+              existing_flutter_version=$(echo "$existing_release" | awk '{print $NF}')
+              if [ "$current_flutter_version" == "$existing_flutter_version" ]; then
+                BUILD_NUMBER=$candidate_number
+                break
+              else
+                candidate_number=$((candidate_number + 1))
+              fi  
+            fi  
+          done
+          echo "Calculated Build Name: $BUILD_NAME"
+          echo "Calculated Build Number: $BUILD_NUMBER"
+          echo "BUILD_NAME=$BUILD_NAME" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT

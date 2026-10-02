@@ -1,0 +1,60 @@
+name: Cleanup Releases
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        required: true
+        type: string
+    secrets:
+      FIREBASE_TOKEN:
+        required: false
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAVOR="${{ inputs.flavor }}"
+          echo "🔍 Finding releases for flavor: $FLAVOR"
+          RELEASES=$(gh release list --limit 100 --json tagName,createdAt --jq '.[].tagName' 2>/dev/null | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+" || echo "")
+          if [ -z "$RELEASES" ]; then
+            exit 0
+          fi
+          COUNT=$(echo "$RELEASES" | wc -l)
+          echo "Found $COUNT releases"
+          if [ "$COUNT" -gt 5 ]; then
+            echo "$RELEASES" | tail -n +6 | while read -r TAG; do
+              if [ -n "$TAG" ]; then
+                gh release delete "$TAG" --yes 2>/dev/null || echo "⚠️ Could not delete $TAG"
+                git push origin --delete "$TAG" 2>/dev/null || echo "⚠️ Could not delete tag $TAG"
+              fi
+            done
+          else
+          fi
+      - env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        uses: w9jds/setup-firebase@main
+        with:
+          tools-version: latest
+          firebase_token: ${{ secrets.FIREBASE_TOKEN }}
+        continue-on-error: true
+      - env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        continue-on-error: true
+        run: |
+          FLAVOR="${{ inputs.flavor }}"
+          DART_FILE="lib/config/firebase/$FLAVOR/firebase_options.dart"
+          APP_ID=""
+          if [ -f "$DART_FILE" ]; then
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
+          fi
+          if [ -z "$APP_ID" ]; then
+            exit 0
+          fi

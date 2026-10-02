@@ -1,0 +1,19 @@
+name: setup-flutter
+description: "Cache Flutter pub dependencies to speed up builds"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          ~/.pub-cache
+          android/.gradle
+          .dart_tool
+        key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/pubspec.lock') }}
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version-file: pubspec.yaml
+        channel: "stable"
+        cache: true

@@ -1,0 +1,21 @@
+#3213124124214
+name: main
+env:
+  force_javascript_actions_to_node24: true
+  actions_allow_use_unsecure_node_version: true
+permissions:
+  contents: write
+on:
+  workflow_call:
+  push:
+    branches: [dev, prod]
+  workflow_dispatch:
+jobs: 
+  shorebird_layer:
+    uses: ./.github/workflows/20-shorebird-layer.yml
+    secrets: inherit
+  #distribution_layer:
+  # needs: [shorebird_layer]
+  # if: always()
+  # uses: ./.github/workflows/50-distribution-layer.yml 
+  # secrets: inherit

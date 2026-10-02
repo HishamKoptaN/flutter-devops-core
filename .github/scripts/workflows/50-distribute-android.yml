@@ -1,0 +1,87 @@
+name: Distribute Android
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        type: string
+        required: true
+    secrets:
+      FIREBASE_ADMIN_SDK:
+        required: false
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.flavor }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-${{ inputs.flavor }}
+          path: build/app/outputs/
+        continue-on-error: true
+      - run: |
+          find build/app/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+      - id: find_apk
+        run: |
+          APK_PATH=$(find build/app/outputs -name "*.apk" -type f 2>/dev/null | head -1)
+          if [ -n "$APK_PATH" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.find_apk.outputs.found == 'true'
+        id: apk_name
+        run: |
+          if [ "${{ inputs.flavor }}" = "prod" ]; then
+            echo "name=android-apk" >> $GITHUB_OUTPUT
+          else
+            echo "name=android-apk_${{ inputs.flavor }}" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.find_apk.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk_name.outputs.name }}
+          path: build/app/outputs/**/*.apk
+          retention-days: 30
+      - id: get_app_id
+        run: |
+          DART_FILE="lib/config/firebase/${{ inputs.flavor }}/firebase_options.dart"
+          if [ -f "$DART_FILE" ]; then
+            echo "🔍 Searching in Dart config: $DART_FILE"
+            APP_ID=$(sed -n '/static const FirebaseOptions android/,/);/p' "$DART_FILE" | grep "appId:" | sed "s/.*'\([^']*\)'.*/\1/")
+            if [ -n "$APP_ID" ]; then
+              echo "Found Firebase App ID: $APP_ID"
+              echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          echo "app_id=" >> $GITHUB_OUTPUT
+      - if: steps.find_apk.outputs.found == 'true' && steps.get_app_id.outputs.app_id != ''
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ steps.get_app_id.outputs.app_id }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_ADMIN_SDK }}
+          groups: "apk"
+          file: ${{ steps.find_apk.outputs.apk_path }}
+        continue-on-error: true
+      - if: steps.find_apk.outputs.found == 'true'
+        id: release_tag
+        run: |
+          if [ "${{ inputs.flavor }}" = "prod" ]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest_${{ inputs.flavor }}" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.find_apk.outputs.found == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: ${{ inputs.flavor == 'prod' && 'Latest Release' || format('Latest {0}', inputs.flavor) }}
+          files: ${{ steps.find_apk.outputs.apk_path }}
+          prerelease: ${{ inputs.flavor == 'dev' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

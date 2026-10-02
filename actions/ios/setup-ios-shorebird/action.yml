@@ -1,0 +1,17 @@
+name: setup-ios-shorebird
+description: setup-ios-shorebird
+inputs:
+  p12_password:
+    required: true
+  shorebird_token:
+    required: true 
+runs:
+  using: "composite"
+  steps:
+    - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@prod
+    - run: flutter pub get
+      shell: bash
+    - run: |
+        cd ios
+        pod install
+      shell: bash

@@ -1,0 +1,44 @@
+name: Distribution Layer
+on:
+  workflow_call:
+    inputs:
+      windows_exe_name:
+        type: string
+        required: false
+      full_version:
+        type: string
+        required: false
+      app_name:
+        type: string
+        required: false
+        default: "MyApp"
+      app_publisher:
+        type: string
+        required: false
+        default: "MyCompany"
+jobs:
+  # build_installer:
+    # if: |
+      # contains(inputs.platforms, 'windows') && 
+      # inputs.windows_exe_name != ''
+    # uses: ./.github/workflows/30-deploy-installer.yml
+    # with:
+    #   flavor: ${{ inputs.flavor }}
+    #   full_version: ${{ inputs.full_version }}
+    #   exe_name: ${{ inputs.windows_exe_name }}
+    #   app_name: ${{ inputs.app_name }}
+    #   app_publisher: ${{ inputs.app_publisher }}
+    # secrets: inherit
+  distribute:
+    uses: ./.github/workflows/50-distribute-android.yml
+    with:
+      flavor: ${{ github.ref_name }}
+    secrets: inherit
+  # cleanup:
+  #   needs: [build_installer, distribute]
+  #   if: always()
+  #   uses: ./.github/workflows/50-cleanup-releases.yml
+  #   with:
+  #     flavor: ${{ inputs.flavor }}
+  #   secrets:
+  #     FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

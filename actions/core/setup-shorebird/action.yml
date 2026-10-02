@@ -1,0 +1,8 @@
+name: setup-shorebird
+description: setup-shorebird
+runs:
+  using: "composite"
+  steps:
+    - uses: shorebirdtech/setup-shorebird@v1
+      with:
+        cache: true
