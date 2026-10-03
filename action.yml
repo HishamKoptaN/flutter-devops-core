@@ -1,4 +1,4 @@
-name: "Test Core Action"
+name: "Core Action"
 description: "Test connecting to core action"
 inputs:
   shorebird-token:
