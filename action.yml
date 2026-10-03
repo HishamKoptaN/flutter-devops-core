@@ -16,9 +16,9 @@ runs:
           repository: HishamKoptaN/flutter-devops-core
           token: ${{ inputs.github-token }}
           path: actions/core/setup-flutter
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v5
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v5
-      - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@v5
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v6
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v6
+      - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@v6
         with:
           flavor: ${{ github.ref_name }}
       - uses: actions/cache@v4
@@ -26,17 +26,17 @@ runs:
           path: build/
           key: ${{ runner.os}}-${{ github.ref_name }}    
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-dry-patch@v5
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-dry-patch@v6
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-patch@v5
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-patch@v6
         with:
           flavor: ${{ github.ref_name }}
      #- if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-     #  uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-release@v5
+     #  uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-release@v6
      #  with:
      #    google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
      #    track: internal
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-apk-release@v5
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-apk-release@v6
         with:
           github_token: ${{ inputs.github-token }}
