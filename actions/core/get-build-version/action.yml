@@ -12,7 +12,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: ./actions/core/set-shorebird-app-id
+    - uses:  HishamKoptaN/flutter-devops-core/actions/core/set-shorebird-app-id@v1
     - id: version_calculator
       shell: bash
       run: |
