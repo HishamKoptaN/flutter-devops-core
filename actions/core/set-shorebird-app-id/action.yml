@@ -4,7 +4,6 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      working-directory: ${{ github.workspace }}
       run: |
         BRANCH_NAME="${{ github.ref_name }}"
         echo "Current Branch / Environment: $BRANCH_NAME"
