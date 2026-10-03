@@ -10,27 +10,27 @@ runs:
         uses: HishamKoptaN/flutter-devops-core/actions/core/get-build-version@v1
         with:
           platform: "android"
-      #- uses: jlumbroso/free-disk-space@main
-      #  with:
-      #    tool-cache: true
-      #    android: false
-      #    dotnet: true
-      #    haskell: true
-      #    large-packages: true
-      #    docker-images: true
-      #    swap-storage: true
-      - uses: easimon/maximize-build-space@v10
+      - uses: jlumbroso/free-disk-space@main
         with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'false'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      #- uses: easimon/maximize-build-space@v10
+      #  with:
+      #    root-reserve-mb: 512
+      #    swap-size-mb: 1024
+      #    remove-dotnet: 'true'
+      #    remove-android: 'false'
+      #    remove-haskell: 'true'
+      #    remove-codeql: 'true'
+      #    remove-docker-images: 'true'
       - shell: bash 
-       # env:
-        #  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.vfs.watch=false"
+        env:
+         GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.vfs.watch=false"
         run: |
             shorebird release android \
             --target=lib/main.dart \
