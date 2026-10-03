@@ -12,9 +12,6 @@ runs:
           path: actions/core/setup-flutter
       - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v1
       - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v1
-      - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@v1
-        with:
-          flavor: ${{ github.ref_name }}
       - uses: actions/cache@v4
         with:
           path: build/
