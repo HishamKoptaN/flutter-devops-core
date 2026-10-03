@@ -7,7 +7,7 @@ runs:
   using: "composite"
   steps:
       - id: get-build-version
-        uses: ./actions/core/get-build-version
+        uses: HishamKoptaN/flutter-devops-core/actions/core/get-build-version@v1
         with:
           platform: "android"
       - shell: bash 
