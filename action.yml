@@ -8,7 +8,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v1
         with:
                fetch-depth: 1
       - uses: actions/checkout@v4
@@ -16,9 +16,9 @@ runs:
           repository: HishamKoptaN/flutter-devops-core
           token: ${{ inputs.github-token }}
           path: actions/core/setup-flutter
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v6
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v6
-      - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@v6
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v1
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v1
+      - uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing@v1
         with:
           flavor: ${{ github.ref_name }}
       - uses: actions/cache@v4
@@ -26,17 +26,17 @@ runs:
           path: build/
           key: ${{ runner.os}}-${{ github.ref_name }}    
       - id: dry_run
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-dry-patch@v6
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-dry-patch@v1
       - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-patch@v6
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-patch@v1
         with:
           flavor: ${{ github.ref_name }}
      #- if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-     #  uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-release@v6
+     #  uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-release@v1
      #  with:
      #    google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
      #    track: internal
       - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-apk-release@v6
+        uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-apk-release@v1
         with:
           github_token: ${{ inputs.github-token }}
