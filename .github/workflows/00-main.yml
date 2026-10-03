@@ -8,6 +8,9 @@ permissions:
 jobs:
     deploy:
       runs-on: ubuntu-latest
+      environment: ${{ github.ref_name }}
+      env: 
+        SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
       steps:
         - uses: actions/checkout@v4
         - uses: HishamKoptaN/flutter-devops-core@v1
