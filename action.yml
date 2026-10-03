@@ -16,7 +16,7 @@ runs:
           repository: HishamKoptaN/flutter-devops-core
           token: ${{ inputs.github-token }}
           path: actions/core/setup-flutter
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v3
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v5
       #- uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird
       #- uses: HishamKoptaN/flutter-devops-core/actions/android/android-signing
       #  with:
