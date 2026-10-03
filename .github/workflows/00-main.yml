@@ -14,5 +14,3 @@ jobs:
       steps:
         - uses: actions/checkout@v4
         - uses: HishamKoptaN/flutter-devops-core@v1
-          with:
-             shorebird-token: ${{ secrets.SHOREBIRD_TOKEN }}
