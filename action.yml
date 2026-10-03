@@ -1,8 +1,5 @@
 name: "Core Action"
 description: "Test connecting to core action"
-inputs:
-  shorebird-token:
-    required: true  
 runs:
   using: "composite"
   steps:
