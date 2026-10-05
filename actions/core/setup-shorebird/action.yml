@@ -5,4 +5,4 @@ runs:
   steps:
     - uses: shorebirdtech/setup-shorebird@v1
       with:
-        cache: true
+        cache: false
