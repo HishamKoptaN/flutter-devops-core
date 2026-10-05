@@ -37,8 +37,8 @@ runs:
       - uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-${{ github.ref_name }}-release.apk
-          tag_name: v${{ steps.get-build-version.outputs.build_name }}+${{ steps.get-build-version.outputs.build_number }}
-          name: ${{ steps.get-build-version.outputs.build_name }}+${{ steps.get-build-version.outputs.build_number }}
+          tag_name: latest
+          name: latest
           draft: false
           prerelease: false
         env:
