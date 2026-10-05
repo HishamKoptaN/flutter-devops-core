@@ -1,4 +1,4 @@
-name: CI/CD Pipeline #2
+name: CI/CD Pipeline #12322
 on:
     push:
         branches: [ prod ]
@@ -12,5 +12,16 @@ jobs:
       env: 
         SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
       steps:
+        - name: Free Disk Space (Ubuntu)
+          uses: jlumbroso/free-disk-space@main
+          with:
+            tool-cache: false
+            android: false
+            dotnet: true
+            haskell: true
+            large-packages: true
+            docker-images: true
+            swap-storage: false
         - uses: actions/checkout@v4
         - uses: HishamKoptaN/flutter-devops-core@v1
+
