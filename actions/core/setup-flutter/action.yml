@@ -16,4 +16,4 @@ runs:
       with:
         flutter-version-file: pubspec.yaml
         channel: "stable"
-        # cache: true
+        cache: true
