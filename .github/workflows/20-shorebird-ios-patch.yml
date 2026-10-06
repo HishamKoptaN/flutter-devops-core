@@ -5,6 +5,7 @@ on:
 jobs:
   patch:
     runs-on: macos-latest
+    timeout-minutes: 60
     environment: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v6
