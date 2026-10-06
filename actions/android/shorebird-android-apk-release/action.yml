@@ -24,6 +24,7 @@ runs:
          GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.caching=true -Dorg.gradle.vfs.watch=true"
         run: |
             shorebird release android \
+            --target-platforms=android-arm,android-arm64,android-x64 \
             --target=lib/main.dart \
             --artifact=apk \
             --confirm \
