@@ -3,6 +3,16 @@ description: "Test connecting to core action"
 runs:
   using: "composite"
   steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
       - uses: actions/checkout@v1
         with:
                fetch-depth: 1
