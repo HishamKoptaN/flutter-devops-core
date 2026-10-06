@@ -24,7 +24,7 @@ runs:
           platform: "android"
       - shell: bash
         env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.vfs.watch=false"
+          GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.caching=true -Dorg.gradle.vfs.watch=true"
         run: |
             shorebird release android \
             --confirm \
