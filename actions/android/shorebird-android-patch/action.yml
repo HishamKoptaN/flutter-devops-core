@@ -11,6 +11,4 @@ runs:
           shorebird patch android \
           --release-version=latest \
           --flavor=${{ inputs.flavor }} \
-          --dart-define=ENV=${{ inputs.flavor }} \
-          -- \
-          --no-tree-shake-icons
+          --dart-define=ENV=${{ inputs.flavor }}
