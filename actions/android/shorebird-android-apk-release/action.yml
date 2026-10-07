@@ -24,15 +24,14 @@ runs:
          GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.caching=true -Dorg.gradle.vfs.watch=true"
         run: |
             shorebird release android \
-            --target-platform=android-arm \
             --target=lib/main.dart \
             --artifact=apk \
-            --confirm \
             --flutter-version=3.47.4 \
             --flavor=${{ github.ref_name }} \
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
-            --build-number=${{ steps.get-build-version.outputs.build_number }}
+            --build-number=${{ steps.get-build-version.outputs.build_number }} \
+            --confirm
       - uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-${{ github.ref_name }}-release.apk
