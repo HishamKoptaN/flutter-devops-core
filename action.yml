@@ -10,8 +10,8 @@ runs:
         with:
           repository: HishamKoptaN/flutter-devops-core
           path: actions/core/setup-flutter
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v1
-      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v1
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@prod
+      - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@prod
       - uses: actions/cache@v4
         with:
           path: build/
