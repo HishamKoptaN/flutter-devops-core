@@ -1,53 +1,15 @@
-name: CI/CD Pipeline #12322
-on:
-    push:
-        branches: [ prods ]
-    workflow_dispatch:
+name: main
+env:
+  force_javascript_actions_to_node24: true
+  actions_allow_use_unsecure_node_version: true
 permissions:
-    contents: write
-jobs:
-    deploy:
-      runs-on: ubuntu-latest
-      timeout-minutes: 60
-      environment: ${{ github.ref_name }}
-      env: 
-        SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-      steps:
-        - name: Free Disk Space
-          uses: jlumbroso/free-disk-space@main
-          with:
-            tool-cache: true
-            android: false
-            dotnet: true
-            haskell: true
-            large-packages: true
-            docker-images: true
-            swap-storage: true
-        - uses: actions/checkout@v1
-          with:
-                 fetch-depth: 1
-        - uses: actions/checkout@v4
-          with:
-            repository: HishamKoptaN/flutter-devops-core
-            path: actions/core/setup-flutter
-        - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-flutter@v1
-        - uses: HishamKoptaN/flutter-devops-core/actions/core/setup-shorebird@v1
-        - uses: actions/cache@v4
-          with:
-            path: build/
-            key: ${{ runner.os}}-${{ github.ref_name }}    
-        - id: dry_run
-          uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-dry-patch@v1
-        - if: ${{ steps.dry_run.outputs.build_type == 'patch' }}
-          uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-patch@v1
-          with:
-            flavor: ${{ github.ref_name }}
-       #- if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-       #  uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-release@v1
-       #  with:
-       #    google_play_service_account_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-       #    track: internal
-        - if: ${{ steps.dry_run.outputs.build_type == 'release'}}
-          uses: HishamKoptaN/flutter-devops-core/actions/android/shorebird-android-apk-release@v1
-          with:
-            github_token: ${{ inputs.github-token }}
+  contents: write
+on:
+  workflow_call:
+  push:
+    branches: [dev, prod]
+  workflow_dispatch:
+jobs: 
+  shorebird_layer:
+    uses: ./.github/workflows/20-shorebird-layer.yml
+    secrets: inherit

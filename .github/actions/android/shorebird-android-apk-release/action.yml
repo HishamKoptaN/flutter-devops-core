@@ -31,7 +31,8 @@ runs:
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
             --build-number=${{ steps.get-build-version.outputs.build_number }} \
-            --confirm
+            --confirm \
+            --target-platform=android-arm,android-arm64
       - uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-${{ github.ref_name }}-release.apk
