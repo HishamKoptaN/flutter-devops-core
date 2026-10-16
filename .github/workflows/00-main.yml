@@ -1,4 +1,4 @@
-name: main
+name: 00-main
 env:
   force_javascript_actions_to_node24: true
   actions_allow_use_unsecure_node_version: true
