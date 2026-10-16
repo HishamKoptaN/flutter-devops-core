@@ -10,6 +10,17 @@ on:
     branches: [dev, prod]
   workflow_dispatch:
 jobs: 
-  shorebird_layer:
-    uses: ./.github/workflows/20-shorebird-layer.yml
-    secrets: inherit
+  # shorebird_layer:
+  #   uses: ./.github/workflows/20-shorebird-layer.yml
+  #   secrets: inherit
+  test_certificate:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    environment: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/ios/setup-ios-signing
+        with:
+          appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}

@@ -7,7 +7,6 @@ jobs:
     timeout-minutes: 60
     environment: ${{ github.ref_name }}
     env:
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
       APP_STORE_CONNECT_API_KEY_ID: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
       APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
@@ -26,7 +25,6 @@ jobs:
         with:
           flavor : ${{ github.ref_name }}
           shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
-          p12_password: ${{ secrets.P12_PASSWORD }}
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
           appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}

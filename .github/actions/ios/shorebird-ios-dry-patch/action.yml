@@ -6,7 +6,8 @@ inputs:
   shorebird_token:
     required: true
   p12_password:
-    required: true
+    required: false
+    default: ""
   appstore_issuer_id:
     required: true
   appstore_api_key_id:
@@ -25,7 +26,6 @@ runs:
         shorebird_token: ${{ inputs.shorebird_token }}   
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
       with:
-        p12-password: ${{ inputs.p12_password }}
         appstore_issuer_id: ${{ inputs.appstore_issuer_id }}
         appstore_api_key_id: ${{ inputs.appstore_api_key_id }}
         appstore_api_private_key: ${{ inputs.appstore_api_private_key }}

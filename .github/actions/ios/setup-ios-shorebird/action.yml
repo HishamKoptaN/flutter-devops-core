@@ -2,7 +2,8 @@ name: setup-ios-shorebird
 description: setup-ios-shorebird
 inputs:
   p12_password:
-    required: true
+    required: false
+    default: ""
   shorebird_token:
     required: true 
 runs:

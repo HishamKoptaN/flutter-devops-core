@@ -13,7 +13,6 @@ jobs:
       - uses: ./.github/actions/core/setup-shorebird
       - uses: ./.github/actions/ios/setup-ios-signing
         with:
-          p12-password: ${{ secrets.P12_PASSWORD }}
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
           appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
