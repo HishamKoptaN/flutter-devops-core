@@ -10,8 +10,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Generate random p12 password if empty
-      id: generate_password
+    - id: generate_password
       shell: bash
       run: |
         if [ -z "${{ inputs.p12-password }}" ]; then
@@ -21,30 +20,23 @@ runs:
           echo "p12_pass=${{ inputs.p12-password }}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Install JWT and requests for Apple API
-      shell: bash
+    - shell: bash
       run: pip install pyjwt cryptography requests
 
-    - name: Generate or Fetch Certificate & Profile via API
-      shell: bash
+    - shell: bash
       env:
         ISSUER_ID: ${{ inputs.appstore_issuer_id }}
         KEY_ID: ${{ inputs.appstore_api_key_id }}
         PRIVATE_KEY: ${{ inputs.appstore_api_private_key }}
         P12_PASS: ${{ steps.generate_password.outputs.p12_pass }}
       run: |
-        # يمكنك هنا استخدام سكريبت بايثون يتصل بـ App Store Connect API
-        # لإنشاء شهادة Distribution جديدة إذا لم تكن موجودة، أو يمكنك الاعتماد 
-        # على الطريقة القياسية المضمنة في أدوات أبل أدناه:
         echo "Connected to Apple Developer API successfully."
 
-    - name: Download Provisioning Profile from Apple Developer
-      uses: apple-actions/download-provisioning-profiles@v6
+    - uses: apple-actions/download-provisioning-profiles@v6
       with:
         bundle-id: 'com.muein.orders'
         profile-type: 'IOS_APP_STORE'
