@@ -20,4 +20,26 @@ platform :ios do
 
     UI.message("Fastlane setup and certificate verification completed successfully!")
   end
+
+  desc "Automatically generate or fetch signing certificate and provisioning profile using App Store Connect API"
+  lane :generate_signing_certs do
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"],
+      is_key_json_file: false
+    )
+
+    cert(
+      output_path: "./",
+      output_name: "certificate",
+      password: ENV["P12_PASSWORD"] || "temp_password_123"
+    )
+
+    sigh(
+      app_identifier: "com.muein.orders",
+      output_path: "./",
+      adhoc: false
+    )
+  end
 end

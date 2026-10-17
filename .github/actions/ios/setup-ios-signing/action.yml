@@ -17,18 +17,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Decode Certificate
-      shell: bash
-      run: |
-        mkdir -p ios
-        if [ -n "${{ inputs.certificate-base64 }}" ]; then
-          echo "${{ inputs.certificate-base64 }}" | base64 --decode > ios/certificate.p12
-        elif [ -f "ios/certificate.p12" ]; then
-          echo "Using existing ios/certificate.p12"
-        else
-          echo "Error: certificate-base64 input not provided and ios/certificate.p12 does not exist."
-          exit 1
-        fi
     - id: generate_password
       shell: bash
       run: |
@@ -37,6 +25,27 @@ runs:
           echo "p12_pass=$GEN_PASS" >> $GITHUB_OUTPUT
         else
           echo "p12_pass=${{ inputs.p12-password }}" >> $GITHUB_OUTPUT
+        fi
+    - name: Decode Certificate or Auto-Generate
+      shell: bash
+      env:
+        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
+        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
+        APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ inputs.appstore_api_private_key }}
+        P12_PASSWORD: ${{ steps.generate_password.outputs.p12_pass }}
+      run: |
+        mkdir -p ios
+        if [ -n "${{ inputs.certificate-base64 }}" ]; then
+          echo "${{ inputs.certificate-base64 }}" | base64 --decode > ios/certificate.p12
+          echo "Certificate decoded from base64 input."
+        elif [ -f "ios/certificate.p12" ]; then
+          echo "Using existing ios/certificate.p12"
+        else
+          echo "Certificate not provided. Auto-generating certificate and provisioning profile using App Store Connect API..."
+          cd ios
+          bundle install || gem install fastlane
+          bundle exec fastlane generate_signing_certs
+          cd ..
         fi
     - uses: apple-actions/import-codesign-certs@v7
       with:
