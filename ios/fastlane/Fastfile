@@ -1,18 +1,27 @@
-# Monkey patch صحيح وشامل لـ OpenSSL 3.x / Ruby 3.3
+# Monkey Patch دقيق وشامل لـ OpenSSL 3.x
 module OpenSSL
   class PKey
+    class << self
+      alias_method :orig_read, :read
+      def read(data, *args, &block)
+        orig_read(data, *args, &block)
+      rescue OpenSSL::PKey::PKeyError, OpenSSL::PKey::ECError
+        orig_read(data, *args, &block)
+      end
+    end
+
     class EC
       class << self
         alias_method :orig_new, :new
-        def new(data = nil, *args, &block)
-          if data.is_a?(String) && (data.include?("BEGIN PRIVATE KEY") || data.include?("BEGIN EC PRIVATE KEY"))
-            OpenSSL::PKey.read(data, *args, &block)
+        def new(*args, &block)
+          if args.first.is_a?(String)
+            OpenSSL::PKey.read(args.first)
           else
-            orig_new(data, *args, &block)
+            orig_new(*args, &block)
           end
-        rescue OpenSSL::PKey::ECError, ArgumentError => e
-          if data.is_a?(String)
-            OpenSSL::PKey.read(data, *args, &block)
+        rescue => e
+          if args.first.is_a?(String)
+            OpenSSL::PKey.read(args.first)
           else
             raise e
           end
@@ -40,37 +49,12 @@ platform :ios do
       key_content: priv_key,
       is_key_content_base64: false
     )
+    
+    # باقي الخطوات...
     get_provisioning_profile( 
       app_identifier: "com.muein.orders",
       distribution_type: "app-store"     
     )
     UI.message("Fastlane setup and certificate verification completed successfully!")
-  end
-
-  desc "Automatically generate or fetch signing certificate and provisioning profile using App Store Connect API"
-  lane :generate_signing_certs do
-    ENV.delete('APP_STORE_CONNECT_API_KEY')
-    
-    priv_key = ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
-    if priv_key && !priv_key.include?("\n")
-      body = priv_key.gsub(/-----BEGIN.*?-----/, '').gsub(/-----END.*?-----/, '').gsub(/\s+/, '')
-      priv_key = "-----BEGIN PRIVATE KEY-----\n" + body.scan(/.{1,64}/).join("\n") + "\n-----END PRIVATE KEY-----"
-    end
-
-    app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: priv_key
-    )
-    cert(
-      output_path: "./",
-      output_name: "certificate",
-      password: ENV["P12_PASSWORD"] || "temp_password_123"
-    )
-    sigh(
-      app_identifier: "com.muein.orders",
-      output_path: "./",
-      adhoc: false
-    )
   end
 end
