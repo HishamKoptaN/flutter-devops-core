@@ -1,5 +1,5 @@
 name: setup-ios-signing
-description: Automatic iOS Code Signing via App Store Connect API without Fastlane
+description: Automatic iOS Code Signing via App Store Connect API using setup-apple-certificate and apple-provisioning
 inputs:
   appstore_issuer_id:
     required: true  
@@ -7,39 +7,44 @@ inputs:
     required: true
   appstore_api_private_key:
     required: true
+  distribution_private_key:
+    required: true
+  bundle_id:
+    required: false
+    default: 'com.muein.orders'
+  p12-password:
+    required: false
+outputs:
+  p12-password:
+    description: "P12 password"
+    value: ${{ steps.cert.outputs.p12-password }}
+  keychain-password:
+    description: "Keychain password"
+    value: ${{ steps.cert.outputs.keychain-password }}
+  codesign-identity:
+    description: "Codesign identity"
+    value: ${{ steps.cert.outputs.codesign-identity }}
+  provisioning-profile-name:
+    description: "Provisioning profile name"
+    value: ${{ steps.cert.outputs.provisioning-profile-name }}
 runs:
   using: "composite"
   steps:
-    - id: generate_password
-      shell: bash
-      run: |
-        if [ -z "${{ inputs.p12-password }}" ]; then
-          GEN_PASS=$(openssl rand -base64 32)
-          echo "p12_pass=$GEN_PASS" >> $GITHUB_OUTPUT
-        else
-          echo "p12_pass=${{ inputs.p12-password }}" >> $GITHUB_OUTPUT
-        fi
-
-    - uses: actions/setup-python@v5
+    - uses: kebechet/setup-apple-certificate@v1
+      id: cert
       with:
-        python-version: '3.10'
+        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
+        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
+        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
+        distribution-private-key: ${{ inputs.distribution_private_key }}
+        bundle-identifier: ${{ inputs.bundle_id != '' && inputs.bundle_id || 'com.muein.orders' }}
 
-    - shell: bash
-      run: pip install pyjwt cryptography requests
-
-    - shell: bash
-      env:
-        ISSUER_ID: ${{ inputs.appstore_issuer_id }}
-        KEY_ID: ${{ inputs.appstore_api_key_id }}
-        PRIVATE_KEY: ${{ inputs.appstore_api_private_key }}
-        P12_PASS: ${{ steps.generate_password.outputs.p12_pass }}
-      run: |
-        echo "Connected to Apple Developer API successfully."
-
-    - uses: apple-actions/download-provisioning-profiles@v6
+    - uses: maui-actions/apple-provisioning@v4
       with:
-        bundle-id: 'com.muein.orders'
-        profile-type: 'IOS_APP_STORE'
-        issuer-id: ${{ inputs.appstore_issuer_id }}
-        api-key-id: ${{ inputs.appstore_api_key_id }}
-        api-private-key: ${{ inputs.appstore_api_private_key }}
+        certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
+        certificate-passphrase: ${{ steps.cert.outputs.p12-password }}
+        bundle-identifiers: ${{ inputs.bundle_id != '' && inputs.bundle_id || 'com.muein.orders' }}
+        profile-types: IOS_APP_STORE
+        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
+        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
+        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
