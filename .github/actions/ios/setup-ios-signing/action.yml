@@ -13,35 +13,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: generate_password
-      shell: bash
-      run: |
-        if [ -z "${{ inputs.p12-password }}" ]; then
-          GEN_PASS=$(openssl rand -base64 32)
-          echo "p12_pass=$GEN_PASS" >> $GITHUB_OUTPUT
-        else
-          echo "p12_pass=${{ inputs.p12-password }}" >> $GITHUB_OUTPUT
-        fi
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.3'
-    - name: Decode Certificate or Auto-Generate
-      shell: bash
-      env:
-        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
-        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
-        APP_STORE_CONNECT_API_PRIVATE_KEY: ${{ inputs.appstore_api_private_key }}
-        P12_PASSWORD: ${{ steps.generate_password.outputs.p12_pass }}
-      run: |
-        mkdir -p ios
-        cd ios
-        bundle install || gem install fastlane
-        bundle exec fastlane build_signed_ipa
-        cd ..
     - uses: apple-actions/import-codesign-certs@v7
       with:
         p12-filepath: ios/certificate.p12
-        p12-password: ${{ steps.generate_password.outputs.p12_pass }}
+        p12-password: ${{ inputs.p12-password }}
         keychain: signing_temp
         create-keychain: true
     - uses: apple-actions/download-provisioning-profiles@v6
