@@ -8,8 +8,7 @@ platform :ios do
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"], # محتوى المفتاح السري كـ String
-      is_key_json_file: false
+      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
     )
 
     # 2. استخدام أداة match أو cert/sigh لإدارة الشهادات والملفات التعريفية تلقائياً
@@ -26,8 +25,7 @@ platform :ios do
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"],
-      is_key_json_file: false
+      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
     )
 
     cert(
