@@ -1,10 +1,7 @@
 default_platform(:ios)
-
 platform :ios do
   desc "Push a new release build to TestFlight or build IPA with automatic code signing"
   lane :build_signed_ipa do
-    
-    # 1. الاتصال بـ App Store Connect باستخدام الـ API Keys المخزنة في GitHub Secrets
     ENV.delete('APP_STORE_CONNECT_API_KEY')
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -12,16 +9,12 @@ platform :ios do
       key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
       is_key_content_base64: false
     )
-
-    # 2. استخدام أداة match أو cert/sigh لإدارة الشهادات والملفات التعريفية تلقائياً
-    get_provisioning_profile(
-      app_identifier: "com.muein.orders", # استبدل بـ Bundle ID الخاص بتطبيقك
-      distribution_type: "app-store"     # نوع التوزيع (App Store / Ad Hoc)
+    get_provisioning_profile( 
+      app_identifier: "com.muein.orders",
+      distribution_type: "app-store"     
     )
-
     UI.message("Fastlane setup and certificate verification completed successfully!")
   end
-
   desc "Automatically generate or fetch signing certificate and provisioning profile using App Store Connect API"
   lane :generate_signing_certs do
     ENV.delete('APP_STORE_CONNECT_API_KEY')
@@ -30,13 +23,11 @@ platform :ios do
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
       key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
     )
-
     cert(
       output_path: "./",
       output_name: "certificate",
       password: ENV["P12_PASSWORD"] || "temp_password_123"
     )
-
     sigh(
       app_identifier: "com.muein.orders",
       output_path: "./",

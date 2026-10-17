@@ -22,6 +22,9 @@ runs:
         else
           echo "p12_pass=${{ inputs.p12-password }}" >> $GITHUB_OUTPUT
         fi
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
     - name: Decode Certificate or Auto-Generate
       shell: bash
       env:
