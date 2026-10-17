@@ -17,11 +17,11 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     environment: ${{ github.ref_name }}
+    
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
-          certificate-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
           appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}

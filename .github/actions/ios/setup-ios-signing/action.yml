@@ -1,10 +1,6 @@
 name: setup-ios-signing
 description: setup-ios-signing
 inputs:
-  certificate-base64:
-    required: false
-    default: ""
-    description: "Base64 encoded .p12 certificate"
   p12-password:
     required: false
     default: ""
@@ -35,18 +31,10 @@ runs:
         P12_PASSWORD: ${{ steps.generate_password.outputs.p12_pass }}
       run: |
         mkdir -p ios
-        if [ -n "${{ inputs.certificate-base64 }}" ]; then
-          echo "${{ inputs.certificate-base64 }}" | base64 --decode > ios/certificate.p12
-          echo "Certificate decoded from base64 input."
-        elif [ -f "ios/certificate.p12" ]; then
-          echo "Using existing ios/certificate.p12"
-        else
-          echo "Certificate not provided. Auto-generating certificate and provisioning profile using App Store Connect API..."
-          cd ios
-          bundle install || gem install fastlane
-          bundle exec fastlane generate_signing_certs
-          cd ..
-        fi
+        cd ios
+        bundle install || gem install fastlane
+        bundle exec fastlane generate_signing_certs
+        cd ..
     - uses: apple-actions/import-codesign-certs@v7
       with:
         p12-filepath: ios/certificate.p12
