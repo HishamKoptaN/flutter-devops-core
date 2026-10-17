@@ -3,10 +3,17 @@ platform :ios do
   desc "Push a new release build to TestFlight or build IPA with automatic code signing"
   lane :build_signed_ipa do
     ENV.delete('APP_STORE_CONNECT_API_KEY')
+    
+    priv_key = ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
+    if priv_key && !priv_key.include?("\n")
+      body = priv_key.gsub(/-----BEGIN.*?-----/, '').gsub(/-----END.*?-----/, '').gsub(/\s+/, '')
+      priv_key = "-----BEGIN PRIVATE KEY-----\n" + body.scan(/.{1,64}/).join("\n") + "\n-----END PRIVATE KEY-----"
+    end
+
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
+      key_content: priv_key,
       is_key_content_base64: false
     )
     get_provisioning_profile( 
@@ -18,10 +25,17 @@ platform :ios do
   desc "Automatically generate or fetch signing certificate and provisioning profile using App Store Connect API"
   lane :generate_signing_certs do
     ENV.delete('APP_STORE_CONNECT_API_KEY')
+    
+    priv_key = ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
+    if priv_key && !priv_key.include?("\n")
+      body = priv_key.gsub(/-----BEGIN.*?-----/, '').gsub(/-----END.*?-----/, '').gsub(/\s+/, '')
+      priv_key = "-----BEGIN PRIVATE KEY-----\n" + body.scan(/.{1,64}/).join("\n") + "\n-----END PRIVATE KEY-----"
+    end
+
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
+      key_content: priv_key
     )
     cert(
       output_path: "./",
