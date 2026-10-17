@@ -4,11 +4,13 @@ module OpenSSL
     class EC
       class << self
         alias_method :orig_new, :new
-        def new(*args)
-          if args.first.is_a?(String) && args.first.include?("PRIVATE KEY")
-            OpenSSL::PKey.read(*args)
+        def new(*args, &block)
+          orig_new(*args, &block)
+        rescue OpenSSL::PKey::ECError, ArgumentError => e
+          if args.first.is_a?(String)
+            OpenSSL::PKey.read(*args, &block)
           else
-            orig_new(*args)
+            raise e
           end
         end
       end
