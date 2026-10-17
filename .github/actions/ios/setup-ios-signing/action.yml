@@ -47,4 +47,4 @@ runs:
         profile-type: 'IOS_APP_STORE'
         issuer-id: ${{ inputs.appstore_issuer_id }}
         api-key-id: ${{ inputs.appstore_api_key_id }}
-        api-private-key: ${{ inputs.appstore_api_private_key }}
+        api-private-key: ${{ inputs.appstore_api_private_key }}ء

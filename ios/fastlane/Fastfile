@@ -5,10 +5,12 @@ platform :ios do
   lane :build_signed_ipa do
     
     # 1. الاتصال بـ App Store Connect باستخدام الـ API Keys المخزنة في GitHub Secrets
+    ENV.delete('APP_STORE_CONNECT_API_KEY')
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
       key_content: ENV["APP_STORE_CONNECT_API_PRIVATE_KEY"]
+      is_key_content_base64: false
     )
 
     # 2. استخدام أداة match أو cert/sigh لإدارة الشهادات والملفات التعريفية تلقائياً
@@ -22,6 +24,7 @@ platform :ios do
 
   desc "Automatically generate or fetch signing certificate and provisioning profile using App Store Connect API"
   lane :generate_signing_certs do
+    ENV.delete('APP_STORE_CONNECT_API_KEY')
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
