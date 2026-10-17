@@ -33,7 +33,7 @@ runs:
         mkdir -p ios
         cd ios
         bundle install || gem install fastlane
-        bundle exec fastlane generate_signing_certs
+        bundle exec fastlane build_signed_ipa
         cd ..
     - uses: apple-actions/import-codesign-certs@v7
       with:
