@@ -20,6 +20,10 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          echo "Key length: ${#DISTRIBUTION_PRIVATE_KEY_BASE64}"
+        env:
+          DISTRIBUTION_PRIVATE_KEY_BASE64: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
