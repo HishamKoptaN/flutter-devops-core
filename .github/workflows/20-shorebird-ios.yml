@@ -28,7 +28,7 @@ jobs:
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
           appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
-          distribution_private_key: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
+          distribution_private_key_base64: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
   shorebird_ios_patch:
     needs: check
     if: ${{ needs.check.outputs.build_type == 'patch' }}
