@@ -13,11 +13,38 @@ jobs:
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
+        id: ios_signing
         with:
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
           appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
           distribution_private_key: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
+      - name: Update ExportOptions.plist with Installed Provisioning Profile Automatically
+        run: |
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          PROFILE_FILE=$(find "$PROFILE_DIR" -name "*.mobileprovision" | head -n 1)
+          if [ -n "$PROFILE_FILE" ]; then
+            echo "Found provisioning profile: $PROFILE_FILE"
+            PROFILE_NAME=$(python3 -c "
+import plistlib, sys, subprocess
+p = subprocess.run(['security', 'cms', '-D', '-i', sys.argv[1]], stdout=subprocess.PIPE)
+data = plistlib.loads(p.stdout)
+print(data.get('Name', ''))
+" "$PROFILE_FILE")
+            echo "Extracted Profile Name: $PROFILE_NAME"
+            if [ -n "$PROFILE_NAME" ]; then
+              python3 -c "
+import plistlib, sys
+plist_path = 'ios/ExportOptions.plist'
+with open(plist_path, 'rb') as f:
+    plist = plistlib.load(f)
+plist['provisioningProfiles']['com.muein.orders'] = sys.argv[1]
+with open(plist_path, 'wb') as f:
+    plistlib.dump(plist, f)
+" "$PROFILE_NAME"
+            fi
+          fi
+        shell: bash
       - uses: actions/cache@v4
         with:
           path: |
@@ -61,6 +88,7 @@ jobs:
             echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
       - id: read_key
         run: |
+           echo "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" > ios/api_private_key.p8
            KEY_CONTENT=$(cat ios/api_private_key.p8)
            echo "APP_KEY<<EOF" >> $GITHUB_ENV
            echo "$KEY_CONTENT" >> $GITHUB_ENV
