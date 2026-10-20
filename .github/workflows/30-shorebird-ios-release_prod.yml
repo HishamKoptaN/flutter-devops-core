@@ -25,23 +25,10 @@ jobs:
           PROFILE_FILE=$(find "$PROFILE_DIR" -name "*.mobileprovision" | head -n 1)
           if [ -n "$PROFILE_FILE" ]; then
             echo "Found provisioning profile: $PROFILE_FILE"
-            PROFILE_NAME=$(python3 -c "
-import plistlib, sys, subprocess
-p = subprocess.run(['security', 'cms', '-D', '-i', sys.argv[1]], stdout=subprocess.PIPE)
-data = plistlib.loads(p.stdout)
-print(data.get('Name', ''))
-" "$PROFILE_FILE")
+            PROFILE_NAME=$(python3 -c "import plistlib, sys, subprocess; p = subprocess.run(['security', 'cms', '-D', '-i', sys.argv[1]], stdout=subprocess.PIPE); print(plistlib.loads(p.stdout).get('Name', ''))" "$PROFILE_FILE")
             echo "Extracted Profile Name: $PROFILE_NAME"
             if [ -n "$PROFILE_NAME" ]; then
-              python3 -c "
-import plistlib, sys
-plist_path = 'ios/ExportOptions.plist'
-with open(plist_path, 'rb') as f:
-    plist = plistlib.load(f)
-plist['provisioningProfiles']['com.muein.orders'] = sys.argv[1]
-with open(plist_path, 'wb') as f:
-    plistlib.dump(plist, f)
-" "$PROFILE_NAME"
+              python3 -c "import plistlib, sys; plist_path = 'ios/ExportOptions.plist'; f = open(plist_path, 'rb'); plist = plistlib.load(f); f.close(); plist['provisioningProfiles']['com.muein.orders'] = sys.argv[1]; f = open(plist_path, 'wb'); plistlib.dump(plist, f); f.close()" "$PROFILE_NAME"
             fi
           fi
         shell: bash
