@@ -16,8 +16,9 @@ jobs:
       - name: Fix App Store Connect API Key Format
         shell: bash
         run: |
+             # Remove Windows carriage returns and ensure proper PEM formatting
              echo "API_KEY_FIXED<<EOF" >> $GITHUB_ENV
-             echo "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" >> $GITHUB_ENV
+             printf '%s\n' "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" | tr -d '\r' >> $GITHUB_ENV
              echo "EOF" >> $GITHUB_ENV
       - uses: apple-actions/download-provisioning-profiles@v1
         with:

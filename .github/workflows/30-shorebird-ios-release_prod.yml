@@ -61,7 +61,7 @@ jobs:
             echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
       - id: read_key
         run: |
-           echo "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" > ios/api_private_key.p8
+           printf '%s\n' "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" | tr -d '\r' > ios/api_private_key.p8
            KEY_CONTENT=$(cat ios/api_private_key.p8)
            echo "APP_KEY<<EOF" >> $GITHUB_ENV
            echo "$KEY_CONTENT" >> $GITHUB_ENV
