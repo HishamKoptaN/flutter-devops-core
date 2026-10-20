@@ -10,6 +10,22 @@ on:
     branches: [dev, prod]
   workflow_dispatch:
 jobs: 
-  shorebird_layer:
-    uses: ./.github/workflows/20-shorebird-layer.yml
-    secrets: inherit
+  test-signing:
+      runs-on: macos-latest
+      steps:
+        - uses: actions/checkout@v6
+        - uses: ./.github/actions/setup-ios-signing
+          with:
+            appstore_issuer_id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+            appstore_api_key_id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+            appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+            distribution_private_key: ${{ secrets.IOS_DISTRIBUTION_PRIVATE_KEY }}
+            bundle_id: 'com.muein_orders'
+        - shell: bash
+          run: |
+            security find-identity -v -p codesigning
+            ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+            echo "تم فحص وتثبيت التوقيع والبروفايل بنجاح!"
+  # shorebird_layer:
+  #   uses: ./.github/workflows/20-shorebird-layer.yml
+  #   secrets: inherit
