@@ -12,6 +12,9 @@ inputs:
   bundle_id:
     required: false
     default: 'com.muein.orders'
+  team_id:
+    required: false
+    default: '5493DS73C7'
   p12-password:
     required: false
 outputs:
@@ -40,13 +43,43 @@ runs:
         app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
         app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
         distribution-private-key: ${{ inputs.distribution_private_key }}
-        bundle-identifier: ${{ 'com.muein.orders' }}
+        bundle-identifier: ${{ inputs.bundle_id }}
     - uses: maui-actions/apple-provisioning@v4
       with:
         certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
         certificate-passphrase: ${{ steps.cert.outputs.p12-password }}
-        bundle-identifiers: ${{ 'com.muein.orders' }}
+        bundle-identifiers: ${{ inputs.bundle_id }}
         profile-types: IOS_APP_STORE
         app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
         app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
         app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
+    - name: Generate ExportOptions.plist automatically
+      shell: bash
+      run: |
+        mkdir -p ios
+        cat << 'EOF' > ios/ExportOptions.plist
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>teamID</key>
+            <string>${{ inputs.team_id }}</string>
+            <key>provisioningProfiles</key>
+            <dict>
+                <key>${{ inputs.bundle_id }}</key>
+                <string>match AppStore ${{ inputs.bundle_id }}</string>
+            </dict>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        echo "Successfully generated ios/ExportOptions.plist for manual signing with profile match AppStore ${{ inputs.bundle_id }}"
