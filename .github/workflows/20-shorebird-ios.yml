@@ -22,9 +22,9 @@ jobs:
       - uses: apple-actions/download-provisioning-profiles@v1
         with:
           bundle-id: 'com.muein.orders'
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          api-private-key: ${{ secrets.API_KEY_FIXED }}
+          issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          api-private-key: ${{ env.API_KEY_FIXED }}
           profile-type: 'IOS_APP_STORE'
       # - uses: actions/checkout@v6
       # - uses: actions/cache@v4
