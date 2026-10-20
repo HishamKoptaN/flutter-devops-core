@@ -17,8 +17,8 @@ jobs:
         with:
           bundle-identifier: 'com.muein.orders'
           issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
           profile-type: 'IOS_APP_STORE'
       # - uses: actions/checkout@v6
       # - uses: actions/cache@v4
