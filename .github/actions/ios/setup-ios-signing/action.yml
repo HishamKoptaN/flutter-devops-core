@@ -36,14 +36,14 @@ runs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.x'
-    # - uses: kebechet/setup-apple-certificate@v1
-    #   id: cert
-    #   with:
-    #     app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
-    #     app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
-    #     app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
-    #     distribution-private-key: ${{ inputs.distribution_private_key }}
-    #     bundle-identifier: ${{ inputs.bundle_id }}
+    - uses: kebechet/setup-apple-certificate@v1
+      id: cert
+      with:
+        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
+        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
+        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
+        distribution-private-key: ${{ inputs.distribution_private_key }}
+        bundle-identifier: ${{ inputs.bundle_id }}
     - shell: bash
       env:
         DISTRIBUTION_PRIVATE_KEY: ${{ inputs.distribution_private_key }}
@@ -63,7 +63,16 @@ runs:
     - shell: bash
       run: |
         mkdir -p ios
-        cat << 'EOF' > ios/ExportOptions.plist
+        PROFILE_PATH=$(ls -t ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -n 1)
+        if [ -n "$PROFILE_PATH" ]; then
+          PROFILE_NAME=$(python3 -c "import plistlib; plist = plistlib.loads(open('$PROFILE_PATH', 'rb').read()); print(plist.get('Name', ''))")
+          echo "Found provisioning profile: $PROFILE_NAME"
+        else
+          PROFILE_NAME="match AppStore ${{ inputs.bundle_id }}"
+          echo "No provisioning profile found, defaulting to: $PROFILE_NAME"
+        fi
+
+        cat << EOF > ios/ExportOptions.plist
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
@@ -77,7 +86,7 @@ runs:
             <key>provisioningProfiles</key>
             <dict>
                 <key>${{ inputs.bundle_id }}</key>
-                <string>match AppStore ${{ inputs.bundle_id }}</string>
+                <string>$PROFILE_NAME</string>
             </dict>
             <key>stripSwiftSymbols</key>
             <true/>
@@ -88,4 +97,4 @@ runs:
         </dict>
         </plist>
         EOF
-        echo "Successfully generated ios/ExportOptions.plist for manual signing with profile match AppStore ${{ inputs.bundle_id }}"
+        echo "Successfully generated ios/ExportOptions.plist with profile: $PROFILE_NAME"
