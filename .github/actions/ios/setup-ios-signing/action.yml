@@ -36,14 +36,21 @@ runs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.x'
-    - uses: kebechet/setup-apple-certificate@v1
-      id: cert
-      with:
-        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
-        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
-        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
-        distribution-private-key: ${{ inputs.distribution_private_key }}
-        bundle-identifier: ${{ inputs.bundle_id }}
+    # - uses: kebechet/setup-apple-certificate@v1
+    #   id: cert
+    #   with:
+    #     app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
+    #     app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
+    #     app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
+    #     distribution-private-key: ${{ inputs.distribution_private_key }}
+    #     bundle-identifier: ${{ inputs.bundle_id }}
+    - shell: bash
+      env:
+        DISTRIBUTION_PRIVATE_KEY: ${{ inputs.distribution_private_key }}
+      run: |
+        mkdir -p ~/.certs
+        echo "$DISTRIBUTION_PRIVATE_KEY" | base64 --decode > ~/.certs/distribution_key.pem
+        echo "تم تجهيز المفتاح بنجاح"
     - uses: maui-actions/apple-provisioning@v4
       with:
         certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
@@ -53,8 +60,7 @@ runs:
         app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
         app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
         app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
-    - name: Generate ExportOptions.plist automatically
-      shell: bash
+    - shell: bash
       run: |
         mkdir -p ios
         cat << 'EOF' > ios/ExportOptions.plist
