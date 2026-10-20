@@ -12,18 +12,13 @@ jobs:
       - uses: actions/checkout@v6
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-      - name: Import Signing Certificate
-        uses: apple-actions/import-codesign-certs@v3
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/setup-ios-signing@prod
         with:
-          p12-file-base64: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
-          p12-password: ${{ secrets.P12_PASSWORD }}
+        appstore_issuer_id: ${{ inputs.appstore_issuer_id }}
+        appstore_api_key_id: ${{ inputs.appstore_api_key_id }}
+        appstore_api_private_key: ${{ inputs.appstore_api_private_key }}
+        distribution_private_key: ${{ inputs.distribution_private_key_base64 }}
 
-      - name: Download Provisioning Profiles
-        uses: apple-actions/download-provisioning-profiles@v1
-        with:
-          issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
       - uses: actions/cache@v4
         with:
           path: |
