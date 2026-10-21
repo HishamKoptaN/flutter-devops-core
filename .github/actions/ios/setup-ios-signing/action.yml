@@ -40,14 +40,6 @@ runs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.x'
-    - shell: bash
-      run: |
-        dotnet tool install --global AppleDev.Tools --version 0.5.0
-        apple ci certificates create \
-          --api-key-id "3ZD59Y97UM" \
-          --api-issuer-id "487919a3-70a5-4992-af37-d75eb388c881" \
-          --api-private-key "ios/api_private_key.p8" \
-          --type "Distribution"
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2'
