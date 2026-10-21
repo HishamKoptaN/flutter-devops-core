@@ -36,14 +36,6 @@ runs:
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.x'
-    - uses: kebechet/setup-apple-certificate@v1
-      id: cert
-      with:
-        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
-        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
-        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
-        distribution-private-key: ${{ inputs.distribution_private_key }}
-        bundle-identifier: ${{ inputs.bundle_id }}
     - shell: bash
       env:
         DISTRIBUTION_PRIVATE_KEY: ${{ inputs.distribution_private_key }}
