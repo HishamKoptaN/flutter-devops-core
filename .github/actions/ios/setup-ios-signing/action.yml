@@ -44,6 +44,13 @@ runs:
       with:
         ruby-version: '3.2'
         bundler-cache: true
+    - name: Import Apple Certificate
+      if: ${{ inputs.certificate-base64 != '' }}
+      uses: apple-actions/import-codesign-certs@v1
+      id: cert
+      with:
+        p12-file-base64: ${{ inputs.certificate-base64 }}
+        p12-password: ${{ inputs.p12-password }}
     - shell: bash
       run: |
         gem install fastlane
