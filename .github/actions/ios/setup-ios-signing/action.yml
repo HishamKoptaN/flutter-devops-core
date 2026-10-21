@@ -8,7 +8,11 @@ inputs:
   appstore_api_private_key:
     required: true
   distribution_private_key:
-    required: true
+    required: false
+    default: ''
+  certificate-base64:
+    required: false
+    default: ''
   bundle_id:
     required: false
     default: 'com.muein.orders'
@@ -45,6 +49,11 @@ runs:
         echo "$DISTRIBUTION_PRIVATE_KEY" | base64 --decode > ~/.certs/distribution_key.pem
         mkdir -p ios
         printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" | tr -d '\r' > ios/api_private_key.p8
+    - id: cert
+      uses: maui-actions/apple-certificate@v3
+      with:
+        certificate-base64: ${{ inputs.certificate-base64 != '' && inputs.certificate-base64 || inputs.distribution_private_key }}
+        certificate-passphrase: ${{ inputs.p12-password }}
     - uses: maui-actions/apple-provisioning@v4
       with:
         certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
