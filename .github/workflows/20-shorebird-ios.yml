@@ -13,43 +13,29 @@ jobs:
     outputs:
       build_type: ${{ steps.dry_run.outputs.build_type }}
     steps:
-      - name: Fix App Store Connect API Key Format
-        shell: bash
-        run: |
-             # Remove Windows carriage returns and ensure proper PEM formatting
-             echo "API_KEY_FIXED<<EOF" >> $GITHUB_ENV
-             printf '%s\n' "${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}" | tr -d '\r' >> $GITHUB_ENV
-             echo "EOF" >> $GITHUB_ENV
-      - uses: apple-actions/download-provisioning-profiles@v1
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v4
         with:
-          bundle-id: 'com.muein.orders'
-          issuer-id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
-          api-private-key: ${{ env.API_KEY_FIXED }}
-          profile-type: 'IOS_APP_STORE'
-      # - uses: actions/checkout@v6
-      # - uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       ~/.cocoapods
-      #       ios/Pods
-      #     key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
-      # - id: dry_run
-      #   uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/shorebird-ios-dry-patch@prod
-      #   with:
-      #     flavor: ${{ github.ref_name }}
-      #     shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
-      #     appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
-      #     appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
-      #     appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
-      #     distribution_private_key_base64: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
-  # shorebird_ios_patch:
-  #   needs: check
-  #   if: ${{ needs.check.outputs.build_type == 'patch' }}
-  #   uses: HishamKoptaN/flutter-devops-core/.github/workflows/20-shorebird-ios-patch.yml@prod
-  #   secrets: inherit
-  # shorebird_ios_release:
-  #   needs: check
-  #   if: ${{ needs.check.outputs.build_type == 'release' }}
-  #   uses: HishamKoptaN/flutter-devops-core/.github/workflows/30-shorebird-ios-release_prod.yml@prod
-  #   secrets: inherit
+          path: |
+            ~/.cocoapods
+            ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
+      - id: dry_run
+        uses: HishamKoptaN/flutter-devops-core/.github/actions/ios/shorebird-ios-dry-patch@prod
+        with:
+          flavor: ${{ github.ref_name }}
+          shorebird_token: ${{ secrets.SHOREBIRD_TOKEN }}
+          appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+          distribution_private_key_base64: ${{ secrets.DISTRIBUTION_PRIVATE_KEY_BASE64 }}
+  shorebird_ios_patch:
+    needs: check
+    if: ${{ needs.check.outputs.build_type == 'patch' }}
+    uses: HishamKoptaN/flutter-devops-core/.github/workflows/20-shorebird-ios-patch.yml@prod
+    secrets: inherit
+  shorebird_ios_release:
+    needs: check
+    if: ${{ needs.check.outputs.build_type == 'release' }}
+    uses: HishamKoptaN/flutter-devops-core/.github/workflows/30-shorebird-ios-release_prod.yml@prod
+    secrets: inherit
