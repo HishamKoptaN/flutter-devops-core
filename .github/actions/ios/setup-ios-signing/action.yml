@@ -24,7 +24,7 @@ inputs:
 outputs:
   p12-password:
     description: "P12 password"
-    value: ${{ steps.cert.outputs.p12-password }}
+    value: ${{ inputs.p12-password }}
   keychain-password:
     description: "Keychain password"
     value: ${{ steps.cert.outputs.keychain-password }}
@@ -33,13 +33,10 @@ outputs:
     value: ${{ steps.cert.outputs.codesign-identity }}
   provisioning-profile-name:
     description: "Provisioning profile name"
-    value: ${{ steps.cert.outputs.provisioning-profile-name }}
+    value: ${{ steps.profile.outputs.profile-name }}
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.x'
     - shell: bash
       env:
         DISTRIBUTION_PRIVATE_KEY: ${{ inputs.distribution_private_key }}
@@ -50,20 +47,18 @@ runs:
         mkdir -p ios
         printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" | tr -d '\r' > ios/api_private_key.p8
     - id: cert
-      uses: maui-actions/apple-certificate@v3
+      uses: apple-actions/import-codesign-certs@v3
       with:
-        certificate-base64: ${{ inputs.certificate-base64 != '' && inputs.certificate-base64 || inputs.distribution_private_key }}
-        certificate-passphrase: ${{ inputs.p12-password }}
-    - uses: maui-actions/apple-provisioning@v4
+        p12-file-base64: ${{ inputs.certificate-base64 != '' && inputs.certificate-base64 || inputs.distribution_private_key }}
+        p12-password: ${{ inputs.p12-password }}
+    - uses: apple-actions/download-provisioning-profiles@v3
       with:
-        certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
-        certificate-passphrase: ${{ steps.cert.outputs.p12-password }}
-        bundle-identifiers: ${{ inputs.bundle_id }}
-        profile-types: IOS_APP_STORE
-        app-store-connect-key-id: ${{ inputs.appstore_api_key_id }}
-        app-store-connect-issuer-id: ${{ inputs.appstore_issuer_id }}
-        app-store-connect-private-key: ${{ inputs.appstore_api_private_key }}
-    - shell: bash
+        bundle-id: ${{ inputs.bundle_id }}
+        issuer-id: ${{ inputs.appstore_issuer_id }}
+        api-key-id: ${{ inputs.appstore_api_key_id }}
+        api-private-key: ${{ inputs.appstore_api_private_key }}
+    - id: profile
+      shell: bash
       run: |
         mkdir -p ios
         PROFILE_PATH=$(ls -t ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -n 1)
@@ -74,6 +69,7 @@ runs:
           PROFILE_NAME="match AppStore ${{ inputs.bundle_id }}"
           echo "No provisioning profile found, defaulting to: $PROFILE_NAME"
         fi
+        echo "profile-name=$PROFILE_NAME" >> $GITHUB_OUTPUT
 
         cat << EOF > ios/ExportOptions.plist
         <?xml version="1.0" encoding="UTF-8"?>
@@ -108,8 +104,7 @@ runs:
     - shell: bash
       run: |
         gem install fastlane
-    - name: Fastlane iOS Provisioning & Signing
-      shell: bash
+    - shell: bash
       env:
         APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
