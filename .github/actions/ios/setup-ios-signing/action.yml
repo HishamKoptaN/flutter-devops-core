@@ -47,10 +47,15 @@ runs:
     - shell: bash
       env:
         DISTRIBUTION_PRIVATE_KEY: ${{ inputs.distribution_private_key }}
+        APPSTORE_API_PRIVATE_KEY: ${{ inputs.appstore_api_private_key }}
       run: |
         mkdir -p ~/.certs
         echo "$DISTRIBUTION_PRIVATE_KEY" | base64 --decode > ~/.certs/distribution_key.pem
         echo "تم تجهيز المفتاح بنجاح"
+        
+        mkdir -p ios
+        printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" | tr -d '\r' > ios/api_private_key.p8
+        echo "تم تجهيز مفتاح App Store Connect API بنجاح"
     - uses: maui-actions/apple-provisioning@v4
       with:
         certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
@@ -98,3 +103,19 @@ runs:
         </plist>
         EOF
         echo "Successfully generated ios/ExportOptions.plist with profile: $PROFILE_NAME"
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+    - shell: bash
+      run: |
+        gem install fastlane
+    - name: Fastlane iOS Provisioning & Signing
+      shell: bash
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
+        APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
+      run: |
+        cd ios
+        fastlane generate_profile
