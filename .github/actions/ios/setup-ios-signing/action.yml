@@ -27,8 +27,7 @@ runs:
           issuer-id: ${{ inputs.appstore_issuer_id }}
           api-key-id: ${{ inputs.appstore_api_key_id }}
           api-private-key: '${{ github.workspace }}/ios/api_private_key.p8'
-      - name: Check provisioning profiles
-        shell: bash
+      - shell: bash
         env:
           PROFILES: ${{ steps.profiles.outputs.profiles }}
         run: |
