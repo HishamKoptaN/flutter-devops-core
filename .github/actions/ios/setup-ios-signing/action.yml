@@ -7,58 +7,33 @@ inputs:
     required: true
   appstore_api_private_key:
     required: true
-  distribution_private_key:
-    required: false
-    default: ''
-  certificate-base64:
-    required: false
-    default: ''
-  bundle_id:
-    required: false
-    default: 'com.muein.orders'
-  team_id:
-    required: false
-    default: '5493DS73C7'
-  p12-password:
-    required: false
-outputs:
-  p12-password:
-    description: "P12 password"
-    value: ${{ inputs.p12-password }}
-  keychain-password:
-    description: "Keychain password"
-    value: ${{ steps.cert.outputs.keychain-password }}
-  codesign-identity:
-    description: "Codesign identity"
-    value: ${{ steps.cert.outputs.codesign-identity }}
-  provisioning-profile-name:
-    description: "Provisioning profile name"
-    value: ${{ steps.profile.outputs.profile-name }}
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.x'
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.2'
-        bundler-cache: true
-    - name: Import Apple Certificate
-      if: ${{ inputs.certificate-base64 != '' }}
-      uses: apple-actions/import-codesign-certs@v1
-      id: cert
-      with:
-        p12-file-base64: ${{ inputs.certificate-base64 }}
-        p12-password: ${{ inputs.p12-password }}
-    - shell: bash
-      run: |
-        gem install fastlane
-    - shell: bash
-      env:
-        APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
-        APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
-        APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
-      run: |
-        cd ios
-        fastlane generate_profile
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+      - shell: bash
+        run: |
+          dotnet tool install --global AppleDev.Tools --version 0.5.0
+          apple ci certificates create \
+            --api-key-id "3ZD59Y97UM" \
+            --api-issuer-id "487919a3-70a5-4992-af37-d75eb388c881" \
+            --api-private-key "ios/api_private_key.p8" \
+            --type "Distribution"
+      - shell: bash
+        run: |
+          echo "=== تم اختبار وإنشاء الشهادة بنجاح تام عبر الـ API! ==="
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+      - run: |
+          gem install fastlane
+      - env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
+        run: |
+          cd ios
+          fastlane generate_profile
