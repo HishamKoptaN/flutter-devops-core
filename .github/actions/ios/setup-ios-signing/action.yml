@@ -43,11 +43,8 @@ runs:
       run: |
         mkdir -p ~/.certs
         echo "$DISTRIBUTION_PRIVATE_KEY" | base64 --decode > ~/.certs/distribution_key.pem
-        echo "تم تجهيز المفتاح بنجاح"
-        
         mkdir -p ios
         printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" | tr -d '\r' > ios/api_private_key.p8
-        echo "تم تجهيز مفتاح App Store Connect API بنجاح"
     - uses: maui-actions/apple-provisioning@v4
       with:
         certificate: ${{ steps.cert.outputs.p12-certificate-base64 }}
