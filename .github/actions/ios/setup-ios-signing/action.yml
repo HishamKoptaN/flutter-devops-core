@@ -19,6 +19,14 @@ runs:
       #       --api-issuer-id "${{ inputs.appstore_issuer_id }}" \
       #       --api-private-key "ios/api_private_key.p8" \
       #       --type "Distribution"
+      - name: Read Private Key Content
+        shell: bash 
+        run: |
+        id: read_key
+          KEY_CONTENT=$(cat ios/api_private_key.p8)
+          echo "key_content<<EOF" >> $GITHUB_ENV
+          echo "$KEY_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV 
       - id: profiles
         uses: apple-actions/download-provisioning-profiles@v7
         with:
@@ -26,7 +34,7 @@ runs:
           profile-type: 'IOS_APP_STORE'
           issuer-id: ${{ inputs.appstore_issuer_id }}
           api-key-id: ${{ inputs.appstore_api_key_id }}
-          api-private-key: '${{ github.workspace }}/ios/api_private_key.p8'
+          api-private-key: ${{ env.key_content }}
       - shell: bash
         env:
           PROFILES: ${{ steps.profiles.outputs.profiles }}
