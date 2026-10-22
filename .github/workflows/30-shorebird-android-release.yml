@@ -26,10 +26,6 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-      - uses: actions/cache@v4
-        with:
-          path: |
-
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
       - uses: actions/cache@v4
         with:

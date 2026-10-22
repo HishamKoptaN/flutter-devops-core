@@ -27,8 +27,6 @@ runs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
           APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
           APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT: ${{ inputs.appstore_api_private_key }}
-          FASTLANE_USER: ${{ vars.APPLE_ID || secrets.APPLE_ID }}
-          APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
         run: |
           echo "$APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT" > ios/api_private_key.p8
           cd ios
