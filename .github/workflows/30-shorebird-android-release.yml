@@ -19,6 +19,7 @@ jobs:
           platform: "android"
       - id: run
         run: |
+          flavor="${{ github.ref_name }}"
           shorebird release android \
           --flavor=$flavor \
           --build-name=${{ steps.get-build-version.outputs.build_name }} \
