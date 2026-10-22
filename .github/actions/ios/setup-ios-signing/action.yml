@@ -26,9 +26,11 @@ runs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
           APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
+          APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT: ${{ inputs.appstore_api_private_key }}
         run: |
+          echo "$APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT" > ios/api_private_key.p8
           cd ios
-          fastlane generate_profile
+          fastlane get_certificates
       - id: profiles
         uses: apple-actions/download-provisioning-profiles@v7
         with:
@@ -41,6 +43,14 @@ runs:
         env:
           PROFILES: ${{ steps.profiles.outputs.profiles }}
         run: |
+            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            echo "$PROFILES" | jq -r '.[] | .fileContent + " " + .uuid' | while read -r content uuid; do
+              if [ -n "$content" ] && [ "$content" != "null" ]; then
+                echo "$content" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/"$uuid.mobileprovision"
+                echo "Installed provisioning profile: $uuid.mobileprovision"
+              fi
+            done
+
             for name in "com.muein.orders AppStore"; do
               jq -e --arg name "$name" 'any(.[]; .name == $name)' <<<"$PROFILES" >/dev/null \
                 || { echo "::error::No ACTIVE provisioning profile \"$name\""; exit 1; }
