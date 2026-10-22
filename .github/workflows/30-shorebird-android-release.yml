@@ -19,9 +19,6 @@ jobs:
           platform: "android"
       - id: run
         run: |
-          flavor="${{ github.ref_name }}"
-          TARGET_ID="${{ vars.SHOREBIRD_APP_ID }}"
-          sed -i "s/^app_id:.*/app_id: $TARGET_ID/" shorebird.yaml
           shorebird release android \
           --flavor=$flavor \
           --build-name=${{ steps.get-build-version.outputs.build_name }} \
