@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/setup-android-shorebird
+      - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/setup-android-shorebird@prod
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
