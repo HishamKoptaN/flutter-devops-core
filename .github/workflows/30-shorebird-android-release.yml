@@ -17,24 +17,6 @@ jobs:
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
-      - uses: actions/cache@v4
-        with:
-          path: |
-            /usr/local/lib/android/sdk
-          key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
-          restore-keys: android-sdk-${{ runner.os }}-
-      - uses: actions/cache@v4
-        with:
-          path: |
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-      - uses: actions/cache@v4
-        with:
-          path: |
-            build/
-            android/.gradle
-            android/app/build
-            .dart_tool/build
-          key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
       - id: run
         run: |
           flavor="${{ github.ref_name }}"
@@ -46,7 +28,7 @@ jobs:
           --build-number=${{ steps.get-build-version.outputs.build_number }} \
           --dart-define=ENV=$flavor \
           --artifact=apk \
-          --target-platform=android-arm,android-arm64 \
+          --target=arm,arm64 \
           -- \
           --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
@@ -56,3 +38,25 @@ jobs:
           retention-days: 1
 
 
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      /usr/local/lib/android/sdk
+      #    key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
+      #    restore-keys: android-sdk-${{ runner.os }}-
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+
+      #    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      #- uses: actions/cache@v4
+      #  with:
+      #    path: |
+      #      build/
+      #      android/.gradle
+      #      android/app/build
+      #      .dart_tool/build
+      #    key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
