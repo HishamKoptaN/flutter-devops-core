@@ -5,7 +5,6 @@ runs:
   steps:
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-flutter@prod
     - uses: HishamKoptaN/flutter-devops-core/.github/actions/core/setup-shorebird@prod
-
     - uses: actions/cache@v4
       with:
         path: |
