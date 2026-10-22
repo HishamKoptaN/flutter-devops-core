@@ -16,7 +16,7 @@ jobs:
         with:
           appstore_issuer_id: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           appstore_api_key_id: ${{ vars.APP_STORE_CONNECT_API_KEY_ID }}
-          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}  
+          appstore_api_private_key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
       - uses: actions/cache@v4
         with:
           path: |
