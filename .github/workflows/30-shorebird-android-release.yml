@@ -50,6 +50,7 @@ jobs:
           --build-number=${{ steps.get-build-version.outputs.build_number }} \
           --dart-define=ENV=$flavor \
           --artifact=apk \
+          --target-platform=android-arm,android-arm64 \
           -- \
           --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
