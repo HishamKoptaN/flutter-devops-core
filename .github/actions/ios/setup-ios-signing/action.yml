@@ -14,14 +14,6 @@ runs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
-      # - shell: bash
-      #   run: |
-      #     dotnet tool install --global AppleDev.Tools --version 0.5.0
-      #     apple ci certificates create \
-      #       --api-key-id "${{ inputs.appstore_api_key_id }}" \
-      #       --api-issuer-id "${{ inputs.appstore_issuer_id }}" \
-      #       --api-private-key "ios/api_private_key.p8" \
-      #       --type "Distribution"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
@@ -37,17 +29,6 @@ runs:
         run: |
           cd ios
           fastlane generate_profile
-      # - shell: bash
-      #   env:
-      #     APP_STORE_CONNECT_API_KEY_ID: ${{ inputs.appstore_api_key_id }}
-      #     APP_STORE_CONNECT_ISSUER_ID: ${{ inputs.appstore_issuer_id }}
-      #     APP_STORE_CONNECT_API_PRIVATE_KEY_PATH: '${{ github.workspace }}/ios/api_private_key.p8'
-      #   run: |
-      #     mkdir -p ~/Library/MobileDevice/Provisioning Profiles
-      #     cd ios
-      #     bundle exec fastlane run download_provisioning_profile \
-      #       app_identifier: "com.muein.orders" \
-      #       api_key_path: "api_private_key.p8"
       - id: profiles
         uses: apple-actions/download-provisioning-profiles@v7
         with:
@@ -60,7 +41,7 @@ runs:
         env:
           PROFILES: ${{ steps.profiles.outputs.profiles }}
         run: |
-          for name in "AppStore com.muein.orders" "DeveloperID com.muein.orders"; do
-            jq -e --arg name "$name" 'any(.[]; .name == $name)' <<<"$PROFILES" >/dev/null \
-              || { echo "::error::No ACTIVE provisioning profile \"$name\""; exit 1; }
-          done
+            for name in "com.muein.orders AppStore"; do
+              jq -e --arg name "$name" 'any(.[]; .name == $name)' <<<"$PROFILES" >/dev/null \
+                || { echo "::error::No ACTIVE provisioning profile \"$name\""; exit 1; }
+            done
