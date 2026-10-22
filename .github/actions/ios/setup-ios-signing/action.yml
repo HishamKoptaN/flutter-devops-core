@@ -5,6 +5,9 @@ inputs:
     required: true  
   appstore_api_key_id:
     required: true
+  appstore_api_private_key:
+    required: true
+  
 runs:
   using: "composite"
   steps:
@@ -34,7 +37,7 @@ runs:
           profile-type: 'IOS_APP_STORE'
           issuer-id: ${{ inputs.appstore_issuer_id }}
           api-key-id: ${{ inputs.appstore_api_key_id }}
-          api-private-key: ${{ env.key_content }}
+          api-private-key: ${{ inputs.appstore_api_private_key }}
       - shell: bash
         env:
           PROFILES: ${{ steps.profiles.outputs.profiles }}
