@@ -12,11 +12,41 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/cmake
+            /usr/local/lib/android/sdk/ndk
+          key: android-sdk-tools-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
+          restore-keys: |
+            android-sdk-tools-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            build/
+            .dart_tool/
+            .pub-cache/
+          key: flutter-build-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}-${{ hashFiles('lib/**/*.dart') }}
+          restore-keys: |
+            flutter-build-${{ runner.os }}-
       - uses: HishamKoptaN/flutter-devops-core/.github/actions/android/setup-android-shorebird@prod
       - id: get-build-version
         uses: HishamKoptaN/flutter-devops-core/.github/actions/core/get-build-version@prod
         with:
           platform: "android"
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+          local-cache: true
       - id: run
         run: |
           flavor="${{ github.ref_name }}"
@@ -35,26 +65,3 @@ jobs:
           path: build/app/outputs/**/*.apk
           retention-days: 1
 
-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      /usr/local/lib/android/sdk
-      #    key: android-sdk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts', 'android/build.gradle.kts') }}
-      #    restore-keys: android-sdk-${{ runner.os }}-
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-
-      #    key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-      #- uses: actions/cache@v4
-      #  with:
-      #    path: |
-      #      build/
-      #      android/.gradle
-      #      android/app/build
-      #      .dart_tool/build
-      #    key: build-${{ hashFiles('lib/**/*.dart', 'pubspec.lock') }}-${{ runner.os }}
