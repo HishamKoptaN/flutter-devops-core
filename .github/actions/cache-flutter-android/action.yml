@@ -1,0 +1,25 @@
+name: 'Cache Flutter & Android Build'
+description: 'Caches Flutter, Dart, Gradle, and Android Native build artifacts for faster CI builds'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          build/
+          .dart_tool/
+          .pub-cache/
+        key: flutter-build-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}-${{ hashFiles('lib/**/*.dart') }}
+        restore-keys: |
+          flutter-build-${{ runner.os }}-
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          android/.gradle
+          android/app/.cxx
+        key: ${{ runner.os }}-gradle-native-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'android/app/build.gradle.kts') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-native-
