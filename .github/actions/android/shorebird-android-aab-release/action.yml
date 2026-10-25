@@ -18,7 +18,7 @@ runs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.caching=true -Dorg.gradle.vfs.watch=true"
         run: |
             shorebird release android \
-            --flutter-version=3.47.4 \
+            --flutter-version=3.47.7 \
             --flavor=${{ github.ref_name }} \
             --dart-define=ENV=${{ github.ref_name }} \
             --build-name=${{ steps.get-build-version.outputs.build_name }} \
