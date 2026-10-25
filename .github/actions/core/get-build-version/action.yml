@@ -43,20 +43,23 @@ runs:
           # 4. خوارزمية البحث عن رقم بناء صالح (Smart Loop)
           # ==========================================  
 
-          candidate_number=$((latest_platform_build + 1))
+          max_build=0
+          if [ -n "$raw_list_all" ]; then
+            for b in $(echo "$raw_list_all" | grep -oE '\+[0-9]+' | tr -d '+' || true); do
+              if [ "$b" -gt "$max_build" ]; then
+                max_build=$b
+              fi
+            done
+          fi
+
+          candidate_number=$((max_build + 1))
           while true; do
             existing_release=$(echo "$raw_list_all" | grep "+$candidate_number" || true)
             if [ -z "$existing_release" ]; then
               BUILD_NUMBER=$candidate_number
               break
             else
-              existing_flutter_version=$(echo "$existing_release" | awk '{print $NF}')
-              if [ "$current_flutter_version" == "$existing_flutter_version" ]; then
-                BUILD_NUMBER=$candidate_number
-                break
-              else
-                candidate_number=$((candidate_number + 1))
-              fi  
+              candidate_number=$((candidate_number + 1))
             fi  
           done
           echo "Calculated Build Name: $BUILD_NAME"
