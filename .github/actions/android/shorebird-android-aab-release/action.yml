@@ -1,5 +1,5 @@
-name: shorebird-android-release
-description: shorebird-android-release
+name: shorebird-android-aab-release
+description: shorebird-android-aab-release
 inputs:
   google_play_service_account_json:
     required: true
@@ -18,7 +18,6 @@ runs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.caching=true -Dorg.gradle.vfs.watch=true"
         run: |
             shorebird release android \
-            --confirm \
             --flutter-version=3.47.4 \
             --flavor=${{ github.ref_name }} \
             --dart-define=ENV=${{ github.ref_name }} \
