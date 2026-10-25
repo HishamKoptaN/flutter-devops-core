@@ -35,6 +35,11 @@ jobs:
           --target-platform=android-arm,android-arm64 \
           -- \
           --no-tree-shake-icons
+      - run: |
+          echo "{
+            \"versionCode\": ${{ steps.get-build-version.outputs.build_number }},
+            \"versionName\": \"${{ steps.get-build-version.outputs.build_name }}\"
+          }" > version.json
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk-${{ github.ref_name }}
