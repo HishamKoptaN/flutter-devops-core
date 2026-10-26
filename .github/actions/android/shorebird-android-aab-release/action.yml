@@ -26,7 +26,7 @@ runs:
       - id: upload-play
         uses: r0adkll/upload-google-play@v1
         with:
-          packageName: com.greensouq.app
+          packageName: com.muein.orders
           serviceAccountJsonPlainText: ${{ inputs.google_play_service_account_json }}
           releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
           tracks: ${{ inputs.track }}
